@@ -4,7 +4,7 @@
 
 // This file implements NewPackage.
 
-package ast
+package dst
 
 import (
 	"fmt"

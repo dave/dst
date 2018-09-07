@@ -4,7 +4,7 @@
 
 // To avoid a cyclic dependency with go/parser, this file is in a separate package.
 
-package ast_test
+package dst_test
 
 import (
 	"bytes"

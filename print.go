@@ -4,7 +4,7 @@
 
 // This file contains printing support for ASTs.
 
-package ast
+package dst
 
 import (
 	"fmt"

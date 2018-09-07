@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package ast declares the types used to represent syntax trees for Go
+// package dst declares the types used to represent syntax trees for Go
 // packages.
 //
-package ast
+package dst
 
 import (
 	"go/token"
