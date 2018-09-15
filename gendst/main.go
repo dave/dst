@@ -272,13 +272,6 @@ var suffixLengths = map[string]int{
 	"SwitchStmt.Init":     1,           // ";"
 	"TypeSwitchStmt.Init": 1,           // ";"
 }
-
-// TODO: SliceExpr special case: two colons may be present if Slice3 == true even if Max == nil?
-// TODO: ChanType special case: no arrow when Dir == 0
-// TODO: EmptyStmt special case Semicolon length = 1 when ???
-// TODO: TypeAssertExpr special case: When Type == nil, then ".(type)" is emitted
-// TODO: CommClause "case" -> "default" if Comm == nil
-// TODO: Range!
 var specialCases = map[string]bool{
 	"SliceExpr.Max":       true,
 	"ChanType.Arrow":      true,
