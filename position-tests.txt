@@ -1,0 +1,226 @@
+package dst
+
+import (
+	// Doc
+	/*ImportSpecAfterDoc*/ fmt /*ImportSpecAfterName*/ "fmt" /*ImportSpecAfterPath*/ // Comment
+)
+
+// Field
+type A struct {
+	A /*FieldAfterName*/ int /*FieldAfterType*/ `a:"a"`
+}
+
+// Ellipsis
+func B(a ... /*EllipsisAfterEllipsis*/ int) {}
+
+// FuncLit
+var C = func(a int, b ...int) (c int) /*FuncLitAfterType*/ { return 0 }
+
+// CompositeLit
+var D = A /*CompositeLitAfterType*/ { /*CompositeLitAfterLbrace*/ A: 0 /*CompositeLitAfterElts*/}
+
+// ParenExpr
+var E = ( /*ParenExprAfterLparen*/ 1 + 1 /*ParenExprAfterX*/) / 2
+
+// SelectorExpr
+var F = fmt. /*SelectorExprAfterX*/ Sprint(0)
+
+// IndexExpr
+var G = []int{0} /*IndexExprAfterX*/ [ /*IndexExprAfterLbrack*/ 0 /*IndexExprAfterIndex*/]
+
+// SliceExpr
+var H = []int{0} /*SliceExprAfterX*/ [ /*SliceExprAfterLbrack*/ 1: /*SliceExprAfterLow*/ 2: /*SliceExprAfterHigh*/ 3 /*SliceExprAfterMax*/]
+
+// TypeAssertExpr
+var I interface{}
+var J = I. /*TypeAssertExprAfterX*/ ( /*TypeAssertExprAfterLparen*/ int /*TypeAssertExprAfterType*/)
+
+// CallExpr
+var L = C /*CallExprAfterFun*/ ( /*CallExprAfterLparen*/ 0, []int{} /*CallExprAfterArgs*/ ... /*CallExprAfterEllipsis*/)
+
+// StarExpr
+var M = * /*StarExprAfterStar*/ (&I)
+
+// UnaryExpr
+var N = ^ /*UnaryExprAfterOp*/ 1
+
+// BinaryExpr
+var O = 1 /*BinaryExprAfterX*/ & /*BinaryExprAfterOp*/ 2
+
+// KeyValueExpr
+var P = map[string]string{"a" /*KeyValueExprAfterKey*/ : /*KeyValueExprAfterColon*/ "a"}
+
+// ArrayType
+type Q [ /*ArrayTypeAfterLbrack*/ 1] /*ArrayTypeAfterLen*/ int
+
+// StructType
+type R struct /*StructTypeAfterStruct*/ {
+	A int
+}
+
+// FuncType
+type S func /*FuncTypeAfterFunc*/ (a int) /*FuncTypeAfterParams*/ (b int)
+
+// InterfaceType
+type T interface /*InterfaceTypeAfterInterface*/ {
+	A()
+}
+
+// MapType
+type U map[ /*MapTypeAfterMap*/ int] /*MapTypeAfterKey*/ int
+
+// ChanType
+type V chan /*ChanTypeAfterBegin*/ int
+
+type W <-chan /*ChanTypeAfterBegin*/ int
+
+type X chan /*ChanTypeAfterBegin*/ <- /*ChanTypeAfterArrow*/ int
+
+func Y() {
+	// LabeledStmt TODO: create cmd/gofmt issue for wonky BeforeNode comment positioning
+
+A /*LabeledStmtAfterLabel*/ : /*LabeledStmtAfterColon*/
+	1++
+
+	// SendStmt
+	B := make(chan int)
+	B /*SendStmtAfterChan*/ <- /*SendStmtAfterArrow*/ 0
+
+	// IncDecStmt
+	var C int
+	C /*IncDecStmtAfterX*/ ++
+
+	// AssignStmt
+
+	D, E, F /*AssignStmtAfterLhs*/ := /*AssignStmtAfterTok*/ 1, 2, 3
+
+	fmt.Println(D, E, F)
+
+	// GoStmt
+
+	go /*GoStmtAfterGo*/ func() {}()
+
+	// DeferStmt
+
+	defer /*DeferStmtAfterDefer*/ func() {}()
+
+	// ReturnStmt
+	func() (int, int, int) {
+		return /*ReturnStmtAfterReturn*/ 1, 2, 3
+	}()
+
+	// BranchStmt
+
+	goto /*BranchStmtAfterTok*/ A
+
+	// BlockStmt
+	if true { /*BlockStmtAfterLbrace*/
+		1++
+	}
+
+	func() { /*BlockStmtAfterLbrace*/ 1++ }()
+
+	// IfStmt
+
+	if /*IfStmtAfterIf*/ a := true; /*IfStmtAfterInit*/ a /*IfStmtAfterCond*/ {
+		1++
+	} else /*IfStmtAfterElse*/ {
+		1++
+	}
+
+	// CaseClause
+	switch C {
+	case /*CaseClauseAfterCase*/ 1, 2, 3 /*CaseClauseAfterList*/ : /*CaseClauseAfterColon*/
+		1++
+	default:
+		1++
+	}
+
+	// SwitchStmt
+	switch /*SwitchStmtAfterSwitch*/ C /*SwitchStmtAfterTag*/ {
+	}
+
+	switch /*SwitchStmtAfterSwitch*/ a := C; /*SwitchStmtAfterInit*/ a /*SwitchStmtAfterTag*/ {
+	}
+
+	// TypeSwitchStmt
+	switch /*TypeSwitchStmtAfterSwitch*/ I.(type) /*TypeSwitchStmtAfterAssign*/ {
+	}
+
+	switch /*TypeSwitchStmtAfterSwitch*/ j := I.(type) /*TypeSwitchStmtAfterAssign*/ {
+	case int:
+		fmt.Print(j)
+	}
+
+	switch /*TypeSwitchStmtAfterSwitch*/ j := I; /*TypeSwitchStmtAfterInit*/ j := j.(type) /*TypeSwitchStmtAfterAssign*/ {
+	case int:
+		fmt.Print(j)
+	}
+
+	// CommClause
+	var a chan int
+	select {
+	case /*CommClauseAfterCase*/ b := <-a /*CommClauseAfterComm*/ : /*CommClauseAfterColon*/
+		b++
+	default:
+	}
+
+	// SelectStmt
+	select /*SelectStmtAfterSelect*/ {
+	default:
+	}
+
+	// ForStmt
+	var i int
+	for /*ForStmtAfterFor*/ {
+		i++
+	}
+
+	for /*ForStmtAfterFor*/ i < 1 /*ForStmtAfterCond*/ {
+		i++
+	}
+
+	for /*ForStmtAfterFor*/ i = 0; /*ForStmtAfterInit*/ i < 10; /*ForStmtAfterCond*/ i++ /*ForStmtAfterPost*/ {
+		i++
+	}
+
+	{
+		// RangeStmt
+		var a []int
+
+		for range /*RangeStmtAfterFor*/ a /*RangeStmtAfterX*/ {
+		}
+
+		for /*RangeStmtAfterFor*/ k /*RangeStmtAfterKey*/ := range /*RangeStmtAfterTok*/ a /*RangeStmtAfterX*/ {
+		}
+
+		for /*RangeStmtAfterFor*/ k /*RangeStmtAfterKey*/, v /*RangeStmtAfterValue*/ := range /*RangeStmtAfterTok*/ a /*RangeStmtAfterX*/ {
+		}
+	}
+
+	{
+		// ValueSpec
+		var /*ValueSpecAfterDoc*/ a = /*ValueSpecAfterNames*/ 1 /*ValueSpecAfterValues*/
+
+		var /*ValueSpecAfterDoc*/ a, b = /*ValueSpecAfterNames*/ 1, 2 /*ValueSpecAfterValues*/
+
+		var /*ValueSpecAfterDoc*/ a, b /*ValueSpecAfterNames*/ int = /*ValueSpecAfterType*/ 1, 2 /*ValueSpecAfterValues*/
+
+	}
+
+	// TypeSpec
+	type /*TypeSpecAfterDoc*/ T1 /*TypeSpecAfterName*/ []int /*TypeSpecAfterType*/
+
+	type /*TypeSpecAfterDoc*/ T2 = /*TypeSpecAfterName*/ T1 /*TypeSpecAfterType*/
+
+	// GenDecl
+	const /*GenDeclAfterTok*/ ( /*GenDeclAfterLparen*/
+		a, b = 1, 2
+		c    = 3
+	) /*GenDeclAfterRparen*/
+
+}
+
+// FuncDecl
+func /*FuncDeclAfterDoc*/ (a *b) /*FuncDeclAfterRecv*/ c /*FuncDeclAfterName*/ (d, e int) (f, g int) /*FuncDeclAfterType*/ {
+}

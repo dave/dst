@@ -42,7 +42,7 @@ func TestCommentText(t *testing.T) {
 			list[i] = &Comment{Text: s}
 		}
 
-		text := (&CommentGroup{list}).Text()
+		text := (&CommentGroup{list, nil}).Text()
 		if text != c.text {
 			t.Errorf("case %d: got %q; expected %q", i, text, c.text)
 		}

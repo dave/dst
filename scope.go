@@ -9,7 +9,6 @@ package dst
 import (
 	"bytes"
 	"fmt"
-	"go/token"
 )
 
 // A Scope maintains the set of named language entities declared
@@ -84,53 +83,6 @@ type Object struct {
 // NewObj creates a new object of a given kind and name.
 func NewObj(kind ObjKind, name string) *Object {
 	return &Object{Kind: kind, Name: name}
-}
-
-// Pos computes the source position of the declaration of an object name.
-// The result may be an invalid position if it cannot be computed
-// (obj.Decl may be nil or not correct).
-func (obj *Object) Pos() token.Pos {
-	name := obj.Name
-	switch d := obj.Decl.(type) {
-	case *Field:
-		for _, n := range d.Names {
-			if n.Name == name {
-				return n.Pos()
-			}
-		}
-	case *ImportSpec:
-		if d.Name != nil && d.Name.Name == name {
-			return d.Name.Pos()
-		}
-		return d.Path.Pos()
-	case *ValueSpec:
-		for _, n := range d.Names {
-			if n.Name == name {
-				return n.Pos()
-			}
-		}
-	case *TypeSpec:
-		if d.Name.Name == name {
-			return d.Name.Pos()
-		}
-	case *FuncDecl:
-		if d.Name.Name == name {
-			return d.Name.Pos()
-		}
-	case *LabeledStmt:
-		if d.Label.Name == name {
-			return d.Label.Pos()
-		}
-	case *AssignStmt:
-		for _, x := range d.Lhs {
-			if ident, isIdent := x.(*Ident); isIdent && ident.Name == name {
-				return ident.Pos()
-			}
-		}
-	case *Scope:
-		// predeclared object - nothing to do for now
-	}
-	return token.NoPos
 }
 
 // ObjKind describes what an object represents.
