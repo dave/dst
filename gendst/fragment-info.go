@@ -1,7 +1,12 @@
 package main
 
+type NodeInfo struct {
+	Name      string
+	Fragments []FragmentInfo
+}
+
 type FragmentInfo struct {
-	Node           string
+	Node           *NodeInfo
 	Name           string
 	Type           string
 	IsNode         bool

@@ -4,14 +4,14 @@ import (
 	. "github.com/dave/jennifer/jen"
 )
 
-func generateProcessor(nodeTypes []string, frags map[string][]FragmentInfo) error {
+func generateProcessor(nodeTypes []string, nodeInfos map[string]NodeInfo) error {
 	f := NewFile("decorator")
 	f.Func().Params(Id("f").Op("*").Id("Fragger")).Id("ProcessNode").Params(Id("n").Qual("go/ast", "Node")).Block(
 		Id("f").Dot("ProcessToken").Call(Id("n"), Lit(""), Lit(true), Lit(0), Id("n").Dot("Pos").Call()),
 		Switch(Id("n").Op(":=").Id("n").Assert(Type())).BlockFunc(func(g *Group) {
 			for _, nodeType := range nodeTypes {
 				g.Case(Op("*").Qual("go/ast", nodeType)).BlockFunc(func(g *Group) {
-					for _, frag := range frags[nodeType] {
+					for _, frag := range nodeInfos[nodeType].Fragments {
 						g.Comment(frag.Name)
 						switch {
 						case frag.Type == "Pos", frag.Type == "Token", frag.Type == "String":

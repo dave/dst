@@ -7,7 +7,7 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
-func generateRestorer(typeNames []string, frags map[string][]FragmentInfo, astPkg *loader.PackageInfo, astTypes map[string]*types.TypeName, dstPkg *loader.PackageInfo, dstTypes map[string]*types.TypeName) error {
+func generateRestorer(typeNames []string, nodeInfos map[string]NodeInfo, astPkg *loader.PackageInfo, astTypes map[string]*types.TypeName, dstPkg *loader.PackageInfo, dstTypes map[string]*types.TypeName) error {
 
 	astNode := astPkg.Pkg.Scope().Lookup("Node").Type().Underlying().(*types.Interface)
 	dstNode := dstPkg.Pkg.Scope().Lookup("Node").Type().Underlying().(*types.Interface)
@@ -38,10 +38,10 @@ func generateRestorer(typeNames []string, frags map[string][]FragmentInfo, astPk
 
 					g.Id("out").Op(":=").Op("&").Qual("go/ast", name).Values()
 
-					nodeFrags := frags[name]
+					nodeInfo := nodeInfos[name]
 					posFields := map[string]bool{}
 					fragsByName := map[string]FragmentInfo{}
-					for _, frag := range nodeFrags {
+					for _, frag := range nodeInfo.Fragments {
 						//fmt.Printf("%#v\n", frag)
 						fragsByName[frag.Name] = frag
 						if frag.PosField != "" {

@@ -39,9 +39,10 @@ func run() error {
 	}
 	sort.Slice(ordered, func(i, j int) bool { return ordered[i].Name < ordered[j].Name })
 
-	var fragsArr []FragmentInfo
-	var typeNames []string
+	var names []string
 	astTypes := map[string]*types.TypeName{}
+
+	nodes := map[string]NodeInfo{}
 
 	for _, k := range ordered {
 		v := astPkg.Defs[k]
@@ -67,8 +68,12 @@ func run() error {
 
 		ts := tn.Type().Underlying().(*types.Struct)
 
-		typeNames = append(typeNames, tn.Name())
+		names = append(names, tn.Name())
 		astTypes[tn.Name()] = tn
+
+		ni := NodeInfo{
+			Name: tn.Name(),
+		}
 
 		for i := 0; i < ts.NumFields(); i++ {
 
@@ -80,7 +85,7 @@ func run() error {
 			}
 
 			sn := FragmentInfo{
-				Node: typeName,
+				Node: &ni,
 				Name: fieldName,
 			}
 
@@ -139,8 +144,9 @@ func run() error {
 				sn.Special = true
 			}
 
-			fragsArr = append(fragsArr, sn)
+			ni.Fragments = append(ni.Fragments, sn)
 		}
+		nodes[ni.Name] = ni
 
 	}
 
@@ -158,21 +164,19 @@ func run() error {
 		dstTypes[typ.Name()] = dstPkg.Pkg.Scope().Lookup(typ.Name()).(*types.TypeName)
 	}
 
-	frags := map[string][]FragmentInfo{}
-	for _, frag := range fragsArr {
-		frags[frag.Node] = append(frags[frag.Node], frag)
-	}
-
-	if err := generateProcessor(typeNames, frags); err != nil {
+	if err := generateProcessor(names, nodes); err != nil {
 		return err
 	}
-	if err := generateDecorator(typeNames, astPkg, astTypes, dstPkg, dstTypes); err != nil {
+	if err := generateDecorator(names, astPkg, astTypes, dstPkg, dstTypes); err != nil {
 		return err
 	}
-	if err := generateDst(typeNames); err != nil {
+	if err := generateDst(names); err != nil {
 		return err
 	}
-	if err := generateRestorer(typeNames, frags, astPkg, astTypes, dstPkg, dstTypes); err != nil {
+	if err := generateRestorer(names, nodes, astPkg, astTypes, dstPkg, dstTypes); err != nil {
+		return err
+	}
+	if err := generateInfo(names, nodes); err != nil {
 		return err
 	}
 
