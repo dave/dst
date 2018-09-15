@@ -190,6 +190,18 @@ func TestDecorator(t *testing.T) {
             KeyValueExpr [(after) "// foo"]
             KeyValueExpr [(after) "\n"]`,
 		},
+		{
+			name: "FuncDecl",
+			code: `package main
+			
+			// FuncDecl
+			func /*FuncDeclAfterDoc*/ (a *b) /*FuncDeclAfterRecv*/ c /*FuncDeclAfterName*/ (d, e int) (f, g int) /*FuncDeclAfterType*/ {
+			}`,
+			expect: `File [Name (after) "\n"] [Name (after) "\n"]
+            FuncDecl [Doc (after) "\n"] [Recv (after) "/*FuncDeclAfterRecv*/"] [Name (after) "/*FuncDeclAfterName*/"] [Type (after) "/*FuncDeclAfterType*/"]
+            FuncType [Func (after) "/*FuncDeclAfterDoc*/"]
+            BlockStmt [Lbrace (after) "\n"]`,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
