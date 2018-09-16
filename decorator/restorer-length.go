@@ -14,6 +14,7 @@ import (
 	ChanType.Arrow
 	EmptyStmt.Semicolon
 	TypeAssertExpr.Type
+	CaseClause.Case
 	CommClause.Comm
 */
 
@@ -111,7 +112,14 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 	case *dst.CaseClause:
 		switch fragment {
 		case "Case":
-			return 0, 4, 0
+			// ************
+			// SPECIAL CASE
+			// When List == nil, "default" is rendered. Otherwise, "case" is rendered before the node.
+			// ************
+			if n.List != nil {
+				return 4, 0, 0 // "case"
+			}
+			return 0, 7, 0 // "default"
 		case "List":
 			return 0, 0, 0
 		case "Colon":
