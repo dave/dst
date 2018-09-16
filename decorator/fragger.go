@@ -15,8 +15,8 @@ type Fragger struct {
 	Fragments []Fragment
 }
 
-func (f *Fragger) ProcessToken(n ast.Node, name string, start bool, length int, pos token.Pos) {
-	f.Fragments = append(f.Fragments, NodeFragment{Node: n, Name: name, Start: start, Length: length, Pos: pos})
+func (f *Fragger) ProcessToken(n ast.Node, name string, pos token.Pos, end bool) {
+	f.Fragments = append(f.Fragments, NodeFragment{Node: n, Name: name, End: end, Pos: pos})
 }
 
 func (f *Fragger) Fragment(file *ast.File, fset *token.FileSet) {
@@ -88,10 +88,10 @@ func (f *Fragger) Link() map[ast.Node][]dst.Decoration {
 					currentNodeFragment = n
 				}
 			}
-			out[currentNodeFragment.Node] = append(out[currentNodeFragment.Node], dst.Decoration{Position: currentNodeFragment.Name, Start: currentNodeFragment.Start, Text: frag.Text})
+			out[currentNodeFragment.Node] = append(out[currentNodeFragment.Node], dst.Decoration{Position: currentNodeFragment.Name, End: currentNodeFragment.End, Text: frag.Text})
 			foundNewlines = strings.HasPrefix(frag.Text, "//")
 		case NewlineFragment:
-			out[currentNodeFragment.Node] = append(out[currentNodeFragment.Node], dst.Decoration{Position: currentNodeFragment.Name, Start: currentNodeFragment.Start, Text: "\n"})
+			out[currentNodeFragment.Node] = append(out[currentNodeFragment.Node], dst.Decoration{Position: currentNodeFragment.Name, End: currentNodeFragment.End, Text: "\n"})
 			foundNewlines = true
 		}
 	}
@@ -113,11 +113,10 @@ type Fragment interface {
 }
 
 type NodeFragment struct {
-	Node   ast.Node
-	Name   string
-	Start  bool
-	Length int
-	Pos    token.Pos
+	Node ast.Node
+	Name string
+	End  bool
+	Pos  token.Pos
 }
 
 type CommentFragment struct {
@@ -148,10 +147,10 @@ func (f Fragger) debug(w io.Writer, fset *token.FileSet) {
 				name = ":" + v.Name
 			}
 			var pos string
-			if v.Start {
-				pos = " (start)"
-			} else {
+			if v.End {
 				pos = " (end)"
+			} else {
+				pos = " (start)"
 			}
 			fmt.Fprintf(w, "%d %s%s%s %s\n", i, nodeType(v.Node), name, pos, formatPos(fset.Position(v.Pos)))
 		case CommentFragment:
@@ -159,5 +158,48 @@ func (f Fragger) debug(w io.Writer, fset *token.FileSet) {
 		case NewlineFragment:
 			fmt.Fprintf(w, "%d * Newline %s\n", i, formatPos(fset.Position(v.Pos)))
 		}
+	}
+}
+
+func (f *Fragger) funcDeclOverride(n *ast.FuncDecl) {
+	// Doc
+	if n.Doc != nil {
+		f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
+		f.ProcessNode(n.Doc)
+		f.ProcessToken(n, "Doc", n.Doc.End(), true)
+	}
+	// Func
+	if n.Type.Func.IsValid() {
+		f.ProcessToken(n, "Func", n.Type.Func, true)
+	}
+	// Recv
+	if n.Recv != nil {
+		f.ProcessToken(n, "Recv", n.Recv.Pos(), false)
+		f.ProcessNode(n.Recv)
+		f.ProcessToken(n, "Recv", n.Recv.End(), true)
+	}
+	// Name
+	if n.Name != nil {
+		f.ProcessToken(n, "Name", n.Name.Pos(), false)
+		f.ProcessNode(n.Name)
+		f.ProcessToken(n, "Name", n.Name.End(), true)
+	}
+	// Params
+	if n.Type.Params != nil {
+		f.ProcessToken(n, "Params", n.Type.Params.Pos(), false)
+		f.ProcessNode(n.Type.Params)
+		f.ProcessToken(n, "Params", n.Type.Params.End(), true)
+	}
+	// Results
+	if n.Type.Results != nil {
+		f.ProcessToken(n, "Results", n.Type.Results.Pos(), false)
+		f.ProcessNode(n.Type.Results)
+		f.ProcessToken(n, "Results", n.Type.Results.End(), true)
+	}
+	// Body
+	if n.Body != nil {
+		f.ProcessToken(n, "Body", n.Body.Pos(), false)
+		f.ProcessNode(n.Body)
+		f.ProcessToken(n, "Body", n.Body.End(), true)
 	}
 }

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"go/ast"
 	"go/types"
 
 	"sort"
@@ -15,172 +13,159 @@ func main() {
 		panic(err)
 	}
 }
-func run() error {
 
+func getPkg(path string) *loader.PackageInfo {
 	var conf loader.Config
-
-	conf.Import("go/ast")
+	conf.Import(path)
 	prog, err := conf.Load()
 	if err != nil {
-		return err
+		panic(err)
 	}
-	astPkg := prog.Package("go/ast")
+	return prog.Package(path)
+}
+
+func run() error {
+
+	astPkg := getPkg("go/ast")
+	dstPkg := getPkg(DSTPATH)
 
 	// Find the "Node" interface so we can match later
-	node := astPkg.Pkg.Scope().Lookup("Node").Type().Underlying().(*types.Interface)
-	stmt := astPkg.Pkg.Scope().Lookup("Stmt").Type().Underlying().(*types.Interface)
-	expr := astPkg.Pkg.Scope().Lookup("Expr").Type().Underlying().(*types.Interface)
-	decl := astPkg.Pkg.Scope().Lookup("Decl").Type().Underlying().(*types.Interface)
+	astNode := astPkg.Pkg.Scope().Lookup("Node").Type().Underlying().(*types.Interface)
+	dstNode := dstPkg.Pkg.Scope().Lookup("Node").Type().Underlying().(*types.Interface)
 
 	// Order the types so we get reproducible output
-	var ordered []*ast.Ident
-	for k := range astPkg.Defs {
-		ordered = append(ordered, k)
+	var ordered []string
+	for _, name := range astPkg.Pkg.Scope().Names() {
+		ordered = append(ordered, name)
 	}
-	sort.Slice(ordered, func(i, j int) bool { return ordered[i].Name < ordered[j].Name })
+	sort.Strings(ordered)
 
 	var names []string
-	astTypes := map[string]*types.TypeName{}
 
 	nodes := map[string]NodeInfo{}
 
-	for _, k := range ordered {
-		v := astPkg.Defs[k]
+	//fields := map[string][]string{}
 
-		typeName := k.Name
+	for _, typeName := range ordered {
 
-		if ignoredTypes[typeName] {
-			continue
-		}
-		if v == nil {
-			continue
-		}
-		if !v.Exported() {
-			continue
-		}
-		tn, ok := v.(*types.TypeName)
+		astFieldNames, astFields, ok := getFields(typeName, astPkg, astNode)
 		if !ok {
 			continue
 		}
-		if !types.Implements(types.NewPointer(tn.Type()), node) {
-			continue
-		}
+		_, dstFields, _ := getFields(typeName, dstPkg, dstNode)
 
-		ts := tn.Type().Underlying().(*types.Struct)
-
-		names = append(names, tn.Name())
-		astTypes[tn.Name()] = tn
+		names = append(names, typeName)
 
 		ni := NodeInfo{
-			Name: tn.Name(),
+			Name: typeName,
 		}
 
-		for i := 0; i < ts.NumFields(); i++ {
+		for _, fieldName := range astFieldNames {
 
-			fieldName := ts.Field(i).Name()
-			fullName := fmt.Sprintf("%s.%s", typeName, fieldName)
-
-			if ignoredFields[fullName] || ignoredFields[fieldName] {
+			if !matchBool(fragmentFieldNames, typeName, fieldName) {
 				continue
 			}
 
 			sn := FragmentInfo{
-				Node: &ni,
 				Name: fieldName,
 			}
 
-			if ph, ok := positionHelpers[fullName]; ok {
-				sn.PosField = ph
-			} else if ph, ok := positionHelpers[fieldName]; ok {
-				sn.PosField = ph
+			astField := astFields[fieldName]
+
+			sn.AstType = getTypeName(astField.Type(), astNode)
+			sn.AstTypeActual, sn.AstTypePointer = getTypeActual(astField.Type())
+
+			dstField, ok := dstFields[fieldName]
+			if ok {
+				sn.DstType = getTypeName(dstField.Type(), dstNode)
+				sn.DstTypeActual, sn.DstTypePointer = getTypeActual(dstField.Type())
 			}
 
-			fieldType := ts.Field(i).Type()
-			if st, ok := fieldType.(*types.Slice); ok {
-				fieldType = st.Elem()
-				sn.Slice = true
-			}
-			fieldType = unwrap(fieldType)
-
-			switch fieldType := fieldType.(type) {
-			case *types.Named:
-				sn.Type = fieldType.Obj().Id()
-				sn.IsNode = types.Implements(fieldType.Obj().Type(), node) || types.Implements(types.NewPointer(fieldType.Obj().Type()), node)
-				sn.IsStmt = types.Implements(fieldType.Obj().Type(), stmt) || types.Implements(types.NewPointer(fieldType.Obj().Type()), stmt)
-				sn.IsDecl = types.Implements(fieldType.Obj().Type(), decl) || types.Implements(types.NewPointer(fieldType.Obj().Type()), decl)
-				sn.IsExpr = types.Implements(fieldType.Obj().Type(), expr) || types.Implements(types.NewPointer(fieldType.Obj().Type()), expr)
-			case *types.Basic:
-				switch fieldType.Name() {
-				case "bool":
-					continue // TODO SliceExpr.Slice3, EmptyStmt.Implicit
-				case "string":
-					sn.Type = "String"
-					sn.LenFieldString = fieldName
-				}
-			default:
-				fmt.Printf("  %s %T ***\n", ts.Field(i).Name(), fieldType)
-			}
-
-			switch sn.Type {
-			case "Pos":
-				if fl, ok := fixedLength[fieldName]; ok {
-					sn.HasLength = true
-					sn.Length = fl
-				}
-				sn.PosField = fieldName
-			case "Token":
-				sn.LenFieldToken = fieldName
-			}
-
-			if pl := prefixLengths[fullName]; pl > 0 {
-				sn.PrefixLength = pl
-			}
-
-			if sl := suffixLengths[fullName]; sl > 0 {
-				sn.SuffixLength = sl
-			}
-
-			if specialCases[fullName] {
-				sn.Special = true
+			if v, ok := matchString(fragmentPositionFields, typeName, fieldName); ok {
+				sn.AstPositionField = v
+			} else if sn.AstType == "Pos" {
+				sn.AstPositionField = fieldName
 			}
 
 			ni.Fragments = append(ni.Fragments, sn)
 		}
+
+		if fromToLengthTypes[typeName] {
+			ni.FromToLength = true
+		}
+
+		if fo, ok := overrideFragmentOrder[typeName]; ok {
+			ni.FragmentOrder = fo
+		}
+
+		if fis, ok := dataFields[typeName]; ok {
+			ni.Data = fis
+		}
+
 		nodes[ni.Name] = ni
 
 	}
 
-	var dstConf loader.Config
-	dstConf.AllowErrors = true
-	dstConf.TypeChecker.Error = func(err error) {}
-	dstConf.Import("github.com/dave/dst")
-	dstProg, err := dstConf.Load()
-	if err != nil {
-		return err
-	}
-	dstPkg := dstProg.Package("github.com/dave/dst")
-	dstTypes := map[string]*types.TypeName{}
-	for _, typ := range astTypes {
-		dstTypes[typ.Name()] = dstPkg.Pkg.Scope().Lookup(typ.Name()).(*types.TypeName)
-	}
+	//for k, v := range fields {
+	//	fmt.Println(k, v)
+	//}
 
-	if err := generateProcessor(names, nodes); err != nil {
+	if err := generateDst(names, nodes); err != nil {
 		return err
 	}
-	if err := generateDecorator(names, astPkg, astTypes, dstPkg, dstTypes); err != nil {
+	if err := generateFragger(names, nodes); err != nil {
 		return err
 	}
-	if err := generateDst(names); err != nil {
+	if err := generateDecorator(names, nodes); err != nil {
 		return err
 	}
-	if err := generateRestorer(names, nodes, astPkg, astTypes, dstPkg, dstTypes); err != nil {
+	if err := generateRestorer(names, nodes); err != nil {
 		return err
 	}
-	if err := generateInfo(names, nodes); err != nil {
-		return err
-	}
-
+	/*
+		// This was used to generate the basis of restorer-length.go, but special cases are added after
+		// generation, so we should not run it again.
+		if err := generateLength(names, nodes); err != nil {
+			return err
+		}
+	*/
 	return nil
+}
+
+func getFields(name string, pkg *loader.PackageInfo, node *types.Interface) (fieldNames []string, fields map[string]*types.Var, found bool) {
+
+	if ignoredTypes[name] {
+		return
+	}
+
+	v := pkg.Pkg.Scope().Lookup(name)
+	if v == nil {
+		return
+	}
+	if !v.Exported() {
+		return
+	}
+
+	tn, ok := v.(*types.TypeName)
+	if !ok {
+		return
+	}
+	if !types.Implements(types.NewPointer(tn.Type()), node) {
+		return
+	}
+
+	found = true
+
+	typ := tn.Type().Underlying().(*types.Struct)
+	fields = map[string]*types.Var{}
+
+	for i := 0; i < typ.NumFields(); i++ {
+		f := typ.Field(i)
+		fieldNames = append(fieldNames, f.Name())
+		fields[f.Name()] = f
+	}
+
+	return
 }
 
 func unwrap(t types.Type) types.Type {
@@ -191,95 +176,275 @@ func unwrap(t types.Type) types.Type {
 }
 
 var fixedLength = map[string]int{
-	"Defer":     len("defer"),     // [DeferStmt]
-	"Interface": len("interface"), // [InterfaceType]
-	"From":      0,                // [BadDecl BadStmt BadExpr]
-	"OpPos":     0,                // [BinaryExpr UnaryExpr]
-	"For":       len("for"),       // [RangeStmt ForStmt]
-	"Return":    len("return"),    // [ReturnStmt]
-	"Func":      len("func"),      // [FuncType]
-	"Case":      len("case"),      // [CaseClause CommClause]
-	"Arrow":     2,                // [SendStmt ChanType]
-	"If":        len("if"),        // [IfStmt]
-	"ValuePos":  0,                // [BasicLit]
-	"Lbrack":    1,                // [SliceExpr ArrayType IndexExpr]
-	"TokPos":    0,                // [RangeStmt BranchStmt AssignStmt IncDecStmt GenDecl]
-	"Struct":    len("struct"),    // [StructType]
-	"Slash":     0,                // [Comment]
-	"Star":      1,                // [StarExpr]
-	"Rbrace":    1,                // [BlockStmt CompositeLit]
-	"Assign":    1,                // [TypeSpec]
-	"Opening":   1,                // [FieldList]
-	"NamePos":   0,                // [Ident]
-	"Rbrack":    1,                // [SliceExpr IndexExpr]
-	"Semicolon": 0,                // [EmptyStmt]
-	"Ellipsis":  3,                // [Ellipsis CallExpr]
-	"Closing":   1,                // [FieldList]
-	"Lparen":    1,                // [TypeAssertExpr ParenExpr GenDecl CallExpr]
-	"Rparen":    1,                // [TypeAssertExpr ParenExpr GenDecl CallExpr]
-	"Package":   len("package"),   // [File]
-	"Switch":    len("switch"),    // [SwitchStmt TypeSwitchStmt]
-	"To":        0,                // [BadDecl BadStmt BadExpr]
-	"Colon":     1,                // [LabeledStmt KeyValueExpr CaseClause CommClause]
-	"Map":       len("map"),       // [MapType]
-	"Lbrace":    1,                // [BlockStmt CompositeLit]
-	"EndPos":    0,                // [ImportSpec]
-	"Go":        len("go"),        // [GoStmt]
-	"Begin":     len("chan"),      //[ChanType]
-	"Select":    len("select"),    // [SelectStmt]
+	"Defer":          len("defer"),     // [DeferStmt]
+	"Interface":      len("interface"), // [InterfaceType]
+	"From":           0,                // [BadDecl BadStmt BadExpr]
+	"OpPos":          0,                // [BinaryExpr UnaryExpr]
+	"For":            len("for"),       // [RangeStmt ForStmt]
+	"Return":         len("return"),    // [ReturnStmt]
+	"Func":           len("func"),      // [FuncType]
+	"Case":           len("case"),      // [CaseClause CommClause]
+	"SendStmt.Arrow": len("<-"),        // [SendStmt] (ChanType has custom length)
+	"If":             len("if"),        // [IfStmt]
+	"ValuePos":       0,                // [BasicLit]
+	"Lbrack":         len("["),         // [SliceExpr ArrayType IndexExpr]
+	"TokPos":         0,                // [RangeStmt BranchStmt AssignStmt IncDecStmt GenDecl]
+	"Struct":         len("struct"),    // [StructType]
+	"Slash":          0,                // [Comment]
+	"Star":           len("*"),         // [StarExpr]
+	"Rbrace":         len("}"),         // [BlockStmt CompositeLit]
+	"Assign":         len("="),         // [TypeSpec]
+	"Opening":        len("("),         // [FieldList]
+	"NamePos":        0,                // [Ident]
+	"Rbrack":         len("]"),         // [SliceExpr IndexExpr]
+	"Semicolon":      0,                // [EmptyStmt]
+	"Ellipsis":       len("..."),       // [Ellipsis CallExpr]
+	"Closing":        len(")"),         // [FieldList]
+	"Lparen":         len("("),         // [TypeAssertExpr ParenExpr GenDecl CallExpr]
+	"Rparen":         len(")"),         // [TypeAssertExpr ParenExpr GenDecl CallExpr]
+	"Package":        len("package"),   // [File]
+	"Switch":         len("switch"),    // [SwitchStmt TypeSwitchStmt]
+	"To":             0,                // [BadDecl BadStmt BadExpr]
+	"Colon":          len(":"),         // [LabeledStmt KeyValueExpr CaseClause CommClause]
+	"Map":            len("map"),       // [MapType]
+	"Lbrace":         len("{"),         // [BlockStmt CompositeLit]
+	"EndPos":         0,                // [ImportSpec]
+	"Go":             len("go"),        // [GoStmt]
+	"Begin":          len("chan"),      // [ChanType]
+	"Select":         len("select"),    // [SelectStmt]
 }
+
 var ignoredTypes = map[string]bool{
 	"Package": true,
-	//"BadDecl": true,
-	//"BadExpr": true,
-	//"BadStmt": true,
 }
-var ignoredFields = map[string]bool{
-	"Obj":               true,
-	"Incomplete":        true,
-	"Kind":              true,
-	"TokPos":            true,
-	"ValuePos":          true,
-	"OpPos":             true,
-	"NamePos":           true,
-	"ChanDir":           true,
-	"Slash":             true,
-	"File.Scope":        true,
-	"File.Imports":      true,
-	"File.Unresolved":   true,
-	"File.Comments":     true,
-	"ImportSpec.EndPos": true,
-	"ChanType.Dir":      true,
+
+// TODO: EmptyStmt?
+var hasCustomLength = map[string]bool{
+	"SliceExpr.Max":       true,
+	"ChanType.Arrow":      true,
+	"TypeAssertExpr.Type": true,
+	"CommClause.Comm":     true,
+	"ArrayType.Len":       true,
 }
-var positionHelpers = map[string]string{
-	"Tok":            "TokPos",
-	"Op":             "OpPos",
-	"BasicLit.Value": "ValuePos",
-	"Ident.Name":     "NamePos",
-	"Comment.Text":   "Slash",
-}
+
 var prefixLengths = map[string]int{
-	"ForStmt.Post":     1,            // ";"
-	"MapType.Key":      1,            // "["
-	"RangeStmt.X":      len("range"), // "range"
-	"SliceExpr.High":   1,            // ":"
-	"SliceExpr.Max":    1,            // ":"
-	"ValueSpec.Values": 1,            // "="
+	"ForStmt.Post":     len(";"),
+	"MapType.Key":      len("["),
+	"RangeStmt.X":      len("range"),
+	"SliceExpr.High":   len(":"),
+	"ValueSpec.Values": len("="),
 }
+
 var suffixLengths = map[string]int{
-	"ArrayType.Len":       1,           // "]"
-	"ForStmt.Init":        1,           // ";"
-	"IfStmt.Init":         1,           // ";"
-	"IfStmt.Else":         len("else"), // "else"
-	"MapType.Key":         1,           // "]"
-	"SelectorExpr.X":      1,           // "."
-	"SwitchStmt.Init":     1,           // ";"
-	"TypeSwitchStmt.Init": 1,           // ";"
+	"ForStmt.Init":        len(";"),
+	"IfStmt.Init":         len(";"),
+	"IfStmt.Else":         len("else"),
+	"MapType.Key":         len("]"),
+	"SelectorExpr.X":      len("."),
+	"SwitchStmt.Init":     len(";"),
+	"TypeSwitchStmt.Init": len(";"),
 }
+
+// Field names corresponding to fragments
+var fragmentFieldNames = map[string]bool{
+	"Args":      true, // [CallExpr([]Node)]
+	"Arrow":     true, // [ChanType(Pos) SendStmt(Pos)]
+	"Assign":    true, // [TypeSpec(Pos) TypeSwitchStmt(Node)]
+	"Begin":     true, // [ChanType(Pos)]
+	"Body":      true, // [CaseClause([]Node) CommClause([]Node) ForStmt(Node) FuncDecl(Node) FuncLit(Node) IfStmt(Node) RangeStmt(Node) SelectStmt(Node) SwitchStmt(Node) TypeSwitchStmt(Node)]
+	"Call":      true, // [DeferStmt(Node) GoStmt(Node)]
+	"Case":      true, // [CaseClause(Pos) CommClause(Pos)]
+	"Chan":      true, // [SendStmt(Node)]
+	"Closing":   true, // [FieldList(Pos)]
+	"Colon":     true, // [CaseClause(Pos) CommClause(Pos) KeyValueExpr(Pos) LabeledStmt(Pos)]
+	"Comm":      true, // [CommClause(Node)]
+	"Comment":   true, // [Field(Node) ImportSpec(Node) TypeSpec(Node) ValueSpec(Node)]
+	"Cond":      true, // [ForStmt(Node) IfStmt(Node)]
+	"Decl":      true, // [DeclStmt(Node)]
+	"Decls":     true, // [File([]Node)]
+	"Defer":     true, // [DeferStmt(Pos)]
+	"Doc":       true, // [Field(Node) File(Node) FuncDecl(Node) GenDecl(Node) ImportSpec(Node) TypeSpec(Node) ValueSpec(Node)]
+	"Ellipsis":  true, // [CallExpr(Pos) Ellipsis(Pos)]
+	"Else":      true, // [IfStmt(Node)]
+	"Elt":       true, // [ArrayType(Node) Ellipsis(Node)]
+	"Elts":      true, // [CompositeLit([]Node)]
+	"Fields":    true, // [StructType(Node)]
+	"For":       true, // [ForStmt(Pos) RangeStmt(Pos)]
+	"Fun":       true, // [CallExpr(Node)]
+	"Func":      true, // [FuncType(Pos)]
+	"Go":        true, // [GoStmt(Pos)]
+	"High":      true, // [SliceExpr(Node)]
+	"If":        true, // [IfStmt(Pos)]
+	"Index":     true, // [IndexExpr(Node)]
+	"Init":      true, // [ForStmt(Node) IfStmt(Node) SwitchStmt(Node) TypeSwitchStmt(Node)]
+	"Interface": true, // [InterfaceType(Pos)]
+	"Key":       true, // [KeyValueExpr(Node) MapType(Node) RangeStmt(Node)]
+	"Label":     true, // [BranchStmt(Node) LabeledStmt(Node)]
+	"Lbrace":    true, // [BlockStmt(Pos) CompositeLit(Pos)]
+	"Lbrack":    true, // [ArrayType(Pos) IndexExpr(Pos) SliceExpr(Pos)]
+	"Len":       true, // [ArrayType(Node)]
+	"Lhs":       true, // [AssignStmt([]Node)]
+	"List":      true, // [BlockStmt([]Node) CaseClause([]Node) CommentGroup([]Node) FieldList([]Node)]
+	"Low":       true, // [SliceExpr(Node)]
+	"Lparen":    true, // [CallExpr(Pos) GenDecl(Pos) ParenExpr(Pos) TypeAssertExpr(Pos)]
+	"Map":       true, // [MapType(Pos)]
+	"Max":       true, // [SliceExpr(Node)]
+	"Methods":   true, // [InterfaceType(Node)]
+	"Name":      true, // [File(Node) FuncDecl(Node) Ident(string) ImportSpec(Node) TypeSpec(Node)]
+	"Names":     true, // [Field([]Node) ValueSpec([]Node)]
+	"Op":        true, // [BinaryExpr(Token) UnaryExpr(Token)]
+	"Opening":   true, // [FieldList(Pos)]
+	"Package":   true, // [File(Pos)]
+	"Params":    true, // [FuncType(Node)]
+	"Path":      true, // [ImportSpec(Node)]
+	"Post":      true, // [ForStmt(Node)]
+	"Rbrace":    true, // [BlockStmt(Pos) CompositeLit(Pos)]
+	"Rbrack":    true, // [IndexExpr(Pos) SliceExpr(Pos)]
+	"Recv":      true, // [FuncDecl(Node)]
+	"Results":   true, // [FuncType(Node) ReturnStmt([]Node)]
+	"Return":    true, // [ReturnStmt(Pos)]
+	"Rhs":       true, // [AssignStmt([]Node)]
+	"Rparen":    true, // [CallExpr(Pos) GenDecl(Pos) ParenExpr(Pos) TypeAssertExpr(Pos)]
+	"Sel":       true, // [SelectorExpr(Node)]
+	"Select":    true, // [SelectStmt(Pos)]
+	"Semicolon": true, // [EmptyStmt(Pos)]
+	"Specs":     true, // [GenDecl([]Node)]
+	"Star":      true, // [StarExpr(Pos)]
+	"Stmt":      true, // [LabeledStmt(Node)]
+	"Struct":    true, // [StructType(Pos)]
+	"Switch":    true, // [SwitchStmt(Pos) TypeSwitchStmt(Pos)]
+	"Tag":       true, // [Field(Node) SwitchStmt(Node)]
+	"Text":      true, // [Comment(string)]
+	"Tok":       true, // [AssignStmt(Token) BranchStmt(Token) GenDecl(Token) IncDecStmt(Token) RangeStmt(Token)]
+	"Type":      true, // [CompositeLit(Node) Field(Node) FuncDecl(Node) FuncLit(Node) TypeAssertExpr(Node) TypeSpec(Node) ValueSpec(Node)]
+	"Value":     true, // [BasicLit(string) ChanType(Node) KeyValueExpr(Node) MapType(Node) RangeStmt(Node) SendStmt(Node)]
+	"Values":    true, // [ValueSpec([]Node)]
+	"X":         true, // [BinaryExpr(Node) ExprStmt(Node) IncDecStmt(Node) IndexExpr(Node) ParenExpr(Node) RangeStmt(Node) SelectorExpr(Node) SliceExpr(Node) StarExpr(Node) TypeAssertExpr(Node) UnaryExpr(Node)]
+	"Y":         true, // [BinaryExpr(Node)]
+}
+
+// TODO: ImportSpec.EndPos ???
+
+var fromToLengthTypes = map[string]bool{
+	"BadDecl": true,
+	"BadExpr": true,
+	"BadStmt": true,
+}
+
+var nodeStartPositionFieldNames = map[string]string{
+	"BadDecl": "From",
+	"BadExpr": "From",
+	"BadStmt": "From",
+}
+
+var nodeEndPositionFieldNames = map[string]string{
+	"BadDecl":    "To",
+	"BadExpr":    "To",
+	"BadStmt":    "To",
+	"ImportSpec": "EndPos",
+}
+
+// Fields that exist in ast and dst but aren't fragments - we should just copy the values
+var dataFields = map[string][]FieldInfo{
+	"ChanType": {
+		{Name: "Dir", Type: "ChanDir"},
+	},
+	"EmptyStmt": {
+		{Name: "Implicit", Type: "bool"},
+	},
+	"File": {
+		{Name: "Imports", Type: "[]Node", Actual: "ImportSpec", Pointer: true},
+		{Name: "Unresolved", Type: "[]Node", Actual: "Ident", Pointer: true},
+		{Name: "Scope", Type: "Scope"},
+	},
+	"CompositeLit": {
+		{Name: "Incomplete", Type: "bool"}},
+	"InterfaceType": {
+		{Name: "Incomplete", Type: "bool"},
+	},
+	"StructType": {
+		{Name: "Incomplete", Type: "bool"},
+	},
+	"BasicLit": {
+		{Name: "Kind", Type: "Token"},
+	},
+	"Ident": {
+		{Name: "Obj", Type: "Object"},
+	},
+	"SliceExpr": {
+		{Name: "Slice3", Type: "bool"},
+	},
+}
+
+var overrideFragmentOrder = map[string][]string{
+	"FuncDecl": {
+		"Doc",
+		"Type.Func",
+		"Recv",
+		"Name",
+		"Type.Params",
+		"Type.Results",
+		"Body",
+	},
+}
+
+/*
+var specialNodes = map[string]bool{
+	"File":          true,
+	"ChanType":      true,
+	"EmptyStmt":     true,
+	"CompositeLit":  true,
+	"InterfaceType": true,
+	"StructType":    true,
+	"BasicLit":      true,
+	"Ident":         true,
+	"SliceExpr":     true,
+	//TypeAssertExpr
+}
+
 var specialCases = map[string]bool{
 	"SliceExpr.Max":       true,
 	"ChanType.Arrow":      true,
 	"EmptyStmt.Semicolon": true,
 	"TypeAssertExpr.Type": true,
 	"CommClause.Case":     true,
+}
+*/
+
+var fragmentPositionFields = map[string]string{
+	"Ident.Name":     "NamePos",  // [Ident(Pos)]
+	"Op":             "OpPos",    // [BinaryExpr(Pos) UnaryExpr(Pos)]
+	"Tok":            "TokPos",   // [AssignStmt(Pos) BranchStmt(Pos) GenDecl(Pos) IncDecStmt(Pos) RangeStmt(Pos)]
+	"BasicLit.Value": "ValuePos", // [BasicLit(Pos)]
+	"Comment.Text":   "Slash",    // [Comment(Pos)]
+}
+
+func matchBool(m map[string]bool, node, field string) bool {
+	if m[node+"."+field] {
+		return true
+	}
+	if m[field] {
+		return true
+	}
+	return false
+}
+
+func matchInt(m map[string]int, node, field string) (int, bool) {
+	if v, ok := m[node+"."+field]; ok {
+		return v, true
+	}
+	if v, ok := m[field]; ok {
+		return v, true
+	}
+	return 0, false
+}
+
+func matchString(m map[string]string, node, field string) (string, bool) {
+	if v, ok := m[node+"."+field]; ok {
+		return v, true
+	}
+	if v, ok := m[field]; ok {
+		return v, true
+	}
+	return "", false
 }

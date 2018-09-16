@@ -1,25 +1,28 @@
 package main
 
 type NodeInfo struct {
-	Name      string
-	Fragments []FragmentInfo
+	Name          string
+	Fragments     []FragmentInfo
+	Data          []FieldInfo
+	FragmentOrder []string
+	FromToLength  bool // From, To -> Length (BadXXX)
 }
 
 type FragmentInfo struct {
-	Node           *NodeInfo
-	Name           string
-	Type           string
-	IsNode         bool
-	IsStmt         bool
-	IsExpr         bool
-	IsDecl         bool
-	PosField       string
-	Slice          bool
-	HasLength      bool
-	Length         int
-	LenFieldString string
-	LenFieldToken  string
-	PrefixLength   int
-	SuffixLength   int
-	Special        bool
+	Name             string
+	AstType          string
+	AstTypeActual    string
+	AstTypePointer   bool
+	DstType          string
+	DstTypeActual    string
+	DstTypePointer   bool
+	AstPositionField string
+	DstExistsField   string
+}
+
+type FieldInfo struct {
+	Name    string
+	Type    string
+	Actual  string
+	Pointer bool
 }

@@ -1,19 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"go/types"
 
 	. "github.com/dave/jennifer/jen"
-	"golang.org/x/tools/go/loader"
 )
 
-func generateRestorer(typeNames []string, nodeInfos map[string]NodeInfo, astPkg *loader.PackageInfo, astTypes map[string]*types.TypeName, dstPkg *loader.PackageInfo, dstTypes map[string]*types.TypeName) error {
-
-	astNode := astPkg.Pkg.Scope().Lookup("Node").Type().Underlying().(*types.Interface)
-	dstNode := dstPkg.Pkg.Scope().Lookup("Node").Type().Underlying().(*types.Interface)
+func generateRestorer(names []string, nodes map[string]NodeInfo) error {
 
 	f := NewFile("decorator")
-	f.ImportName("github.com/dave/dst", "dst")
+	f.ImportName(DSTPATH, "dst")
 	// func (r *Restorer) RestoreNode(n dst.Node) ast.Node {
 	// 	switch n := n.(type) {
 	// 	case <type>:
@@ -22,151 +19,122 @@ func generateRestorer(typeNames []string, nodeInfos map[string]NodeInfo, astPkg 
 	// 		panic(...)
 	// 	}
 	// }
-	f.Func().Params(Id("r").Op("*").Id("FileRestorer")).Id("RestoreNode").Params(Id("n").Qual("github.com/dave/dst", "Node")).Qual("go/ast", "Node").BlockFunc(func(g *Group) {
+	f.Func().Params(Id("r").Op("*").Id("FileRestorer")).Id("RestoreNode").Params(Id("n").Qual(DSTPATH, "Node")).Qual("go/ast", "Node").BlockFunc(func(g *Group) {
 		g.If(List(Id("an"), Id("ok")).Op(":=").Id("r").Dot("nodes").Index(Id("n")), Id("ok")).Block(
 			Return(Id("an")),
 		)
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
-			for _, name := range typeNames {
-				g.Case(Op("*").Qual("github.com/dave/dst", name)).BlockFunc(func(g *Group) {
+			for _, name := range names {
+				node := nodes[name]
+				g.Case(Op("*").Qual(DSTPATH, name)).BlockFunc(func(g *Group) {
 
-					g.Id("r").Dot("applyDecorations").Call(
-						Id("n").Dot("Decs"),
-						Lit(""),
-						Lit(true),
-					)
-
-					g.Id("out").Op(":=").Op("&").Qual("go/ast", name).Values()
-
-					nodeInfo := nodeInfos[name]
-					posFields := map[string]bool{}
-					fragsByName := map[string]FragmentInfo{}
-					for _, frag := range nodeInfo.Fragments {
-						//fmt.Printf("%#v\n", frag)
-						fragsByName[frag.Name] = frag
-						if frag.PosField != "" {
-							posFields[frag.PosField] = true
-						}
-					}
-
-					astStruct := astTypes[name].Type().Underlying().(*types.Struct)
-					dstStruct := dstTypes[name].Type().Underlying().(*types.Struct)
-
-					dstFields := map[string]*types.Var{}
-					for i := 0; i < dstStruct.NumFields(); i++ {
-						dstFields[dstStruct.Field(i).Name()] = dstStruct.Field(i)
-					}
-
-					for i := 0; i < astStruct.NumFields(); i++ {
-
-						astField := astStruct.Field(i)
-						fieldName := astField.Name()
-
-						if name == "File" && fieldName == "Comments" {
-							continue
-						}
-
-						astFieldTypeName := getTypeName(astField.Type(), astNode)
-
-						dstField, ok := dstFields[astField.Name()]
-						var dstFieldTypeName string
-						if ok {
-							dstFieldTypeName = getTypeName(dstField.Type(), dstNode)
-						}
-						g.Line()
-
-						frag, hasFrag := fragsByName[fieldName]
-
-						if hasFrag {
-							g.Id("r").Dot("applyDecorations").Call(
-								Id("n").Dot("Decs"),
-								Lit(fieldName),
-								Lit(true),
-							)
-							if frag.PosField != "" {
-								if dstFieldTypeName == "bool" {
-									// special case - this is handled below
-								} else {
-									g.Id("out").Dot(frag.PosField).Op("=").Id("r").Dot("cursor")
-								}
-							}
-						}
-
-						switch {
-						case astFieldTypeName == "Pos" && dstFieldTypeName == "":
-							if fieldName == "From" {
-								// Special case "From" / "To" - dst node has "Length"
-								g.Id("r").Dot("cursor").Op("+=").Qual("go/token", "Pos").Parens(Id("n").Dot("Length"))
-							} else if fieldName == "To" {
-								// Special case handled above
-							} else {
-								if posFields[fieldName] {
-									// this is a pos field, so we will render later
-								} else {
-									g.Id("out").Dot(fieldName).Op("=").Id("r").Dot("cursor")
-								}
-							}
-						case astFieldTypeName == "Node" && dstFieldTypeName == "Node":
-							g.If(Id("n").Dot(fieldName).Op("!=").Nil()).BlockFunc(func(g *Group) {
-								if hasFrag && frag.PrefixLength > 0 {
-									g.Id("r").Dot("cursor").Op("+=").Lit(frag.PrefixLength).Commentf("%s has prefix length %d", fieldName, frag.PrefixLength)
-								}
-								g.Id("out").Dot(fieldName).Op("=").Id("r").Dot("RestoreNode").Call(Id("n").Dot(fieldName)).Assert(typeLiteral(astField.Type()))
-								if hasFrag && frag.SuffixLength > 0 {
-									g.Id("r").Dot("cursor").Op("+=").Lit(frag.SuffixLength).Commentf("%s has suffix length %d", fieldName, frag.SuffixLength)
-								}
-							})
-						case astFieldTypeName == "[]Node" && dstFieldTypeName == "[]Node":
-							g.For(List(Id("_"), Id("v")).Op(":=").Range().Id("n").Dot(fieldName)).Block(
-								Id("out").Dot(fieldName).Op("=").Append(
-									Id("out").Dot(fieldName),
-									Id("r").Dot("RestoreNode").Call(Id("v")).Assert(typeLiteral(astField.Type().(*types.Slice).Elem())),
-								),
-							)
-						case astFieldTypeName == "Token" && dstFieldTypeName == "Token":
-							g.Id("out").Dot(fieldName).Op("=").Id("n").Dot(fieldName)
-						case astFieldTypeName == "string" && dstFieldTypeName == "string":
-							g.Id("out").Dot(fieldName).Op("=").Id("n").Dot(fieldName)
-						case astFieldTypeName == "Pos" && dstFieldTypeName == "bool":
-							g.If(Id("n").Dot(fieldName)).Block(
-								Id("out").Dot(fieldName).Op("=").Id("r").Dot("cursor"),
-							)
-						case astFieldTypeName == "ChanDir" && dstFieldTypeName == "ChanDir":
-							g.Id("out").Dot(fieldName).Op("=").Qual("go/ast", "ChanDir").Parens(Id("n").Dot(fieldName))
-						case astFieldTypeName == "bool" && dstFieldTypeName == "bool":
-							g.Id("out").Dot(fieldName).Op("=").Id("n").Dot(fieldName)
-						case astFieldTypeName == "Scope" && dstFieldTypeName == "Scope":
-							// TODO
-							g.Commentf("TODO: %s (Scope)", fieldName)
-						case astFieldTypeName == "Object" && dstFieldTypeName == "Object":
-							// TODO
-							g.Commentf("TODO: %s (Object)", fieldName)
-						default:
-							g.Commentf("%s %s %s", astField.Name(), astFieldTypeName, dstFieldTypeName)
-						}
-
-						if hasFrag {
-							if frag.HasLength && frag.Length > 0 {
-								g.Id("r").Dot("cursor").Op("+=").Lit(frag.Length).Commentf("%s has fixed length %d", fieldName, frag.Length)
-							}
-							if frag.LenFieldToken != "" {
-								g.Id("r").Dot("cursor").Op("+=").Qual("go/token", "Pos").Parens(Len(Id("n").Dot(frag.LenFieldToken).Dot("String").Call()))
-							}
-							if frag.LenFieldString != "" {
-								g.Id("r").Dot("cursor").Op("+=").Qual("go/token", "Pos").Parens(Len(Id("n").Dot(frag.LenFieldString)))
-							}
-							g.Id("r").Dot("applyDecorations").Call(
-								Id("n").Dot("Decs"),
-								Lit(fieldName),
-								Lit(false),
-							)
-						}
+					if name == "FuncDecl" {
+						// SPECIAL CASE
+						g.Return(Id("r").Dot("funcDeclOverride").Call(Id("n")))
+						return
 					}
 
 					g.Id("r").Dot("applyDecorations").Call(
 						Id("n").Dot("Decs"),
 						Lit(""),
 						Lit(false),
+					)
+
+					g.Id("out").Op(":=").Op("&").Qual("go/ast", name).Values()
+
+					if node.FromToLength {
+						g.Id("out").Dot("From").Op("=").Id("r").Dot("cursor")
+						g.Id("r").Dot("cursor").Op("+=").Qual("go/token", "Pos").Parens(Id("n").Dot("Length"))
+						g.Id("out").Dot("To").Op("=").Id("r").Dot("cursor")
+					}
+
+					for _, frag := range node.Fragments {
+
+						g.BlockFunc(func(g *Group) {
+							// Apply the Before Fragment decorators
+							g.Id("r").Dot("applyDecorations").Call(
+								Id("n").Dot("Decs"),
+								Lit(frag.Name),
+								Lit(false),
+							)
+
+							g.List(Id("prefix"), Id("length"), Id("suffix")).Op(":=").Id("getLength").Call(Id("n"), Lit(frag.Name))
+
+							// Record the cursor position if there's a position field for this fragment
+							if frag.AstPositionField != "" {
+								if frag.DstType == "bool" {
+									g.If(Id("n").Dot(frag.Name)).Block(
+										Id("out").Dot(frag.AstPositionField).Op("=").Id("r").Dot("cursor"),
+									)
+								} else {
+									g.Id("out").Dot(frag.AstPositionField).Op("=").Id("r").Dot("cursor")
+								}
+							}
+
+							// Increment the cursor if there's a prefix length
+							g.Id("r").Dot("cursor").Op("+=").Qual("go/token", "Pos").Parens(Id("prefix"))
+
+							// Copy the values
+							switch frag.AstType {
+							case "Node":
+								g.If(Id("n").Dot(frag.Name).Op("!=").Nil()).Block(
+									Id("out").Dot(frag.Name).Op("=").Id("r").Dot("RestoreNode").Call(Id("n").Dot(frag.Name)).Assert(typeLiteral("go/ast", frag.AstTypeActual, frag.AstTypePointer)),
+								)
+							case "[]Node":
+								g.For(List(Id("_"), Id("v")).Op(":=").Range().Id("n").Dot(frag.Name)).Block(
+									Id("out").Dot(frag.Name).Op("=").Append(
+										Id("out").Dot(frag.Name),
+										Id("r").Dot("RestoreNode").Call(Id("v")).Assert(typeLiteral("go/ast", frag.AstTypeActual, frag.AstTypePointer)),
+									),
+								)
+							case "Token", "string", "bool":
+								g.Id("out").Dot(frag.Name).Op("=").Id("n").Dot(frag.Name)
+							}
+
+							// Increment the cursor if there's a fixed / Token / string length
+							g.Id("r").Dot("cursor").Op("+=").Qual("go/token", "Pos").Parens(Id("length"))
+
+							// Increment the cursor if there's a suffix length
+							g.Id("r").Dot("cursor").Op("+=").Qual("go/token", "Pos").Parens(Id("suffix"))
+
+							// Apply the After Fragment decorators
+							g.Id("r").Dot("applyDecorations").Call(
+								Id("n").Dot("Decs"),
+								Lit(frag.Name),
+								Lit(true),
+							)
+						})
+
+					}
+
+					for _, field := range node.Data {
+						switch field.Type {
+						case "[]Node":
+							g.For(List(Id("_"), Id("v")).Op(":=").Range().Id("n").Dot(field.Name)).Block(
+								Id("out").Dot(field.Name).Op("=").Append(
+									Id("out").Dot(field.Name),
+									Id("r").Dot("RestoreNode").Call(Id("v")).Assert(typeLiteral("go/ast", field.Actual, field.Pointer)),
+								),
+							)
+						case "ChanDir":
+							g.Id("out").Dot(field.Name).Op("=").Qual("go/ast", "ChanDir").Parens(Id("n").Dot(field.Name))
+						case "Token", "bool":
+							g.Id("out").Dot(field.Name).Op("=").Id("n").Dot(field.Name)
+						case "Object":
+							// TODO
+							g.Commentf("TODO: %s (Object)", field.Name)
+						case "Scope":
+							// TODO
+							g.Commentf("TODO: %s (Scope)", field.Name)
+						default:
+							panic(fmt.Sprintf("%s: %s", field.Name, field.Type))
+						}
+					}
+
+					g.Id("r").Dot("applyDecorations").Call(
+						Id("n").Dot("Decs"),
+						Lit(""),
+						Lit(true),
 					)
 
 					if name == "CommentGroup" {
@@ -207,4 +175,100 @@ func getTypeName(t types.Type, node *types.Interface) string {
 		name = t.String()
 	}
 	return slice + name
+}
+
+func getTypeActual(t types.Type) (actual string, pointer bool) {
+	if sl, ok := t.(*types.Slice); ok {
+		t = sl.Elem()
+	}
+	if ptr, ok := t.(*types.Pointer); ok {
+		pointer = true
+		t = ptr.Elem()
+	}
+	switch t := t.(type) {
+	case *types.Named:
+		actual = t.Obj().Name()
+	case *types.Basic:
+		actual = t.String()
+	}
+	return
+}
+
+// This was used to generate the basis of restorer-length.go, but special cases are added after
+// generation, so we should not run it again.
+func generateLength(names []string, nodes map[string]NodeInfo) error {
+	f := NewFile("decorator")
+	f.ImportName(DSTPATH, "dst")
+
+	/*
+		func getLength(node dst.Node, fragment string) (suffix, length, prefix int) {
+			switch node := node.(type) {
+			case *dst.<name>:
+				switch fragment {
+				case <frag.Name>:
+					return ...
+				}
+			}
+		}
+	*/
+	f.Func().Id("getLength").Params(Id("n").Qual(DSTPATH, "Node"), Id("fragment").String()).Params(List(Id("suffix"), Id("length"), Id("prefix")).Int()).BlockFunc(func(g *Group) {
+		g.Switch(Id("n").Op(":=").Id("n").Assert(Type())).BlockFunc(func(g *Group) {
+			for _, name := range names {
+				node := nodes[name]
+				g.Case(Op("*").Qual(DSTPATH, name)).Block(
+					Switch(Id("fragment")).BlockFunc(func(g *Group) {
+						for _, frag := range node.Fragments {
+							prefix, _ := matchInt(prefixLengths, name, frag.Name)
+							suffix, _ := matchInt(suffixLengths, name, frag.Name)
+							length, hasFixedLength := matchInt(fixedLength, name, frag.Name)
+							var lengthStatement *Statement
+							var lengthIsZero bool
+							if hasFixedLength {
+								lengthIsZero = length == 0
+								lengthStatement = Lit(length)
+							} else if frag.AstType == "Token" {
+								lengthStatement = Len(Id("n").Dot(frag.Name).Dot("String").Call())
+							} else if frag.AstType == "string" {
+								lengthStatement = Len(Id("n").Dot(frag.Name))
+							} else {
+								lengthIsZero = true
+								lengthStatement = Lit(0)
+							}
+							allValuesZero := prefix == 0 && suffix == 0 && lengthIsZero
+							g.Case(Lit(frag.Name)).BlockFunc(func(g *Group) {
+								retVal := Return(Lit(prefix), lengthStatement, Lit(suffix))
+								retZero := Return(Lit(0), Lit(0), Lit(0))
+								if allValuesZero {
+									g.Add(retVal)
+								} else {
+									switch frag.DstType {
+									case "Node":
+										g.If(Id("n").Dot(frag.Name).Op("!=").Nil()).Block(retVal)
+										g.Add(retZero)
+									case "[]Node":
+										g.If(Len(Id("n").Dot(frag.Name)).Op(">").Lit(0)).Block(retVal)
+										g.Add(retZero)
+									case "Token":
+										g.If(Id("n").Dot(frag.Name).Op("!=").Qual("go/token", "ILLEGAL")).Block(retVal)
+										g.Add(retZero)
+									case "string":
+										g.If(Id("n").Dot(frag.Name).Op("!=").Lit("")).Block(retVal)
+										g.Add(retZero)
+									case "bool":
+										g.If(Id("n").Dot(frag.Name)).Block(retVal)
+										g.Add(retZero)
+									default:
+										g.Add(retVal)
+									}
+								}
+							})
+						}
+					}),
+				)
+			}
+		})
+		g.Return(Lit(0), Lit(0), Lit(0))
+	})
+
+	return f.Save("./decorator/restorer-generated-length.go.txt")
 }

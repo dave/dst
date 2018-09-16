@@ -79,14 +79,14 @@ func TestDecorator(t *testing.T) {
             ExprStmt [(after) "\n"]`,
 		},
 		{
-			name: "comment after lbrace",
+			name: "comment after func",
 			code: `package main
 			
 			func /* foo */ main() {
 				i
 			}`,
 			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            FuncType [Func (after) "/* foo */"]
+            FuncDecl [Func (after) "/* foo */"]
             BlockStmt [Lbrace (after) "\n"]
             ExprStmt [(after) "\n"]`,
 		},
@@ -198,8 +198,7 @@ func TestDecorator(t *testing.T) {
 			func /*FuncDeclAfterDoc*/ (a *b) /*FuncDeclAfterRecv*/ c /*FuncDeclAfterName*/ (d, e int) (f, g int) /*FuncDeclAfterType*/ {
 			}`,
 			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            FuncDecl [Doc (after) "\n"] [Recv (after) "/*FuncDeclAfterRecv*/"] [Name (after) "/*FuncDeclAfterName*/"] [Type (after) "/*FuncDeclAfterType*/"]
-            FuncType [Func (after) "/*FuncDeclAfterDoc*/"]
+            FuncDecl [Doc (after) "\n"] [Func (after) "/*FuncDeclAfterDoc*/"] [Recv (after) "/*FuncDeclAfterRecv*/"] [Name (after) "/*FuncDeclAfterName*/"] [Results (after) "/*FuncDeclAfterType*/"]
             BlockStmt [Lbrace (after) "\n"]`,
 		},
 	}
@@ -238,10 +237,10 @@ func TestDecorator(t *testing.T) {
 							pos = v.Position + " "
 						}
 						var rel string
-						if v.Start {
-							rel = "(before) "
-						} else {
+						if v.End {
 							rel = "(after) "
+						} else {
+							rel = "(before) "
 						}
 						result += fmt.Sprintf(" [%s%s%q]", pos, rel, v.Text)
 					}

@@ -4,9 +4,9 @@ import (
 	. "github.com/dave/jennifer/jen"
 )
 
-func generateDst(typeNames []string) error {
+func generateDst(names []string, nodes map[string]NodeInfo) error {
 	f := NewFile("dst")
-	for _, name := range typeNames {
+	for _, name := range names {
 		// func (v *<name>) Decorations() []Decoration {
 		// 	return v.Decs
 		// }
