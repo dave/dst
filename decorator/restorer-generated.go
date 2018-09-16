@@ -666,7 +666,9 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 		{
 			r.applyDecorations(n.Decs, "Opening", false)
 			prefix, length, suffix := getLength(n, "Opening")
-			out.Opening = r.cursor
+			if n.Opening {
+				out.Opening = r.cursor
+			}
 			r.cursor += token.Pos(prefix)
 			r.cursor += token.Pos(length)
 			r.cursor += token.Pos(suffix)
@@ -686,7 +688,9 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 		{
 			r.applyDecorations(n.Decs, "Closing", false)
 			prefix, length, suffix := getLength(n, "Closing")
-			out.Closing = r.cursor
+			if n.Closing {
+				out.Closing = r.cursor
+			}
 			r.cursor += token.Pos(prefix)
 			r.cursor += token.Pos(length)
 			r.cursor += token.Pos(suffix)
