@@ -237,11 +237,17 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 	case *dst.FieldList:
 		switch fragment {
 		case "Opening":
-			return 0, 1, 0
+			if n.Opening {
+				return 0, 1, 0
+			}
+			return 0, 0, 0
 		case "List":
 			return 0, 0, 0
 		case "Closing":
-			return 0, 1, 0
+			if n.Closing {
+				return 0, 1, 0
+			}
+			return 0, 0, 0
 		}
 	case *dst.File:
 		switch fragment {

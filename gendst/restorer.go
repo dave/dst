@@ -108,6 +108,12 @@ func generateRestorer(names []string, nodes map[string]NodeInfo) error {
 					}
 
 					for _, field := range node.Data {
+
+						if name == "File" && field.Name == "Comments" {
+							// SPECIAL CASE - don't restore comments - they will be restored manually
+							continue
+						}
+
 						switch field.Type {
 						case "[]Node":
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Id("n").Dot(field.Name)).Block(

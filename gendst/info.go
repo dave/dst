@@ -1,6 +1,15 @@
 package main
 
 /*
+import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"reflect"
+
+	. "github.com/dave/jennifer/jen"
+)
+
 func generateInfo(names []string, nodes map[string]NodeInfo) error {
 
 	customValues := Options{

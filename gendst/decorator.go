@@ -83,7 +83,7 @@ func generateDecorator(names []string, nodes map[string]NodeInfo) error {
 						}
 					}
 					if node.FromToLength {
-						g.Id("out").Id("Length").Op("=").Id("n").Dot("End").Call().Op("-").Id("n").Dot("Pos").Call()
+						g.Id("out").Dot("Length").Op("=").Int().Parens(Id("n").Dot("End").Call().Op("-").Id("n").Dot("Pos").Call())
 					}
 					g.If(List(Id("decs"), Id("ok")).Op(":=").Id("d").Dot("decorations").Index(Id("n")), Id("ok")).Block(
 						Id("out").Dot("Decs").Op("=").Id("decs"),
@@ -98,10 +98,7 @@ func generateDecorator(names []string, nodes map[string]NodeInfo) error {
 
 	})
 
-	if err := f.Save("./decorator/decorator-generated.go"); err != nil {
-		return nil
-	}
-	return nil
+	return f.Save("./decorator/decorator-generated.go")
 }
 
 func typeLiteral(path, actual string, pointer bool) *Statement {

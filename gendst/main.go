@@ -122,6 +122,11 @@ func run() error {
 	if err := generateRestorer(names, nodes); err != nil {
 		return err
 	}
+
+	//if err := generateInfo(names, nodes); err != nil {
+	//	return err
+	//}
+
 	/*
 		// This was used to generate the basis of restorer-length.go, but special cases are added after
 		// generation, so we should not run it again.
@@ -355,6 +360,7 @@ var dataFields = map[string][]FieldInfo{
 	"File": {
 		{Name: "Imports", Type: "[]Node", Actual: "ImportSpec", Pointer: true},
 		{Name: "Unresolved", Type: "[]Node", Actual: "Ident", Pointer: true},
+		{Name: "Comments", Type: "[]Node", Actual: "CommentGroup", Pointer: true},
 		{Name: "Scope", Type: "Scope"},
 	},
 	"CompositeLit": {

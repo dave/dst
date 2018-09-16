@@ -40,6 +40,7 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.BadDecl:
 		out := &dst.BadDecl{}
+		out.Length = int(n.End() - n.Pos())
 		if decs, ok := d.decorations[n]; ok {
 			out.Decs = decs
 		}
@@ -47,6 +48,7 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.BadExpr:
 		out := &dst.BadExpr{}
+		out.Length = int(n.End() - n.Pos())
 		if decs, ok := d.decorations[n]; ok {
 			out.Decs = decs
 		}
@@ -54,6 +56,7 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.BadStmt:
 		out := &dst.BadStmt{}
+		out.Length = int(n.End() - n.Pos())
 		if decs, ok := d.decorations[n]; ok {
 			out.Decs = decs
 		}
@@ -61,8 +64,8 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.BasicLit:
 		out := &dst.BasicLit{}
-		out.Kind = n.Kind
 		out.Value = n.Value
+		out.Kind = n.Kind
 		if decs, ok := d.decorations[n]; ok {
 			out.Decs = decs
 		}
@@ -134,10 +137,10 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.ChanType:
 		out := &dst.ChanType{}
-		out.Dir = dst.ChanDir(n.Dir)
 		if n.Value != nil {
 			out.Value = d.NodeToDst(n.Value).(dst.Expr)
 		}
+		out.Dir = dst.ChanDir(n.Dir)
 		if decs, ok := d.decorations[n]; ok {
 			out.Decs = decs
 		}
@@ -260,8 +263,14 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.FieldList:
 		out := &dst.FieldList{}
+		if n.Opening != token.NoPos {
+			out.Opening = true
+		}
 		for _, v := range n.List {
 			out.List = append(out.List, d.NodeToDst(v).(*dst.Field))
+		}
+		if n.Closing != token.NoPos {
+			out.Closing = true
 		}
 		if decs, ok := d.decorations[n]; ok {
 			out.Decs = decs
@@ -279,7 +288,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		for _, v := range n.Decls {
 			out.Decls = append(out.Decls, d.NodeToDst(v).(dst.Decl))
 		}
-		// TODO: Scope (Scope)
 		for _, v := range n.Imports {
 			out.Imports = append(out.Imports, d.NodeToDst(v).(*dst.ImportSpec))
 		}
@@ -289,6 +297,7 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		for _, v := range n.Comments {
 			out.Comments = append(out.Comments, d.NodeToDst(v).(*dst.CommentGroup))
 		}
+		// TODO: Scope (Scope)
 		if decs, ok := d.decorations[n]; ok {
 			out.Decs = decs
 		}
