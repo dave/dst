@@ -5,6 +5,17 @@
 The `dst` package attempts to provide a work-arround for [go/ast: Free-floating comments are 
 single-biggest issue when manipulating the AST](https://github.com/golang/go/issues/20744).
 
+### Progress as of 16th September
+
+Big refactor today... I'm a bit happier with the code generation. I still haven't found an 
+elegant solution for the `FuncDecl` special case, but all the other special cases are fixed nicely.
+
+The `FuncDecl` special case currently has a kludgy work around by extracting some of the generated 
+code out into a separate function and re-arranging by hand. Will need manual updates every time the 
+code generation is changed. Needs work. However, with this kludge all the tests pass.
+
+Next I'm going to see if it can handle some real code by feeding it the standard library source.     
+
 ### Progress as of 15th September
 
 [github.com/dave/dst](https://github.com/dave/dst) is a fork of the `go/ast` package with a few changes. The [decorator](https://github.com/dave/dst/tree/master/decorator) package converts from `*ast.File + *token.FileSet` to `*dst.File` and back again.
