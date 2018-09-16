@@ -167,8 +167,10 @@ type Field struct {
 
 // A FieldList represents a list of Fields, enclosed by parentheses or braces.
 type FieldList struct {
-	List []*Field // field list; or nil
-	Decs []Decoration
+	Opening bool
+	List    []*Field // field list; or nil
+	Closing bool
+	Decs    []Decoration
 }
 
 // NumFields returns the number of parameters or struct fields represented by a FieldList.
