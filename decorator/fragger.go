@@ -170,6 +170,7 @@ func (f *Fragger) funcDeclOverride(n *ast.FuncDecl) {
 	}
 	// Func
 	if n.Type.Func.IsValid() {
+		f.ProcessToken(n, "Func", n.Type.Func, false)
 		f.ProcessToken(n, "Func", n.Type.Func, true)
 	}
 	// Recv

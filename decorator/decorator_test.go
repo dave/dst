@@ -20,6 +20,20 @@ func TestDecorator(t *testing.T) {
 		expect string
 	}{
 		{
+			name: "inside if block",
+			code: `package main
+
+				func main() {
+					if true {
+						// a
+					}
+				}`,
+			expect: `File [Name (after) "\n"] [Name (after) "\n"]
+            BlockStmt [Lbrace (after) "\n"]
+            IfStmt [(after) "\n"]
+            BlockStmt [Lbrace (after) "\n"] [Rbrace (before) "// a"]`,
+		},
+		{
 			name: "simple",
 			code: `package main
 			
@@ -204,6 +218,9 @@ func TestDecorator(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			//if test.name != "inside if block" {
+			//	t.Skip()
+			//}
 			if test.skip {
 				t.Skip()
 			}

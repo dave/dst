@@ -8,6 +8,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.ArrayType:
 		// Lbrack
 		if n.Lbrack.IsValid() {
+			f.ProcessToken(n, "Lbrack", n.Lbrack, false)
 			f.ProcessToken(n, "Lbrack", n.Lbrack, true)
 		}
 		// Len
@@ -31,6 +32,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Tok
 		if n.TokPos.IsValid() {
+			f.ProcessToken(n, "Tok", n.TokPos, false)
 			f.ProcessToken(n, "Tok", n.TokPos, true)
 		}
 		// Rhs
@@ -45,6 +47,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.BasicLit:
 		// Value
 		if n.ValuePos.IsValid() {
+			f.ProcessToken(n, "Value", n.ValuePos, false)
 			f.ProcessToken(n, "Value", n.ValuePos, true)
 		}
 	case *ast.BinaryExpr:
@@ -56,6 +59,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Op
 		if n.OpPos.IsValid() {
+			f.ProcessToken(n, "Op", n.OpPos, false)
 			f.ProcessToken(n, "Op", n.OpPos, true)
 		}
 		// Y
@@ -67,6 +71,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.BlockStmt:
 		// Lbrace
 		if n.Lbrace.IsValid() {
+			f.ProcessToken(n, "Lbrace", n.Lbrace, false)
 			f.ProcessToken(n, "Lbrace", n.Lbrace, true)
 		}
 		// List
@@ -77,11 +82,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Rbrace
 		if n.Rbrace.IsValid() {
+			f.ProcessToken(n, "Rbrace", n.Rbrace, false)
 			f.ProcessToken(n, "Rbrace", n.Rbrace, true)
 		}
 	case *ast.BranchStmt:
 		// Tok
 		if n.TokPos.IsValid() {
+			f.ProcessToken(n, "Tok", n.TokPos, false)
 			f.ProcessToken(n, "Tok", n.TokPos, true)
 		}
 		// Label
@@ -99,6 +106,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Lparen
 		if n.Lparen.IsValid() {
+			f.ProcessToken(n, "Lparen", n.Lparen, false)
 			f.ProcessToken(n, "Lparen", n.Lparen, true)
 		}
 		// Args
@@ -109,15 +117,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Ellipsis
 		if n.Ellipsis.IsValid() {
+			f.ProcessToken(n, "Ellipsis", n.Ellipsis, false)
 			f.ProcessToken(n, "Ellipsis", n.Ellipsis, true)
 		}
 		// Rparen
 		if n.Rparen.IsValid() {
+			f.ProcessToken(n, "Rparen", n.Rparen, false)
 			f.ProcessToken(n, "Rparen", n.Rparen, true)
 		}
 	case *ast.CaseClause:
 		// Case
 		if n.Case.IsValid() {
+			f.ProcessToken(n, "Case", n.Case, false)
 			f.ProcessToken(n, "Case", n.Case, true)
 		}
 		// List
@@ -128,6 +139,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Colon
 		if n.Colon.IsValid() {
+			f.ProcessToken(n, "Colon", n.Colon, false)
 			f.ProcessToken(n, "Colon", n.Colon, true)
 		}
 		// Body
@@ -139,10 +151,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.ChanType:
 		// Begin
 		if n.Begin.IsValid() {
+			f.ProcessToken(n, "Begin", n.Begin, false)
 			f.ProcessToken(n, "Begin", n.Begin, true)
 		}
 		// Arrow
 		if n.Arrow.IsValid() {
+			f.ProcessToken(n, "Arrow", n.Arrow, false)
 			f.ProcessToken(n, "Arrow", n.Arrow, true)
 		}
 		// Value
@@ -154,6 +168,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.CommClause:
 		// Case
 		if n.Case.IsValid() {
+			f.ProcessToken(n, "Case", n.Case, false)
 			f.ProcessToken(n, "Case", n.Case, true)
 		}
 		// Comm
@@ -164,6 +179,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Colon
 		if n.Colon.IsValid() {
+			f.ProcessToken(n, "Colon", n.Colon, false)
 			f.ProcessToken(n, "Colon", n.Colon, true)
 		}
 		// Body
@@ -175,6 +191,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.Comment:
 		// Text
 		if n.Slash.IsValid() {
+			f.ProcessToken(n, "Text", n.Slash, false)
 			f.ProcessToken(n, "Text", n.Slash, true)
 		}
 	case *ast.CommentGroup:
@@ -193,6 +210,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Lbrace
 		if n.Lbrace.IsValid() {
+			f.ProcessToken(n, "Lbrace", n.Lbrace, false)
 			f.ProcessToken(n, "Lbrace", n.Lbrace, true)
 		}
 		// Elts
@@ -203,6 +221,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Rbrace
 		if n.Rbrace.IsValid() {
+			f.ProcessToken(n, "Rbrace", n.Rbrace, false)
 			f.ProcessToken(n, "Rbrace", n.Rbrace, true)
 		}
 	case *ast.DeclStmt:
@@ -215,6 +234,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.DeferStmt:
 		// Defer
 		if n.Defer.IsValid() {
+			f.ProcessToken(n, "Defer", n.Defer, false)
 			f.ProcessToken(n, "Defer", n.Defer, true)
 		}
 		// Call
@@ -226,6 +246,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.Ellipsis:
 		// Ellipsis
 		if n.Ellipsis.IsValid() {
+			f.ProcessToken(n, "Ellipsis", n.Ellipsis, false)
 			f.ProcessToken(n, "Ellipsis", n.Ellipsis, true)
 		}
 		// Elt
@@ -237,6 +258,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.EmptyStmt:
 		// Semicolon
 		if n.Semicolon.IsValid() {
+			f.ProcessToken(n, "Semicolon", n.Semicolon, false)
 			f.ProcessToken(n, "Semicolon", n.Semicolon, true)
 		}
 	case *ast.ExprStmt:
@@ -280,6 +302,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.FieldList:
 		// Opening
 		if n.Opening.IsValid() {
+			f.ProcessToken(n, "Opening", n.Opening, false)
 			f.ProcessToken(n, "Opening", n.Opening, true)
 		}
 		// List
@@ -290,6 +313,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Closing
 		if n.Closing.IsValid() {
+			f.ProcessToken(n, "Closing", n.Closing, false)
 			f.ProcessToken(n, "Closing", n.Closing, true)
 		}
 	case *ast.File:
@@ -301,6 +325,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Package
 		if n.Package.IsValid() {
+			f.ProcessToken(n, "Package", n.Package, false)
 			f.ProcessToken(n, "Package", n.Package, true)
 		}
 		// Name
@@ -318,6 +343,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.ForStmt:
 		// For
 		if n.For.IsValid() {
+			f.ProcessToken(n, "For", n.For, false)
 			f.ProcessToken(n, "For", n.For, true)
 		}
 		// Init
@@ -362,6 +388,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.FuncType:
 		// Func
 		if n.Func.IsValid() {
+			f.ProcessToken(n, "Func", n.Func, false)
 			f.ProcessToken(n, "Func", n.Func, true)
 		}
 		// Params
@@ -385,10 +412,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Tok
 		if n.TokPos.IsValid() {
+			f.ProcessToken(n, "Tok", n.TokPos, false)
 			f.ProcessToken(n, "Tok", n.TokPos, true)
 		}
 		// Lparen
 		if n.Lparen.IsValid() {
+			f.ProcessToken(n, "Lparen", n.Lparen, false)
 			f.ProcessToken(n, "Lparen", n.Lparen, true)
 		}
 		// Specs
@@ -399,11 +428,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Rparen
 		if n.Rparen.IsValid() {
+			f.ProcessToken(n, "Rparen", n.Rparen, false)
 			f.ProcessToken(n, "Rparen", n.Rparen, true)
 		}
 	case *ast.GoStmt:
 		// Go
 		if n.Go.IsValid() {
+			f.ProcessToken(n, "Go", n.Go, false)
 			f.ProcessToken(n, "Go", n.Go, true)
 		}
 		// Call
@@ -415,11 +446,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.Ident:
 		// Name
 		if n.NamePos.IsValid() {
+			f.ProcessToken(n, "Name", n.NamePos, false)
 			f.ProcessToken(n, "Name", n.NamePos, true)
 		}
 	case *ast.IfStmt:
 		// If
 		if n.If.IsValid() {
+			f.ProcessToken(n, "If", n.If, false)
 			f.ProcessToken(n, "If", n.If, true)
 		}
 		// Init
@@ -480,6 +513,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Tok
 		if n.TokPos.IsValid() {
+			f.ProcessToken(n, "Tok", n.TokPos, false)
 			f.ProcessToken(n, "Tok", n.TokPos, true)
 		}
 	case *ast.IndexExpr:
@@ -491,6 +525,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Lbrack
 		if n.Lbrack.IsValid() {
+			f.ProcessToken(n, "Lbrack", n.Lbrack, false)
 			f.ProcessToken(n, "Lbrack", n.Lbrack, true)
 		}
 		// Index
@@ -501,11 +536,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Rbrack
 		if n.Rbrack.IsValid() {
+			f.ProcessToken(n, "Rbrack", n.Rbrack, false)
 			f.ProcessToken(n, "Rbrack", n.Rbrack, true)
 		}
 	case *ast.InterfaceType:
 		// Interface
 		if n.Interface.IsValid() {
+			f.ProcessToken(n, "Interface", n.Interface, false)
 			f.ProcessToken(n, "Interface", n.Interface, true)
 		}
 		// Methods
@@ -523,6 +560,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Colon
 		if n.Colon.IsValid() {
+			f.ProcessToken(n, "Colon", n.Colon, false)
 			f.ProcessToken(n, "Colon", n.Colon, true)
 		}
 		// Value
@@ -540,6 +578,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Colon
 		if n.Colon.IsValid() {
+			f.ProcessToken(n, "Colon", n.Colon, false)
 			f.ProcessToken(n, "Colon", n.Colon, true)
 		}
 		// Stmt
@@ -551,6 +590,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.MapType:
 		// Map
 		if n.Map.IsValid() {
+			f.ProcessToken(n, "Map", n.Map, false)
 			f.ProcessToken(n, "Map", n.Map, true)
 		}
 		// Key
@@ -568,6 +608,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.ParenExpr:
 		// Lparen
 		if n.Lparen.IsValid() {
+			f.ProcessToken(n, "Lparen", n.Lparen, false)
 			f.ProcessToken(n, "Lparen", n.Lparen, true)
 		}
 		// X
@@ -578,11 +619,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Rparen
 		if n.Rparen.IsValid() {
+			f.ProcessToken(n, "Rparen", n.Rparen, false)
 			f.ProcessToken(n, "Rparen", n.Rparen, true)
 		}
 	case *ast.RangeStmt:
 		// For
 		if n.For.IsValid() {
+			f.ProcessToken(n, "For", n.For, false)
 			f.ProcessToken(n, "For", n.For, true)
 		}
 		// Key
@@ -599,6 +642,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Tok
 		if n.TokPos.IsValid() {
+			f.ProcessToken(n, "Tok", n.TokPos, false)
 			f.ProcessToken(n, "Tok", n.TokPos, true)
 		}
 		// X
@@ -616,6 +660,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.ReturnStmt:
 		// Return
 		if n.Return.IsValid() {
+			f.ProcessToken(n, "Return", n.Return, false)
 			f.ProcessToken(n, "Return", n.Return, true)
 		}
 		// Results
@@ -627,6 +672,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.SelectStmt:
 		// Select
 		if n.Select.IsValid() {
+			f.ProcessToken(n, "Select", n.Select, false)
 			f.ProcessToken(n, "Select", n.Select, true)
 		}
 		// Body
@@ -657,6 +703,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Arrow
 		if n.Arrow.IsValid() {
+			f.ProcessToken(n, "Arrow", n.Arrow, false)
 			f.ProcessToken(n, "Arrow", n.Arrow, true)
 		}
 		// Value
@@ -674,6 +721,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Lbrack
 		if n.Lbrack.IsValid() {
+			f.ProcessToken(n, "Lbrack", n.Lbrack, false)
 			f.ProcessToken(n, "Lbrack", n.Lbrack, true)
 		}
 		// Low
@@ -696,11 +744,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Rbrack
 		if n.Rbrack.IsValid() {
+			f.ProcessToken(n, "Rbrack", n.Rbrack, false)
 			f.ProcessToken(n, "Rbrack", n.Rbrack, true)
 		}
 	case *ast.StarExpr:
 		// Star
 		if n.Star.IsValid() {
+			f.ProcessToken(n, "Star", n.Star, false)
 			f.ProcessToken(n, "Star", n.Star, true)
 		}
 		// X
@@ -712,6 +762,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.StructType:
 		// Struct
 		if n.Struct.IsValid() {
+			f.ProcessToken(n, "Struct", n.Struct, false)
 			f.ProcessToken(n, "Struct", n.Struct, true)
 		}
 		// Fields
@@ -723,6 +774,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.SwitchStmt:
 		// Switch
 		if n.Switch.IsValid() {
+			f.ProcessToken(n, "Switch", n.Switch, false)
 			f.ProcessToken(n, "Switch", n.Switch, true)
 		}
 		// Init
@@ -752,6 +804,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Lparen
 		if n.Lparen.IsValid() {
+			f.ProcessToken(n, "Lparen", n.Lparen, false)
 			f.ProcessToken(n, "Lparen", n.Lparen, true)
 		}
 		// Type
@@ -762,6 +815,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Rparen
 		if n.Rparen.IsValid() {
+			f.ProcessToken(n, "Rparen", n.Rparen, false)
 			f.ProcessToken(n, "Rparen", n.Rparen, true)
 		}
 	case *ast.TypeSpec:
@@ -779,6 +833,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 		// Assign
 		if n.Assign.IsValid() {
+			f.ProcessToken(n, "Assign", n.Assign, false)
 			f.ProcessToken(n, "Assign", n.Assign, true)
 		}
 		// Type
@@ -796,6 +851,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.TypeSwitchStmt:
 		// Switch
 		if n.Switch.IsValid() {
+			f.ProcessToken(n, "Switch", n.Switch, false)
 			f.ProcessToken(n, "Switch", n.Switch, true)
 		}
 		// Init
@@ -819,6 +875,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.UnaryExpr:
 		// Op
 		if n.OpPos.IsValid() {
+			f.ProcessToken(n, "Op", n.OpPos, false)
 			f.ProcessToken(n, "Op", n.OpPos, true)
 		}
 		// X

@@ -87,6 +87,39 @@ func TestRestorer(t *testing.T) {
 		code string
 	}{
 		{
+			name: "inside if block",
+			code: `package main
+
+				func main() {
+					if true {
+						// a
+					}
+				}`,
+		},
+		{
+			name: "indented comment in case",
+			code: `package main
+
+			func main() {
+				switch true {
+				case true:
+					// a
+				case false:
+				}
+			}`,
+		},
+		{
+			name: "comment in final case",
+			code: `package main
+
+			func main() {
+				switch true {
+				case true:
+					// a
+				}
+			}`,
+		},
+		{
 			name: "Interface param",
 			code: `package main
 
@@ -560,8 +593,7 @@ func TestRestorer(t *testing.T) {
 				fmt.Println("Got:")
 				dst.Print(r.Fset, out)*/
 
-				t.Fatalf("expected:\n%s\n\ngot:\n%s", test.code, string(formatted))
-
+				t.Errorf("diff: %s", diff.LineDiff(test.code, string(formatted)))
 			}
 		})
 	}

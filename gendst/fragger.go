@@ -23,6 +23,7 @@ func generateFragger(names []string, nodes map[string]NodeInfo) error {
 						switch frag.AstType {
 						case "Pos", "Token", "string":
 							g.If(Id("n").Dot(frag.AstPositionField).Dot("IsValid").Call()).Block(
+								Id("f").Dot("ProcessToken").Call(Id("n"), Lit(frag.Name), Id("n").Dot(frag.AstPositionField), Lit(false)),
 								Id("f").Dot("ProcessToken").Call(Id("n"), Lit(frag.Name), Id("n").Dot(frag.AstPositionField), Lit(true)),
 							)
 						case "Node":
