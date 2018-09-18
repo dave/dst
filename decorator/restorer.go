@@ -34,11 +34,28 @@ func (r *Restorer) Restore(fname string, dstFile *dst.File) *ast.File {
 		Lines:    []int{0},
 	}
 	astFile := fr.RestoreNode(dstFile).(*ast.File)
-	fsetFile := r.Fset.AddFile(fname, r.Fset.Base(), int(fr.cursor-fr.base))
+
+	astFileEndPos := int(fr.cursor - fr.base)
+	// Check that none of the comments or newlines extend past the file end position. If so, increment.
+	for _, cg := range fr.Comments {
+		if int(cg.End()) >= astFileEndPos {
+			astFileEndPos = int(cg.End()) + 1
+		}
+	}
+	for _, l := range fr.Lines {
+		if l >= astFileEndPos {
+			astFileEndPos = l + 1
+		}
+	}
+
+	fsetFile := r.Fset.AddFile(fname, r.Fset.Base(), astFileEndPos)
 	for _, cg := range fr.Comments {
 		astFile.Comments = append(astFile.Comments, cg)
 	}
-	fsetFile.SetLines(fr.Lines)
+	success := fsetFile.SetLines(fr.Lines)
+	if !success {
+		panic("SetLines failed")
+	}
 
 	return astFile
 }

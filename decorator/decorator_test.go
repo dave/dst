@@ -14,10 +14,10 @@ import (
 
 func TestDecorator(t *testing.T) {
 	tests := []struct {
-		skip   bool
-		name   string
-		code   string
-		expect string
+		skip, solo bool
+		name       string
+		code       string
+		expect     string
 	}{
 		{
 			name: "inside if block",
@@ -216,11 +216,18 @@ func TestDecorator(t *testing.T) {
             BlockStmt [Lbrace (after) "\n"]`,
 		},
 	}
+	var solo bool
+	for _, test := range tests {
+		if test.solo {
+			solo = true
+			break
+		}
+	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			//if test.name != "inside if block" {
-			//	t.Skip()
-			//}
+			if solo && !test.solo {
+				t.Skip()
+			}
 			if test.skip {
 				t.Skip()
 			}
