@@ -11,6 +11,7 @@ import (
 
 	ArrayType.Len
 	SliceExpr.Max
+	ChanType.Begin
 	ChanType.Arrow
 	EmptyStmt.Semicolon
 	TypeAssertExpr.Type
@@ -130,16 +131,31 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 	case *dst.ChanType:
 		switch fragment {
 		case "Begin":
-			return 0, 4, 0
+			// ************
+			// SPECIAL CASE
+			// Arrow is rendered as part of Begin when Dir == SEND
+			// ************
+			switch n.Dir {
+			case dst.SEND:
+				return 0, 6, 0 // "<-chan"
+			case dst.RECV:
+				return 0, 4, 0 // "chan"
+			default:
+				return 0, 4, 0 // "chan"
+			}
 		case "Arrow":
 			// ************
 			// SPECIAL CASE
 			// Arrow is not rendered when Dir == 0
 			// ************
-			if n.Dir == dst.SEND || n.Dir == dst.RECV {
-				return 0, 2, 0
+			switch n.Dir {
+			case dst.SEND:
+				return 0, 0, 0
+			case dst.RECV:
+				return 0, 2, 0 // "<-"
+			default:
+				return 0, 0, 0
 			}
-			return 0, 0, 0
 		case "Value":
 			return 0, 0, 0
 		}
