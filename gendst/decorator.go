@@ -14,13 +14,13 @@ func generateDecorator(names []string, nodes map[string]NodeInfo) error {
 	f.ImportName(DSTPATH, "dst")
 
 	/*
-		func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
+		func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			if dn, ok := d.nodes[n]; ok {
 				return dn
 			}
 		}
 	*/
-	f.Func().Params(Id("d").Op("*").Id("Decorator")).Id("NodeToDst").Params(
+	f.Func().Params(Id("d").Op("*").Id("Decorator")).Id("DecorateNode").Params(
 		Id("n").Qual("go/ast", "Node"),
 	).Qual(DSTPATH, "Node").BlockFunc(func(g *Group) {
 		g.If(List(Id("dn"), Id("ok")).Op(":=").Id("d").Dot("nodes").Index(Id("n")), Id("ok")).Block(
@@ -36,7 +36,7 @@ func generateDecorator(names []string, nodes map[string]NodeInfo) error {
 						switch frag.AstType {
 						case "Node":
 							g.If(Id("n").Dot(frag.Name).Op("!=").Nil()).Block(
-								Id("out").Dot(frag.Name).Op("=").Id("d").Dot("NodeToDst").Call(
+								Id("out").Dot(frag.Name).Op("=").Id("d").Dot("DecorateNode").Call(
 									Id("n").Dot(frag.Name),
 								).Assert(typeLiteral(DSTPATH, frag.DstTypeActual, frag.DstTypePointer)),
 							)
@@ -44,7 +44,7 @@ func generateDecorator(names []string, nodes map[string]NodeInfo) error {
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Id("n").Dot(frag.Name)).Block(
 								Id("out").Dot(frag.Name).Op("=").Append(
 									Id("out").Dot(frag.Name),
-									Id("d").Dot("NodeToDst").Call(Id("v")).Assert(typeLiteral(DSTPATH, frag.DstTypeActual, frag.DstTypePointer)),
+									Id("d").Dot("DecorateNode").Call(Id("v")).Assert(typeLiteral(DSTPATH, frag.DstTypeActual, frag.DstTypePointer)),
 								),
 							)
 						case "string", "bool", "Token":
@@ -65,7 +65,7 @@ func generateDecorator(names []string, nodes map[string]NodeInfo) error {
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Id("n").Dot(field.Name)).Block(
 								Id("out").Dot(field.Name).Op("=").Append(
 									Id("out").Dot(field.Name),
-									Id("d").Dot("NodeToDst").Call(Id("v")).Assert(typeLiteral(DSTPATH, field.Actual, field.Pointer)),
+									Id("d").Dot("DecorateNode").Call(Id("v")).Assert(typeLiteral(DSTPATH, field.Actual, field.Pointer)),
 								),
 							)
 						case "ChanDir":

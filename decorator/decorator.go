@@ -26,5 +26,5 @@ func (d *Decorator) Decorate(f *ast.File, fset *token.FileSet) *dst.File {
 	//p.debug(os.Stdout, fset)
 
 	d.decorations = p.Link()
-	return d.NodeToDst(f).(*dst.File)
+	return d.DecorateNode(f).(*dst.File)
 }
