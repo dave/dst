@@ -27,7 +27,7 @@ func TestStdLib(t *testing.T) {
 		}
 		all := strings.Split(strings.TrimSpace(string(b)), "\n")
 	*/
-	all := []string{"archive/tar", "archive/zip", "bufio", "io", "os", "fmt"}
+	all := []string{"github.com/dave/dst/gendst/postests", "archive/tar", "archive/zip", "bufio", "io", "os", "fmt"}
 
 	ignore := map[string]bool{
 		"builtin": true,
