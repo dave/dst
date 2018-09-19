@@ -89,66 +89,6 @@ func (f *FileRestorer) applyDecorations(decorations []dst.Decoration, position s
 	}
 }
 
-func (f *FileRestorer) customLength(node dst.Node, fragment string) (suffix, length, prefix int) {
-
-	// value == -1 => calculate from field
-
-	switch node := node.(type) {
-	case *dst.ArrayType:
-		switch fragment {
-		case "Len":
-			return 0, -1, 1 // Len has "]" suffix even when Len == nil
-		}
-	case *dst.SliceExpr:
-		switch fragment {
-		case "Max":
-			if node.Slice3 {
-				// If Slice3, we have two colons even with Max == nil
-				return 1, -1, 0
-			} else if node.Max != nil {
-				return 1, -1, 0
-			} else {
-				return 0, -1, 0
-			}
-		}
-	case *dst.ChanType:
-		switch fragment {
-		case "Arrow":
-			if node.Dir == 0 {
-				return 0, 0, 0
-			} else {
-				return 0, 2, 0
-			}
-		}
-	case *dst.EmptyStmt:
-		// TODO: Is this needed?
-		if node.Implicit {
-			return 0, 0, 0
-		} else {
-			return 0, 1, 0
-		}
-	case *dst.TypeAssertExpr:
-		switch fragment {
-		case "Type":
-			if node.Type == nil {
-				return 0, len(".(type)"), 0
-			} else {
-				return len(".("), -1, len(")")
-			}
-		}
-	case *dst.CommClause:
-		switch fragment {
-		case "Comm":
-			if node.Comm == nil {
-				return 0, len("default"), 0
-			} else {
-				return len("case"), -1, 0
-			}
-		}
-	}
-	return -1, -1, -1
-}
-
 func (r *FileRestorer) funcDeclOverride(n *dst.FuncDecl) *ast.FuncDecl {
 	r.applyDecorations(n.Decs, "", false)
 	out := &ast.FuncDecl{}
