@@ -188,19 +188,6 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 				f.ProcessNode(v)
 			}
 		}
-	case *ast.Comment:
-		// Text
-		if n.Slash.IsValid() {
-			f.ProcessToken(n, "Text", n.Slash, false)
-			f.ProcessToken(n, "Text", n.Slash, true)
-		}
-	case *ast.CommentGroup:
-		// List
-		if n.List != nil {
-			for _, v := range n.List {
-				f.ProcessNode(v)
-			}
-		}
 	case *ast.CompositeLit:
 		// Type
 		if n.Type != nil {
@@ -269,12 +256,6 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 			f.ProcessToken(n, "X", n.X.End(), true)
 		}
 	case *ast.Field:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
-		}
 		// Names
 		if n.Names != nil {
 			for _, v := range n.Names {
@@ -292,12 +273,6 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 			f.ProcessToken(n, "Tag", n.Tag.Pos(), false)
 			f.ProcessNode(n.Tag)
 			f.ProcessToken(n, "Tag", n.Tag.End(), true)
-		}
-		// Comment
-		if n.Comment != nil {
-			f.ProcessToken(n, "Comment", n.Comment.Pos(), false)
-			f.ProcessNode(n.Comment)
-			f.ProcessToken(n, "Comment", n.Comment.End(), true)
 		}
 	case *ast.FieldList:
 		// Opening
@@ -317,12 +292,6 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 			f.ProcessToken(n, "Closing", n.Closing, true)
 		}
 	case *ast.File:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
-		}
 		// Package
 		if n.Package.IsValid() {
 			f.ProcessToken(n, "Package", n.Package, false)
@@ -404,12 +373,6 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 			f.ProcessToken(n, "Results", n.Results.End(), true)
 		}
 	case *ast.GenDecl:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
-		}
 		// Tok
 		if n.TokPos.IsValid() {
 			f.ProcessToken(n, "Tok", n.TokPos, false)
@@ -480,12 +443,6 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 			f.ProcessToken(n, "Else", n.Else.End(), true)
 		}
 	case *ast.ImportSpec:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
-		}
 		// Name
 		if n.Name != nil {
 			f.ProcessToken(n, "Name", n.Name.Pos(), false)
@@ -497,12 +454,6 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 			f.ProcessToken(n, "Path", n.Path.Pos(), false)
 			f.ProcessNode(n.Path)
 			f.ProcessToken(n, "Path", n.Path.End(), true)
-		}
-		// Comment
-		if n.Comment != nil {
-			f.ProcessToken(n, "Comment", n.Comment.Pos(), false)
-			f.ProcessNode(n.Comment)
-			f.ProcessToken(n, "Comment", n.Comment.End(), true)
 		}
 	case *ast.IncDecStmt:
 		// X
@@ -819,12 +770,6 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 			f.ProcessToken(n, "Rparen", n.Rparen, true)
 		}
 	case *ast.TypeSpec:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
-		}
 		// Name
 		if n.Name != nil {
 			f.ProcessToken(n, "Name", n.Name.Pos(), false)
@@ -841,12 +786,6 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 			f.ProcessToken(n, "Type", n.Type.Pos(), false)
 			f.ProcessNode(n.Type)
 			f.ProcessToken(n, "Type", n.Type.End(), true)
-		}
-		// Comment
-		if n.Comment != nil {
-			f.ProcessToken(n, "Comment", n.Comment.Pos(), false)
-			f.ProcessNode(n.Comment)
-			f.ProcessToken(n, "Comment", n.Comment.End(), true)
 		}
 	case *ast.TypeSwitchStmt:
 		// Switch
@@ -885,12 +824,6 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 			f.ProcessToken(n, "X", n.X.End(), true)
 		}
 	case *ast.ValueSpec:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
-		}
 		// Names
 		if n.Names != nil {
 			for _, v := range n.Names {
@@ -908,12 +841,6 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 			for _, v := range n.Values {
 				f.ProcessNode(v)
 			}
-		}
-		// Comment
-		if n.Comment != nil {
-			f.ProcessToken(n, "Comment", n.Comment.Pos(), false)
-			f.ProcessNode(n.Comment)
-			f.ProcessToken(n, "Comment", n.Comment.End(), true)
 		}
 	}
 	f.ProcessToken(n, "", n.End(), true)

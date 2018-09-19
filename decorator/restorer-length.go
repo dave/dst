@@ -177,19 +177,6 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 		case "Body":
 			return 0, 0, 0
 		}
-	case *dst.Comment:
-		switch fragment {
-		case "Text":
-			if n.Text != "" {
-				return 0, len(n.Text), 0
-			}
-			return 0, 0, 0
-		}
-	case *dst.CommentGroup:
-		switch fragment {
-		case "List":
-			return 0, 0, 0
-		}
 	case *dst.CompositeLit:
 		switch fragment {
 		case "Type":
@@ -239,15 +226,11 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 		}
 	case *dst.Field:
 		switch fragment {
-		case "Doc":
-			return 0, 0, 0
 		case "Names":
 			return 0, 0, 0
 		case "Type":
 			return 0, 0, 0
 		case "Tag":
-			return 0, 0, 0
-		case "Comment":
 			return 0, 0, 0
 		}
 	case *dst.FieldList:
@@ -297,8 +280,6 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 		}
 	case *dst.FuncDecl:
 		switch fragment {
-		case "Doc":
-			return 0, 0, 0
 		case "Recv":
 			return 0, 0, 0
 		case "Name":
@@ -329,8 +310,6 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 		}
 	case *dst.GenDecl:
 		switch fragment {
-		case "Doc":
-			return 0, 0, 0
 		case "Tok":
 			if n.Tok != token.ILLEGAL {
 				return 0, len(n.Tok.String()), 0
@@ -385,13 +364,9 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 		}
 	case *dst.ImportSpec:
 		switch fragment {
-		case "Doc":
-			return 0, 0, 0
 		case "Name":
 			return 0, 0, 0
 		case "Path":
-			return 0, 0, 0
-		case "Comment":
 			return 0, 0, 0
 		}
 	case *dst.IncDecStmt:
@@ -588,8 +563,6 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 		}
 	case *dst.TypeSpec:
 		switch fragment {
-		case "Doc":
-			return 0, 0, 0
 		case "Name":
 			return 0, 0, 0
 		case "Assign":
@@ -598,8 +571,6 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 			}
 			return 0, 0, 0
 		case "Type":
-			return 0, 0, 0
-		case "Comment":
 			return 0, 0, 0
 		}
 	case *dst.TypeSwitchStmt:
@@ -631,8 +602,6 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 		}
 	case *dst.ValueSpec:
 		switch fragment {
-		case "Doc":
-			return 0, 0, 0
 		case "Names":
 			return 0, 0, 0
 		case "Type":
@@ -641,8 +610,6 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 			if len(n.Values) > 0 {
 				return 1, 0, 0
 			}
-			return 0, 0, 0
-		case "Comment":
 			return 0, 0, 0
 		}
 	}

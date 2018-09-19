@@ -416,40 +416,6 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 		r.applyDecorations(n.Decs, "", true)
 		r.nodes[n] = out
 		return out
-	case *dst.Comment:
-		r.applyDecorations(n.Decs, "", false)
-		out := &ast.Comment{}
-		{
-			r.applyDecorations(n.Decs, "Text", false)
-			prefix, length, suffix := getLength(n, "Text")
-			out.Slash = r.cursor
-			r.cursor += token.Pos(prefix)
-			out.Text = n.Text
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "Text", true)
-		}
-		r.applyDecorations(n.Decs, "", true)
-		r.nodes[n] = out
-		return out
-	case *dst.CommentGroup:
-		r.applyDecorations(n.Decs, "", false)
-		out := &ast.CommentGroup{}
-		{
-			r.applyDecorations(n.Decs, "List", false)
-			prefix, length, suffix := getLength(n, "List")
-			r.cursor += token.Pos(prefix)
-			for _, v := range n.List {
-				out.List = append(out.List, r.RestoreNode(v).(*ast.Comment))
-			}
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "List", true)
-		}
-		r.applyDecorations(n.Decs, "", true)
-		r.Comments = append(r.Comments, out)
-		r.nodes[n] = out
-		return out
 	case *dst.CompositeLit:
 		r.applyDecorations(n.Decs, "", false)
 		out := &ast.CompositeLit{}
@@ -603,17 +569,6 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 		r.applyDecorations(n.Decs, "", false)
 		out := &ast.Field{}
 		{
-			r.applyDecorations(n.Decs, "Doc", false)
-			prefix, length, suffix := getLength(n, "Doc")
-			r.cursor += token.Pos(prefix)
-			if n.Doc != nil {
-				out.Doc = r.RestoreNode(n.Doc).(*ast.CommentGroup)
-			}
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "Doc", true)
-		}
-		{
 			r.applyDecorations(n.Decs, "Names", false)
 			prefix, length, suffix := getLength(n, "Names")
 			r.cursor += token.Pos(prefix)
@@ -645,17 +600,6 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 			r.cursor += token.Pos(length)
 			r.cursor += token.Pos(suffix)
 			r.applyDecorations(n.Decs, "Tag", true)
-		}
-		{
-			r.applyDecorations(n.Decs, "Comment", false)
-			prefix, length, suffix := getLength(n, "Comment")
-			r.cursor += token.Pos(prefix)
-			if n.Comment != nil {
-				out.Comment = r.RestoreNode(n.Comment).(*ast.CommentGroup)
-			}
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "Comment", true)
 		}
 		r.applyDecorations(n.Decs, "", true)
 		r.nodes[n] = out
@@ -702,17 +646,6 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 	case *dst.File:
 		r.applyDecorations(n.Decs, "", false)
 		out := &ast.File{}
-		{
-			r.applyDecorations(n.Decs, "Doc", false)
-			prefix, length, suffix := getLength(n, "Doc")
-			r.cursor += token.Pos(prefix)
-			if n.Doc != nil {
-				out.Doc = r.RestoreNode(n.Doc).(*ast.CommentGroup)
-			}
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "Doc", true)
-		}
 		{
 			r.applyDecorations(n.Decs, "Package", false)
 			prefix, length, suffix := getLength(n, "Package")
@@ -886,17 +819,6 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 		r.applyDecorations(n.Decs, "", false)
 		out := &ast.GenDecl{}
 		{
-			r.applyDecorations(n.Decs, "Doc", false)
-			prefix, length, suffix := getLength(n, "Doc")
-			r.cursor += token.Pos(prefix)
-			if n.Doc != nil {
-				out.Doc = r.RestoreNode(n.Doc).(*ast.CommentGroup)
-			}
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "Doc", true)
-		}
-		{
 			r.applyDecorations(n.Decs, "Tok", false)
 			prefix, length, suffix := getLength(n, "Tok")
 			out.TokPos = r.cursor
@@ -1048,17 +970,6 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 		r.applyDecorations(n.Decs, "", false)
 		out := &ast.ImportSpec{}
 		{
-			r.applyDecorations(n.Decs, "Doc", false)
-			prefix, length, suffix := getLength(n, "Doc")
-			r.cursor += token.Pos(prefix)
-			if n.Doc != nil {
-				out.Doc = r.RestoreNode(n.Doc).(*ast.CommentGroup)
-			}
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "Doc", true)
-		}
-		{
 			r.applyDecorations(n.Decs, "Name", false)
 			prefix, length, suffix := getLength(n, "Name")
 			r.cursor += token.Pos(prefix)
@@ -1079,17 +990,6 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 			r.cursor += token.Pos(length)
 			r.cursor += token.Pos(suffix)
 			r.applyDecorations(n.Decs, "Path", true)
-		}
-		{
-			r.applyDecorations(n.Decs, "Comment", false)
-			prefix, length, suffix := getLength(n, "Comment")
-			r.cursor += token.Pos(prefix)
-			if n.Comment != nil {
-				out.Comment = r.RestoreNode(n.Comment).(*ast.CommentGroup)
-			}
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "Comment", true)
 		}
 		r.applyDecorations(n.Decs, "", true)
 		r.nodes[n] = out
@@ -1746,17 +1646,6 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 		r.applyDecorations(n.Decs, "", false)
 		out := &ast.TypeSpec{}
 		{
-			r.applyDecorations(n.Decs, "Doc", false)
-			prefix, length, suffix := getLength(n, "Doc")
-			r.cursor += token.Pos(prefix)
-			if n.Doc != nil {
-				out.Doc = r.RestoreNode(n.Doc).(*ast.CommentGroup)
-			}
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "Doc", true)
-		}
-		{
 			r.applyDecorations(n.Decs, "Name", false)
 			prefix, length, suffix := getLength(n, "Name")
 			r.cursor += token.Pos(prefix)
@@ -1788,17 +1677,6 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 			r.cursor += token.Pos(length)
 			r.cursor += token.Pos(suffix)
 			r.applyDecorations(n.Decs, "Type", true)
-		}
-		{
-			r.applyDecorations(n.Decs, "Comment", false)
-			prefix, length, suffix := getLength(n, "Comment")
-			r.cursor += token.Pos(prefix)
-			if n.Comment != nil {
-				out.Comment = r.RestoreNode(n.Comment).(*ast.CommentGroup)
-			}
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "Comment", true)
 		}
 		r.applyDecorations(n.Decs, "", true)
 		r.nodes[n] = out
@@ -1882,17 +1760,6 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 		r.applyDecorations(n.Decs, "", false)
 		out := &ast.ValueSpec{}
 		{
-			r.applyDecorations(n.Decs, "Doc", false)
-			prefix, length, suffix := getLength(n, "Doc")
-			r.cursor += token.Pos(prefix)
-			if n.Doc != nil {
-				out.Doc = r.RestoreNode(n.Doc).(*ast.CommentGroup)
-			}
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "Doc", true)
-		}
-		{
 			r.applyDecorations(n.Decs, "Names", false)
 			prefix, length, suffix := getLength(n, "Names")
 			r.cursor += token.Pos(prefix)
@@ -1924,17 +1791,6 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 			r.cursor += token.Pos(length)
 			r.cursor += token.Pos(suffix)
 			r.applyDecorations(n.Decs, "Values", true)
-		}
-		{
-			r.applyDecorations(n.Decs, "Comment", false)
-			prefix, length, suffix := getLength(n, "Comment")
-			r.cursor += token.Pos(prefix)
-			if n.Comment != nil {
-				out.Comment = r.RestoreNode(n.Comment).(*ast.CommentGroup)
-			}
-			r.cursor += token.Pos(length)
-			r.cursor += token.Pos(suffix)
-			r.applyDecorations(n.Decs, "Comment", true)
 		}
 		r.applyDecorations(n.Decs, "", true)
 		r.nodes[n] = out

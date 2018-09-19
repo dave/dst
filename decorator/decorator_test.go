@@ -212,7 +212,7 @@ func TestDecorator(t *testing.T) {
 			func /*FuncDeclAfterDoc*/ (a *b) /*FuncDeclAfterRecv*/ c /*FuncDeclAfterName*/ (d, e int) (f, g int) /*FuncDeclAfterType*/ {
 			}`,
 			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            FuncDecl [Doc (after) "\n"] [Func (after) "/*FuncDeclAfterDoc*/"] [Recv (after) "/*FuncDeclAfterRecv*/"] [Name (after) "/*FuncDeclAfterName*/"] [Results (after) "/*FuncDeclAfterType*/"]
+            FuncDecl [(before) "// FuncDecl"] [Func (after) "/*FuncDeclAfterDoc*/"] [Recv (after) "/*FuncDeclAfterRecv*/"] [Name (after) "/*FuncDeclAfterName*/"] [Results (after) "/*FuncDeclAfterType*/"]
             BlockStmt [Lbrace (after) "\n"]`,
 		},
 	}

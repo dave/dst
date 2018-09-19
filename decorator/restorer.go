@@ -152,17 +152,6 @@ func (f *FileRestorer) customLength(node dst.Node, fragment string) (suffix, len
 func (r *FileRestorer) funcDeclOverride(n *dst.FuncDecl) *ast.FuncDecl {
 	r.applyDecorations(n.Decs, "", false)
 	out := &ast.FuncDecl{}
-	{
-		r.applyDecorations(n.Decs, "Doc", false)
-		prefix, length, suffix := getLength(n, "Doc")
-		r.cursor += token.Pos(prefix)
-		if n.Doc != nil {
-			out.Doc = r.RestoreNode(n.Doc).(*ast.CommentGroup)
-		}
-		r.cursor += token.Pos(length)
-		r.cursor += token.Pos(suffix)
-		r.applyDecorations(n.Decs, "Doc", true)
-	}
 	out.Type = &ast.FuncType{}
 	r.nodes[n.Type] = out.Type
 	{

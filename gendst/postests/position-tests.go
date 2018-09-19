@@ -210,22 +210,22 @@ A /*AfterLabel*/ : /*AfterColon*/
 
 	// ValueSpec (no comment possible before "=")
 	/*Start*/
-	var /*AfterDoc*/ j = /*AfterNames*/ 1 /*End*/
+	var /*AfterVar*/ j = /*AfterNames*/ 1 /*End*/
 
 	/*Start*/
-	var /*AfterDoc*/ k, l = /*AfterNames*/ 1, 2 /*End*/
+	var /*AfterVar*/ k, l = /*AfterNames*/ 1, 2 /*End*/
 
 	/*Start*/
-	var /*AfterDoc*/ m, n /*AfterNames*/ int = /*AfterType*/ 1, 2 /*End*/
+	var /*AfterVar*/ m, n /*AfterNames*/ int = /*AfterType*/ 1, 2 /*End*/
 
 	print(j, k, l, m, n)
 
 	// TypeSpec (no comment possible before "=")
 	/*Start*/
-	type /*AfterDoc*/ T1 /*AfterName*/ []int /*End*/
+	type /*AfterType*/ T1 /*AfterName*/ []int /*End*/
 
 	/*Start*/
-	type /*AfterDoc*/ T2 = /*AfterName*/ T1 /*End*/
+	type /*AfterType*/ T2 = /*AfterName*/ T1 /*End*/
 
 	// GenDecl
 	/*Start*/
@@ -238,6 +238,6 @@ A /*AfterLabel*/ : /*AfterColon*/
 
 // FuncDecl
 /*Start*/
-func /*AfterDoc*/ (a *A) /*AfterRecv*/ c /*AfterName*/ (d, e int) (f, g int) /*AfterType*/ {
+func /*AfterFunc*/ (a *A) /*AfterRecv*/ c /*AfterName*/ (d, e int) (f, g int) /*AfterType*/ {
 	return
 } /*End*/

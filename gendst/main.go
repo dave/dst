@@ -220,7 +220,9 @@ var fixedLength = map[string]int{
 }
 
 var ignoredTypes = map[string]bool{
-	"Package": true,
+	"Package":      true,
+	"Comment":      true,
+	"CommentGroup": true,
 }
 
 // TODO: EmptyStmt?
@@ -263,12 +265,10 @@ var fragmentFieldNames = map[string]bool{
 	"Closing":   true, // [FieldList(Pos)]
 	"Colon":     true, // [CaseClause(Pos) CommClause(Pos) KeyValueExpr(Pos) LabeledStmt(Pos)]
 	"Comm":      true, // [CommClause(Node)]
-	"Comment":   true, // [Field(Node) ImportSpec(Node) TypeSpec(Node) ValueSpec(Node)]
 	"Cond":      true, // [ForStmt(Node) IfStmt(Node)]
 	"Decl":      true, // [DeclStmt(Node)]
 	"Decls":     true, // [File([]Node)]
 	"Defer":     true, // [DeferStmt(Pos)]
-	"Doc":       true, // [Field(Node) File(Node) FuncDecl(Node) GenDecl(Node) ImportSpec(Node) TypeSpec(Node) ValueSpec(Node)]
 	"Ellipsis":  true, // [CallExpr(Pos) Ellipsis(Pos)]
 	"Else":      true, // [IfStmt(Node)]
 	"Elt":       true, // [ArrayType(Node) Ellipsis(Node)]
@@ -360,7 +360,6 @@ var dataFields = map[string][]FieldInfo{
 	"File": {
 		{Name: "Imports", Type: "[]Node", Actual: "ImportSpec", Pointer: true},
 		{Name: "Unresolved", Type: "[]Node", Actual: "Ident", Pointer: true},
-		{Name: "Comments", Type: "[]Node", Actual: "CommentGroup", Pointer: true},
 		{Name: "Scope", Type: "Scope"},
 	},
 	"CompositeLit": {

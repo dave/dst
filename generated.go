@@ -39,12 +39,6 @@ func (v *ChanType) Decorations() []Decoration {
 func (v *CommClause) Decorations() []Decoration {
 	return v.Decs
 }
-func (v *Comment) Decorations() []Decoration {
-	return v.Decs
-}
-func (v *CommentGroup) Decorations() []Decoration {
-	return v.Decs
-}
 func (v *CompositeLit) Decorations() []Decoration {
 	return v.Decs
 }

@@ -35,6 +35,7 @@ func TestRestorer(t *testing.T) {
 				}`,
 		},
 		{
+			skip: true,
 			name: "indented comment in case",
 			code: `package main
 

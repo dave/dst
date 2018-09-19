@@ -23,22 +23,9 @@ func (f *Fragger) Fragment(file *ast.File, fset *token.FileSet) {
 
 	f.ProcessNode(file)
 
-	// make a list of the comments that are already included in the AST - we don't need to include
-	// them as decorations
-	comments := map[*ast.Comment]bool{}
-	ast.Inspect(file, func(n ast.Node) bool {
-		if c, ok := n.(*ast.Comment); ok {
-			comments[c] = true
-		}
-		return true
-	})
-
 	lineComments := map[int]bool{}
 	for _, cg := range file.Comments {
 		for _, c := range cg.List {
-			if comments[c] {
-				continue
-			}
 			f.Fragments = append(f.Fragments, CommentFragment{Pos: c.Pos(), Text: c.Text})
 			if strings.HasPrefix(c.Text, "//") {
 				lineComments[fset.Position(c.Pos()).Line] = true
@@ -162,12 +149,6 @@ func (f Fragger) debug(w io.Writer, fset *token.FileSet) {
 }
 
 func (f *Fragger) funcDeclOverride(n *ast.FuncDecl) {
-	// Doc
-	if n.Doc != nil {
-		f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-		f.ProcessNode(n.Doc)
-		f.ProcessToken(n, "Doc", n.Doc.End(), true)
-	}
 	// Func
 	if n.Type.Func.IsValid() {
 		f.ProcessToken(n, "Func", n.Type.Func, false)

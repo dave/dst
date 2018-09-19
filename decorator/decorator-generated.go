@@ -159,24 +159,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		}
 		d.nodes[n] = out
 		return out
-	case *ast.Comment:
-		out := &dst.Comment{}
-		out.Text = n.Text
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
-		}
-		d.nodes[n] = out
-		return out
-	case *ast.CommentGroup:
-		out := &dst.CommentGroup{}
-		for _, v := range n.List {
-			out.List = append(out.List, d.NodeToDst(v).(*dst.Comment))
-		}
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
-		}
-		d.nodes[n] = out
-		return out
 	case *ast.CompositeLit:
 		out := &dst.CompositeLit{}
 		if n.Type != nil {
@@ -241,9 +223,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.Field:
 		out := &dst.Field{}
-		if n.Doc != nil {
-			out.Doc = d.NodeToDst(n.Doc).(*dst.CommentGroup)
-		}
 		for _, v := range n.Names {
 			out.Names = append(out.Names, d.NodeToDst(v).(*dst.Ident))
 		}
@@ -252,9 +231,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		}
 		if n.Tag != nil {
 			out.Tag = d.NodeToDst(n.Tag).(*dst.BasicLit)
-		}
-		if n.Comment != nil {
-			out.Comment = d.NodeToDst(n.Comment).(*dst.CommentGroup)
 		}
 		if decs, ok := d.decorations[n]; ok {
 			out.Decs = decs
@@ -279,9 +255,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.File:
 		out := &dst.File{}
-		if n.Doc != nil {
-			out.Doc = d.NodeToDst(n.Doc).(*dst.CommentGroup)
-		}
 		if n.Name != nil {
 			out.Name = d.NodeToDst(n.Name).(*dst.Ident)
 		}
@@ -293,9 +266,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		}
 		for _, v := range n.Unresolved {
 			out.Unresolved = append(out.Unresolved, d.NodeToDst(v).(*dst.Ident))
-		}
-		for _, v := range n.Comments {
-			out.Comments = append(out.Comments, d.NodeToDst(v).(*dst.CommentGroup))
 		}
 		// TODO: Scope (Scope)
 		if decs, ok := d.decorations[n]; ok {
@@ -324,9 +294,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.FuncDecl:
 		out := &dst.FuncDecl{}
-		if n.Doc != nil {
-			out.Doc = d.NodeToDst(n.Doc).(*dst.CommentGroup)
-		}
 		if n.Recv != nil {
 			out.Recv = d.NodeToDst(n.Recv).(*dst.FieldList)
 		}
@@ -375,9 +342,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.GenDecl:
 		out := &dst.GenDecl{}
-		if n.Doc != nil {
-			out.Doc = d.NodeToDst(n.Doc).(*dst.CommentGroup)
-		}
 		out.Tok = n.Tok
 		if n.Lparen != token.NoPos {
 			out.Lparen = true
@@ -433,17 +397,11 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.ImportSpec:
 		out := &dst.ImportSpec{}
-		if n.Doc != nil {
-			out.Doc = d.NodeToDst(n.Doc).(*dst.CommentGroup)
-		}
 		if n.Name != nil {
 			out.Name = d.NodeToDst(n.Name).(*dst.Ident)
 		}
 		if n.Path != nil {
 			out.Path = d.NodeToDst(n.Path).(*dst.BasicLit)
-		}
-		if n.Comment != nil {
-			out.Comment = d.NodeToDst(n.Comment).(*dst.CommentGroup)
 		}
 		if decs, ok := d.decorations[n]; ok {
 			out.Decs = decs
@@ -672,9 +630,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.TypeSpec:
 		out := &dst.TypeSpec{}
-		if n.Doc != nil {
-			out.Doc = d.NodeToDst(n.Doc).(*dst.CommentGroup)
-		}
 		if n.Name != nil {
 			out.Name = d.NodeToDst(n.Name).(*dst.Ident)
 		}
@@ -683,9 +638,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		}
 		if n.Type != nil {
 			out.Type = d.NodeToDst(n.Type).(dst.Expr)
-		}
-		if n.Comment != nil {
-			out.Comment = d.NodeToDst(n.Comment).(*dst.CommentGroup)
 		}
 		if decs, ok := d.decorations[n]; ok {
 			out.Decs = decs
@@ -721,9 +673,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		return out
 	case *ast.ValueSpec:
 		out := &dst.ValueSpec{}
-		if n.Doc != nil {
-			out.Doc = d.NodeToDst(n.Doc).(*dst.CommentGroup)
-		}
 		for _, v := range n.Names {
 			out.Names = append(out.Names, d.NodeToDst(v).(*dst.Ident))
 		}
@@ -732,9 +681,6 @@ func (d *Decorator) NodeToDst(n ast.Node) dst.Node {
 		}
 		for _, v := range n.Values {
 			out.Values = append(out.Values, d.NodeToDst(v).(dst.Expr))
-		}
-		if n.Comment != nil {
-			out.Comment = d.NodeToDst(n.Comment).(*dst.CommentGroup)
 		}
 		if decs, ok := d.decorations[n]; ok {
 			out.Decs = decs
