@@ -464,20 +464,20 @@ func getLength(n dst.Node, fragment string) (suffix, length, prefix int) {
 	case *dst.RangeStmt:
 		switch fragment {
 		case "For":
-			return 0, 3, 0
+			if n.Key == nil {
+				return 0, 3, 5 // "for range" TODO???
+			}
+			return 0, 3, 0 // "for"
 		case "Key":
 			return 0, 0, 0
 		case "Value":
 			return 0, 0, 0
 		case "Tok":
 			if n.Tok != token.ILLEGAL {
-				return 0, len(n.Tok.String()), 0
+				return 0, len(n.Tok.String()), 5 // "range" TODO???
 			}
 			return 0, 0, 0
 		case "X":
-			if n.X != nil {
-				return 5, 0, 0
-			}
 			return 0, 0, 0
 		case "Body":
 			return 0, 0, 0
