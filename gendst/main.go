@@ -113,10 +113,10 @@ func run() error {
 	if err := generateDst(names, nodes); err != nil {
 		return err
 	}
-	if err := generateFragger(names, nodes); err != nil {
+	if err := generateFragger(names); err != nil {
 		return err
 	}
-	if err := generateDecorator(names, nodes); err != nil {
+	if err := generateDecorator(names); err != nil {
 		return err
 	}
 	if err := generateRestorer(names, nodes); err != nil {

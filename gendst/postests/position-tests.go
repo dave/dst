@@ -1,4 +1,4 @@
-package postests
+/*Start*/ package /*AfterPackage*/ postests /*AfterName*/
 
 // ImportSpec
 import (
@@ -37,6 +37,16 @@ var G = /*Start*/ []int{0} /*AfterX*/ [ /*AfterLbrack*/ 0 /*AfterIndex*/] /*End*
 
 // SliceExpr (no comment possible before colons)
 var H = /*Start*/ []int{0} /*AfterX*/ [ /*AfterLbrack*/ 1: /*AfterLow*/ 2: /*AfterHigh*/ 3 /*AfterMax*/] /*End*/
+
+var H1 = /*Start*/ []int{0} /*AfterX*/ [ /*AfterLbrack*/ 1: /*AfterLow*/ 2 /*AfterHigh*/] /*End*/
+
+var H2 = /*Start*/ []int{0} /*AfterX*/ [: /*AfterLow*/] /*End*/
+
+var H3 = /*Start*/ []int{0} /*AfterX*/ [ /*AfterLbrack*/ 1: /*AfterLow*/] /*End*/
+
+var H4 = /*Start*/ []int{0} /*AfterX*/ [: /*AfterLow*/ 2 /*AfterHigh*/] /*End*/
+
+var H5 = /*Start*/ []int{0} /*AfterX*/ [: /*AfterLow*/ 2: /*AfterHigh*/ 3 /*AfterMax*/] /*End*/
 
 // TypeAssertExpr (no comment possible before period)
 var J = /*Start*/ f. /*AfterX*/ ( /*AfterLparen*/ int /*AfterType*/) /*End*/
@@ -137,7 +147,7 @@ A /*AfterLabel*/ : /*AfterColon*/
 	// CaseClause
 	switch i {
 	/*Start*/ case /*AfterCase*/ 1 /*AfterList*/ : /*AfterColon*/
-		i++ /*End*/
+		i++ /*End(?)*/
 	}
 
 	// SwitchStmt (no comment possible before semicolon)
@@ -169,7 +179,7 @@ A /*AfterLabel*/ : /*AfterColon*/
 	// CommClause
 	select {
 	/*Start*/ case /*AfterCase*/ a := <-c /*AfterComm*/ : /*AfterColon*/
-		print(a) /*End*/
+		print(a) /*End(?)*/
 	}
 
 	// SelectStmt
@@ -195,37 +205,40 @@ A /*AfterLabel*/ : /*AfterColon*/
 
 	// RangeStmt (no comment possible before "range" if Key == nil, or between ":=" and "range")
 	/*Start*/
-	for range /*AfterFor*/ a /*AfterX*/ {
+	for range /*AfterRange*/ a /*AfterX*/ {
 	} /*End*/
 
 	/*Start*/
-	for /*AfterFor*/ k /*AfterKey*/ := range /*AfterTok*/ a /*AfterX*/ {
+	for /*AfterFor*/ k /*AfterKey*/ := range /*AfterRange*/ a /*AfterX*/ {
 		print(k)
 	} /*End*/
 
 	/*Start*/
-	for /*AfterFor*/ k /*AfterKey*/, v /*AfterValue*/ := range /*AfterTok*/ a /*AfterX*/ {
+	for /*AfterFor*/ k /*AfterKey*/, v /*AfterValue*/ := range /*AfterRange*/ a /*AfterX*/ {
 		print(k, v)
 	} /*End*/
 
 	// ValueSpec (no comment possible before "=")
-	/*Start*/
-	var /*AfterVar*/ j = /*AfterNames*/ 1 /*End*/
-
-	/*Start*/
-	var /*AfterVar*/ k, l = /*AfterNames*/ 1, 2 /*End*/
-
-	/*Start*/
-	var /*AfterVar*/ m, n /*AfterNames*/ int = /*AfterType*/ 1, 2 /*End*/
+	var (
+		/*Start*/ j = /*AfterAssign*/ 1 /*End*/
+	)
+	var (
+		/*Start*/ k, l = /*AfterAssign*/ 1, 2 /*End*/
+	)
+	var (
+		/*Start*/ m, n /*AfterNames*/ int = /*AfterAssign*/ 1, 2 /*End*/
+	)
 
 	print(j, k, l, m, n)
 
 	// TypeSpec (no comment possible before "=")
-	/*Start*/
-	type /*AfterType*/ T1 /*AfterName*/ []int /*End*/
+	type (
+		/*Start*/ T1 /*AfterName*/ []int /*End*/
+	)
 
-	/*Start*/
-	type /*AfterType*/ T2 = /*AfterName*/ T1 /*End*/
+	type (
+		/*Start*/ T2 = /*AfterName*/ T1 /*End*/
+	)
 
 	// GenDecl
 	/*Start*/
@@ -234,10 +247,22 @@ A /*AfterLabel*/ : /*AfterColon*/
 		c    = 3
 	) /*End*/
 
+	/*Start*/
+	const /*AfterTok*/ d = 1 /*End*/
+
 }
 
-// FuncDecl
 /*Start*/
-func /*AfterFunc*/ (a *A) /*AfterRecv*/ c /*AfterName*/ (d, e int) (f, g int) /*AfterType*/ {
+func /*AfterFunc*/ d /*AfterName*/ (d, e int) /*AfterParams*/ {
+	return
+} /*End*/
+
+/*Start*/
+func /*AfterFunc*/ (a *A) /*AfterRecv*/ e /*AfterName*/ (d, e int) /*AfterParams*/ {
+	return
+} /*End*/
+
+/*Start*/
+func /*AfterFunc*/ (a *A) /*AfterRecv*/ f /*AfterName*/ (d, e int) /*AfterParams*/ (f, g int) /*AfterResults*/ {
 	return
 } /*End*/

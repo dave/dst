@@ -32,6 +32,7 @@ var Info = map[string][]Part{
 		},
 		List{
 			Name:      "Names",
+			Field:     Field{"Names"},
 			Elem:      Type{"Ident", true},
 			Separator: token.COMMA,
 		},
@@ -39,16 +40,18 @@ var Info = map[string][]Part{
 			Name: "AfterNames",
 		},
 		Node{
-			Name: "Type",
-			Type: Type{"Expr", false},
+			Name:  "Type",
+			Field: Field{"Type"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterType",
-			Use:  Single{jen.Id("n").Dot("Tag").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Tag").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Tag",
-			Type: Type{"BasicLit", true},
+			Name:  "Tag",
+			Field: Field{"Tag"},
+			Type:  Type{"BasicLit", true},
 		},
 		Decoration{
 			Name: "End",
@@ -63,37 +66,37 @@ var Info = map[string][]Part{
 		}
 	*/
 	"FieldList": {
+		Decoration{
+			Name: "Start",
+		},
 		Token{
 			Name:  "Opening",
-			Token: Single{jen.Qual("go/token", "LPAREN")},
+			Token: Basic{jen.Qual("go/token", "LPAREN")},
 			Exists: Double{
-				Ast: jen.Id("n").Dot("Opening").Dot("IsValid").Call(),
-				Dst: jen.Id("n").Dot("Opening"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Opening").Dot("IsValid").Call() }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Opening") }),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("Opening"),
-				Set: jen.Id("n").Dot("Opening").Op("=").Id("pos"),
-			},
+			ExistsField:   Field{"Opening"},
+			PositionField: Field{"Opening"},
 		},
 		Decoration{
 			Name: "AfterOpening",
 		},
 		List{
 			Name:      "List",
+			Field:     Field{"List"},
 			Elem:      Type{"Field", true},
 			Separator: token.COMMA,
 		},
 		Token{
 			Name:  "Closing",
-			Token: Single{jen.Qual("go/token", "RPAREN")},
+			Token: Basic{jen.Qual("go/token", "RPAREN")},
 			Exists: Double{
-				Ast: jen.Id("n").Dot("Closing").Dot("IsValid").Call(),
-				Dst: jen.Id("n").Dot("Closing"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Closing").Dot("IsValid").Call() }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Closing") }),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("Closing"),
-				Set: jen.Id("n").Dot("Closing").Op("=").Id("pos"),
-			},
+			ExistsField:   Field{"Closing"},
+			PositionField: Field{"Closing"},
 		},
 		Decoration{
 			Name: "End",
@@ -111,13 +114,12 @@ var Info = map[string][]Part{
 	"BadExpr": {
 		Ignored{
 			Length: Double{
-				Ast: jen.Int().Parens(jen.Id("n").Dot("End").Call().Op("-").Id("n").Dot("Pos").Call()),
-				Dst: jen.Id("n").Dot("Length"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement {
+					return jen.Int().Parens(jen.Add(n).Dot("End").Call().Op("-").Add(n).Dot("Pos").Call())
+				}),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Length") }),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("From"),
-				Set: jen.Id("n").Dot("From").Op("=").Id("pos"),
-			},
+			PositionField: Field{"From"},
 		},
 	},
 	/*
@@ -133,11 +135,9 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		String{
-			Name: "Name",
-			Position: Position{
-				Get: jen.Id("n").Dot("NamePos"),
-				Set: jen.Id("n").Dot("NamePos").Op("=").Id("pos"),
-			},
+			Name:          "Name",
+			ValueField:    Field{"Name"},
+			PositionField: Field{"NamePos"},
 		},
 		Decoration{
 			Name: "End",
@@ -157,20 +157,18 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Ellipsis",
-			Token: Single{jen.Qual("go/token", "ELLIPSIS")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Ellipsis"),
-				Set: jen.Id("n").Dot("Ellipsis").Op("=").Id("pos"),
-			},
+			Name:          "Ellipsis",
+			Token:         Basic{jen.Qual("go/token", "ELLIPSIS")},
+			PositionField: Field{"Ellipsis"},
 		},
 		Decoration{
 			Name: "AfterEllipsis",
-			Use:  Single{jen.Id("n").Dot("Elt").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Elt").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Elt",
-			Type: Type{"Expr", false},
+			Name:  "Elt",
+			Field: Field{"Elt"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "End",
@@ -189,17 +187,16 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		String{
-			Name: "Value",
-			Position: Position{
-				Get: jen.Id("n").Dot("ValuePos"),
-				Set: jen.Id("n").Dot("ValuePos").Op("=").Id("pos"),
-			},
+			Name:          "Value",
+			ValueField:    Field{"Value"},
+			PositionField: Field{"ValuePos"},
 		},
 		Decoration{
 			Name: "End",
 		},
 		Value{
-			Name: "Kind",
+			Name:  "Kind",
+			Field: Field{"Kind"},
 		},
 	},
 	/*
@@ -214,15 +211,17 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "Type",
-			Type: Type{"FuncType", true},
+			Name:  "Type",
+			Field: Field{"Type"},
+			Type:  Type{"FuncType", true},
 		},
 		Decoration{
 			Name: "AfterType",
 		},
 		Node{
-			Name: "Body",
-			Type: Type{"BlockStmt", true},
+			Name:  "Body",
+			Field: Field{"Body"},
+			Type:  Type{"BlockStmt", true},
 		},
 		Decoration{
 			Name: "End",
@@ -243,45 +242,40 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "Type",
-			Type: Type{"Expr", false},
+			Name:  "Type",
+			Field: Field{"Type"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterType",
-			Use:  Single{jen.Id("n").Dot("Type").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Op("!=").Nil() }),
 		},
 		Token{
-			Name:  "Lbrace",
-			Token: Single{jen.Qual("go/token", "LBRACE")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Lbrace"),
-				Set: jen.Id("n").Dot("Lbrace").Op("=").Id("pos"),
-			},
+			Name:          "Lbrace",
+			Token:         Basic{jen.Qual("go/token", "LBRACE")},
+			PositionField: Field{"Lbrace"},
 		},
 		Decoration{
 			Name: "AfterLbrace",
 		},
 		List{
 			Name:      "Elts",
+			Field:     Field{"Elts"},
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
-		Decoration{
-			Name: "AfterElts",
-		},
+		// TODO: removed AfterElts decoration - should we remove all decorations after comma separated lists?
 		Token{
-			Name:  "Rbrace",
-			Token: Single{jen.Qual("go/token", "RBRACE")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Rbrace"),
-				Set: jen.Id("n").Dot("Rbrace").Op("=").Id("pos"),
-			},
+			Name:          "Rbrace",
+			Token:         Basic{jen.Qual("go/token", "RBRACE")},
+			PositionField: Field{"Rbrace"},
 		},
 		Decoration{
 			Name: "End",
 		},
 		Value{
-			Name: "Incomplete",
+			Name:  "Incomplete",
+			Field: Field{"Incomplete"},
 		},
 	},
 	/*
@@ -297,30 +291,25 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Lparen",
-			Token: Single{jen.Qual("go/token", "LPAREN")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Lparen"),
-				Set: jen.Id("n").Dot("Lparen").Op("=").Id("pos"),
-			},
+			Name:          "Lparen",
+			Token:         Basic{jen.Qual("go/token", "LPAREN")},
+			PositionField: Field{"Lparen"},
 		},
 		Decoration{
 			Name: "AfterLparen",
 		},
 		Node{
-			Name: "X",
-			Type: Type{"Expr", false},
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterX",
 		},
 		Token{
-			Name:  "Rparen",
-			Token: Single{jen.Qual("go/token", "RPAREN")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Rparen"),
-				Set: jen.Id("n").Dot("Rparen").Op("=").Id("pos"),
-			},
+			Name:          "Rparen",
+			Token:         Basic{jen.Qual("go/token", "RPAREN")},
+			PositionField: Field{"Rparen"},
 		},
 		Decoration{
 			Name: "End",
@@ -338,19 +327,21 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "X",
-			Type: Type{"Expr", false},
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Type{"Expr", false},
 		},
 		Token{
 			Name:  "Period",
-			Token: Single{jen.Qual("go/token", "PERIOD")},
+			Token: Basic{jen.Qual("go/token", "PERIOD")},
 		},
 		Decoration{
 			Name: "AfterX",
 		},
 		Node{
-			Name: "Sel",
-			Type: Type{"Ident", true},
+			Name:  "Sel",
+			Field: Field{"Sel"},
+			Type:  Type{"Ident", true},
 		},
 		Decoration{
 			Name: "End",
@@ -370,37 +361,33 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "X",
-			Type: Type{"Expr", false},
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterX",
 		},
 		Token{
-			Name:  "Lbrack",
-			Token: Single{jen.Qual("go/token", "LBRACK")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Lbrack"),
-				Set: jen.Id("n").Dot("Lbrack").Op("=").Id("pos"),
-			},
+			Name:          "Lbrack",
+			Token:         Basic{jen.Qual("go/token", "LBRACK")},
+			PositionField: Field{"Lbrack"},
 		},
 		Decoration{
 			Name: "AfterLbrack",
 		},
 		Node{
-			Name: "Index",
-			Type: Type{"Expr", false},
+			Name:  "Index",
+			Field: Field{"Index"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterIndex",
 		},
 		Token{
-			Name:  "Rbrack",
-			Token: Single{jen.Qual("go/token", "RBRACK")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Rbrack"),
-				Set: jen.Id("n").Dot("Rbrack").Op("=").Id("pos"),
-			},
+			Name:          "Rbrack",
+			Token:         Basic{jen.Qual("go/token", "RBRACK")},
+			PositionField: Field{"Rbrack"},
 		},
 		Decoration{
 			Name: "End",
@@ -428,62 +415,60 @@ var Info = map[string][]Part{
 			Name: "AfterX",
 		},
 		Token{
-			Name:  "Lbrack",
-			Token: Single{jen.Qual("go/token", "LBRACK")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Lbrack"),
-				Set: jen.Id("n").Dot("Lbrack").Op("=").Id("pos"),
-			},
+			Name:          "Lbrack",
+			Token:         Basic{jen.Qual("go/token", "LBRACK")},
+			PositionField: Field{"Lbrack"},
 		},
 		Decoration{
 			Name: "AfterLbrack",
-			Use:  Single{jen.Id("n").Dot("Low").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Low").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Low",
-			Type: Type{"Expr", false},
+			Name:  "Low",
+			Field: Field{"Low"},
+			Type:  Type{"Expr", false},
 		},
 		Token{
 			Name:  "Colon1",
-			Token: Single{jen.Qual("go/token", "COLON")},
+			Token: Basic{jen.Qual("go/token", "COLON")},
 		},
 		Decoration{
 			Name: "AfterLow",
 		},
 		Node{
-			Name: "High",
-			Type: Type{"Expr", false},
+			Name:  "High",
+			Field: Field{"High"},
+			Type:  Type{"Expr", false},
 		},
 		Token{
 			Name:   "Colon2",
-			Token:  Single{jen.Qual("go/token", "COLON")},
-			Exists: Single{jen.Id("n").Dot("Slice3")},
+			Token:  Basic{jen.Qual("go/token", "COLON")},
+			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Slice3") }),
 		},
 		Decoration{
 			Name: "AfterHigh",
-			Use:  Single{jen.Id("n").Dot("High").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("High").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Max",
-			Type: Type{"Expr", false},
+			Name:  "Max",
+			Field: Field{"Max"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterMax",
-			Use:  Single{jen.Id("n").Dot("Max").Op("!=").Nil()}, // TODO - Slice3 in here?
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Max").Op("!=").Nil() }), // TODO - Slice3 in here?
 		},
 		Token{
-			Name:  "Rbrack",
-			Token: Single{jen.Qual("go/token", "RBRACK")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Rbrack"),
-				Set: jen.Id("n").Dot("Rbrack").Op("=").Id("pos"),
-			},
+			Name:          "Rbrack",
+			Token:         Basic{jen.Qual("go/token", "RBRACK")},
+			PositionField: Field{"Rbrack"},
 		},
 		Decoration{
 			Name: "End",
 		},
 		Value{
-			Name: "Slice3",
+			Name:  "Slice3",
+			Field: Field{"Slice3"},
 		},
 	},
 	/*
@@ -502,46 +487,42 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "X",
-			Type: Type{"Expr", false},
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Type{"Expr", false},
 		},
 		Token{
 			Name:  "Period",
-			Token: Single{jen.Qual("go/token", "PERIOD")},
+			Token: Basic{jen.Qual("go/token", "PERIOD")},
 		},
 		Decoration{
 			Name: "AfterX",
 		},
 		Token{
-			Name:  "Lparen",
-			Token: Single{jen.Qual("go/token", "LPAREN")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Lparen"),
-				Set: jen.Id("n").Dot("Lparen").Op("=").Id("pos"),
-			},
+			Name:          "Lparen",
+			Token:         Basic{jen.Qual("go/token", "LPAREN")},
+			PositionField: Field{"Lparen"},
 		},
 		Decoration{
 			Name: "AfterLparen",
 		},
 		Node{
-			Name: "Type",
-			Type: Type{"Expr", false},
+			Name:  "Type",
+			Field: Field{"Type"},
+			Type:  Type{"Expr", false},
 		},
 		Token{
 			Name:   "TypeToken",
-			Token:  Single{jen.Qual("go/token", "TYPE")},
-			Exists: Single{jen.Id("n").Dot("Type").Op("==").Nil()},
+			Token:  Basic{jen.Qual("go/token", "TYPE")},
+			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Op("==").Nil() }),
 		},
 		Decoration{
 			Name: "AfterType",
 		},
 		Token{
-			Name:  "Rparen",
-			Token: Single{jen.Qual("go/token", "RPAREN")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Rparen"),
-				Set: jen.Id("n").Dot("Rparen").Op("=").Id("pos"),
-			},
+			Name:          "Rparen",
+			Token:         Basic{jen.Qual("go/token", "RPAREN")},
+			PositionField: Field{"Rparen"},
 		},
 		Decoration{
 			Name: "End",
@@ -562,25 +543,24 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "Fun",
-			Type: Type{"Expr", false},
+			Name:  "Fun",
+			Field: Field{"Fun"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterFun",
 		},
 		Token{
-			Name:  "Lparen",
-			Token: Single{jen.Qual("go/token", "LPAREN")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Lparen"),
-				Set: jen.Id("n").Dot("Lparen").Op("=").Id("pos"),
-			},
+			Name:          "Lparen",
+			Token:         Basic{jen.Qual("go/token", "LPAREN")},
+			PositionField: Field{"Lparen"},
 		},
 		Decoration{
 			Name: "AfterLparen",
 		},
 		List{
 			Name:      "Args",
+			Field:     Field{"Args"},
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
@@ -589,30 +569,25 @@ var Info = map[string][]Part{
 		},
 		Token{
 			Name:  "Ellipsis",
-			Token: Single{jen.Qual("go/token", "ELLIPSIS")},
+			Token: Basic{jen.Qual("go/token", "ELLIPSIS")},
 			Exists: Double{
-				Ast: jen.Id("n").Dot("Ellipsis").Dot("IsValid").Call(),
-				Dst: jen.Id("n").Dot("Ellipsis"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Ellipsis").Dot("IsValid").Call() }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Ellipsis") }),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("Ellipsis"),
-				Set: jen.Id("n").Dot("Ellipsis").Op("=").Id("pos"),
-			},
+			ExistsField:   Field{"Ellipsis"},
+			PositionField: Field{"Ellipsis"},
 		},
 		Decoration{
 			Name: "AfterEllipsis",
 			Use: Double{
-				Ast: jen.Id("n").Dot("Ellipsis").Dot("IsValid").Call(),
-				Dst: jen.Id("n").Dot("Ellipsis"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Ellipsis").Dot("IsValid").Call() }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Ellipsis") }),
 			},
 		},
 		Token{
-			Name:  "Rparen",
-			Token: Single{jen.Qual("go/token", "RPAREN")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Rparen"),
-				Set: jen.Id("n").Dot("Rparen").Op("=").Id("pos"),
-			},
+			Name:          "Rparen",
+			Token:         Basic{jen.Qual("go/token", "RPAREN")},
+			PositionField: Field{"Rparen"},
 		},
 		Decoration{
 			Name: "End",
@@ -632,19 +607,17 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Star",
-			Token: Single{jen.Qual("go/token", "MUL")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Star"),
-				Set: jen.Id("n").Dot("Star").Op("=").Id("pos"),
-			},
+			Name:          "Star",
+			Token:         Basic{jen.Qual("go/token", "MUL")},
+			PositionField: Field{"Star"},
 		},
 		Decoration{
 			Name: "AfterStar",
 		},
 		Node{
-			Name: "X",
-			Type: Type{"Expr", false},
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "End",
@@ -665,19 +638,18 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Op",
-			Token: Single{jen.Id("n").Dot("Op")},
-			Position: Position{
-				Get: jen.Id("n").Dot("OpPos"),
-				Set: jen.Id("n").Dot("OpPos").Op("=").Id("pos"),
-			},
+			Name:          "Op",
+			TokenField:    Field{"Op"},
+			Token:         Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Op") }),
+			PositionField: Field{"OpPos"},
 		},
 		Decoration{
 			Name: "AfterOp",
 		},
 		Node{
-			Name: "X",
-			Type: Type{"Expr", false},
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "End",
@@ -697,26 +669,26 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "X",
-			Type: Type{"Expr", false},
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterX",
 		},
 		Token{
-			Name:  "Op",
-			Token: Single{jen.Id("n").Dot("Op")},
-			Position: Position{
-				Get: jen.Id("n").Dot("OpPos"),
-				Set: jen.Id("n").Dot("OpPos").Op("=").Id("pos"),
-			},
+			Name:          "Op",
+			TokenField:    Field{"Op"},
+			Token:         Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Op") }),
+			PositionField: Field{"OpPos"},
 		},
 		Decoration{
 			Name: "AfterOp",
 		},
 		Node{
-			Name: "Y",
-			Type: Type{"Expr", false},
+			Name:  "Y",
+			Field: Field{"Y"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "End",
@@ -737,26 +709,25 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "Key",
-			Type: Type{"Expr", false},
+			Name:  "Key",
+			Field: Field{"Key"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterKey",
 		},
 		Token{
-			Name:  "Colon",
-			Token: Single{jen.Qual("go/token", "COLON")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Colon"),
-				Set: jen.Id("n").Dot("Colon").Op("=").Id("pos"),
-			},
+			Name:          "Colon",
+			Token:         Basic{jen.Qual("go/token", "COLON")},
+			PositionField: Field{"Colon"},
 		},
 		Decoration{
 			Name: "AfterColon",
 		},
 		Node{
-			Name: "Value",
-			Type: Type{"Expr", false},
+			Name:  "Value",
+			Field: Field{"Value"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "End",
@@ -775,30 +746,29 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Lbrack",
-			Token: Single{jen.Qual("go/token", "LBRACK")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Lbrack"),
-				Set: jen.Id("n").Dot("Lbrack").Op("=").Id("pos"),
-			},
+			Name:          "Lbrack",
+			Token:         Basic{jen.Qual("go/token", "LBRACK")},
+			PositionField: Field{"Lbrack"},
 		},
 		Decoration{
 			Name: "AfterLbrack",
 		},
 		Node{
-			Name: "Len",
-			Type: Type{"Expr", false},
+			Name:  "Len",
+			Field: Field{"Len"},
+			Type:  Type{"Expr", false},
 		},
 		Token{
 			Name:  "Rbrack",
-			Token: Single{jen.Qual("go/token", "RBRACK")},
+			Token: Basic{jen.Qual("go/token", "RBRACK")},
 		},
 		Decoration{
 			Name: "AfterLen",
 		},
 		Node{
-			Name: "Elt",
-			Type: Type{"Expr", false},
+			Name:  "Elt",
+			Field: Field{"Elt"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "End",
@@ -817,25 +787,24 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Struct",
-			Token: Single{jen.Qual("go/token", "STRUCT")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Struct"),
-				Set: jen.Id("n").Dot("Struct").Op("=").Id("pos"),
-			},
+			Name:          "Struct",
+			Token:         Basic{jen.Qual("go/token", "STRUCT")},
+			PositionField: Field{"Struct"},
 		},
 		Decoration{
 			Name: "AfterStruct",
 		},
 		Node{
-			Name: "Fields",
-			Type: Type{"FieldList", true},
+			Name:  "Fields",
+			Field: Field{"Fields"},
+			Type:  Type{"FieldList", true},
 		},
 		Decoration{
 			Name: "End",
 		},
 		Value{
-			Name: "Incomplete", // TODO: Remove this and always set to false?
+			Name:  "Incomplete",
+			Field: Field{"Incomplete"}, // TODO: Remove this and always set to false?
 		},
 	},
 	/*
@@ -852,34 +821,34 @@ var Info = map[string][]Part{
 		},
 		Token{
 			Name:  "Func",
-			Token: Single{jen.Qual("go/token", "FUNC")},
+			Token: Basic{jen.Qual("go/token", "FUNC")},
 			Exists: Double{
-				Ast: jen.Id("n").Dot("Func").Dot("IsValid").Call(),
-				Dst: jen.Id("n").Dot("Func"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Func").Dot("IsValid").Call() }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Func") }),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("Func"),
-				Set: jen.Id("n").Dot("Func").Op("=").Id("pos"),
-			},
+			ExistsField:   Field{"Func"},
+			PositionField: Field{"Func"},
 		},
 		Decoration{
 			Name: "AfterFunc",
 			Use: Double{
-				Ast: jen.Id("n").Dot("Func").Dot("IsValid").Call(),
-				Dst: jen.Id("n").Dot("Func"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Func").Dot("IsValid").Call() }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Func") }),
 			},
 		},
 		Node{
-			Name: "Params",
-			Type: Type{"FieldList", true},
+			Name:  "Params",
+			Field: Field{"Params"},
+			Type:  Type{"FieldList", true},
 		},
 		Decoration{
 			Name: "AfterParams",
-			Use:  Single{jen.Id("n").Dot("Results").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Results").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Results",
-			Type: Type{"FieldList", true},
+			Name:  "Results",
+			Field: Field{"Results"},
+			Type:  Type{"FieldList", true},
 		},
 		Decoration{
 			Name: "End",
@@ -898,25 +867,24 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Interface",
-			Token: Single{jen.Qual("go/token", "INTERFACE")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Interface"),
-				Set: jen.Id("n").Dot("Interface").Op("=").Id("pos"),
-			},
+			Name:          "Interface",
+			Token:         Basic{jen.Qual("go/token", "INTERFACE")},
+			PositionField: Field{"Interface"},
 		},
 		Decoration{
 			Name: "AfterInterface",
 		},
 		Node{
-			Name: "Methods",
-			Type: Type{"FieldList", true},
+			Name:  "Methods",
+			Field: Field{"Methods"},
+			Type:  Type{"FieldList", true},
 		},
 		Decoration{
 			Name: "End",
 		},
 		Value{
-			Name: "Incomplete", // TODO: Remove this and always set to false?
+			Name:  "Incomplete",
+			Field: Field{"Incomplete"}, // TODO: Remove this and always set to false?
 		},
 	},
 	/*
@@ -932,34 +900,33 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Map",
-			Token: Single{jen.Qual("go/token", "MAP")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Map"),
-				Set: jen.Id("n").Dot("Map").Op("=").Id("pos"),
-			},
+			Name:          "Map",
+			Token:         Basic{jen.Qual("go/token", "MAP")},
+			PositionField: Field{"Map"},
 		},
 		Token{
 			Name:  "Lbrack",
-			Token: Single{jen.Qual("go/token", "LBRACK")},
+			Token: Basic{jen.Qual("go/token", "LBRACK")},
 		},
 		Decoration{
 			Name: "AfterMap",
 		},
 		Node{
-			Name: "Key",
-			Type: Type{"Expr", false},
+			Name:  "Key",
+			Field: Field{"Key"},
+			Type:  Type{"Expr", false},
 		},
 		Token{
 			Name:  "Rbrack",
-			Token: Single{jen.Qual("go/token", "RBRACK")},
+			Token: Basic{jen.Qual("go/token", "RBRACK")},
 		},
 		Decoration{
 			Name: "AfterKey",
 		},
 		Node{
-			Name: "Value",
-			Type: Type{"Expr", false},
+			Name:  "Value",
+			Field: Field{"Value"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "End",
@@ -983,20 +950,21 @@ var Info = map[string][]Part{
 		Token{
 			Name: "Begin",
 			Token: Double{
-				Ast: jen.Func().Params().Qual("go/token", "Token").Block(jen.If(jen.Id("n").Dot("Dir").Op("==").Qual("go/ast", "SEND")).Block(jen.Return(jen.Qual("go/token", "ARROW"))).Else().Block(jen.Return(jen.Qual("go/token", "CHAN")))).Call(),
-				Dst: jen.Func().Params().Qual("go/token", "Token").Block(jen.If(jen.Id("n").Dot("Dir").Op("==").Qual(DSTPATH, "SEND")).Block(jen.Return(jen.Qual("go/token", "ARROW"))).Else().Block(jen.Return(jen.Qual("go/token", "CHAN")))).Call(),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement {
+					return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Dir").Op("==").Qual("go/ast", "SEND")).Block(jen.Return(jen.Qual("go/token", "ARROW"))).Else().Block(jen.Return(jen.Qual("go/token", "CHAN")))).Call()
+				}),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement {
+					return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Dir").Op("==").Qual(DSTPATH, "SEND")).Block(jen.Return(jen.Qual("go/token", "ARROW"))).Else().Block(jen.Return(jen.Qual("go/token", "CHAN")))).Call()
+				}),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("Begin"),
-				Set: jen.Id("n").Dot("Begin").Op("=").Id("pos"),
-			},
+			PositionField: Field{"Begin"},
 		},
 		Token{
 			Name:  "Chan",
-			Token: Single{jen.Qual("go/token", "CHAN")},
+			Token: Basic{jen.Qual("go/token", "CHAN")},
 			Exists: Double{
-				Ast: jen.Id("n").Dot("Dir").Op("==").Qual("go/ast", "SEND"),
-				Dst: jen.Id("n").Dot("Dir").Op("==").Qual(DSTPATH, "SEND"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual("go/ast", "SEND") }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual(DSTPATH, "SEND") }),
 			},
 		},
 		Decoration{
@@ -1004,32 +972,35 @@ var Info = map[string][]Part{
 		},
 		Token{
 			Name:  "Arrow",
-			Token: Single{jen.Qual("go/token", "ARROW")},
+			Token: Basic{jen.Qual("go/token", "ARROW")},
 			Exists: Double{
-				Ast: jen.Id("n").Dot("Dir").Op("==").Qual("go/ast", "RECV"),
-				Dst: jen.Id("n").Dot("Dir").Op("==").Qual(DSTPATH, "RECV"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual("go/ast", "RECV") }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual(DSTPATH, "RECV") }),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("Arrow"),
-				Set: jen.Id("n").Dot("Arrow").Op("=").Id("pos"),
-			},
+			PositionField: Field{"Arrow"},
 		},
 		Decoration{
 			Name: "AfterArrow",
 			Use: Double{
-				Ast: jen.Id("n").Dot("Dir").Op("==").Qual("go/ast", "RECV"),
-				Dst: jen.Id("n").Dot("Dir").Op("==").Qual(DSTPATH, "RECV"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual("go/ast", "RECV") }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual(DSTPATH, "RECV") }),
 			},
 		},
 		Node{
-			Name: "Value",
-			Type: Type{"Expr", false},
+			Name:  "Value",
+			Field: Field{"Value"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "End",
 		},
 		Value{
-			Name: "Dir",
+			Name:  "Dir",
+			Field: Field{"Dir"},
+			Value: Double{
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return jen.Qual(DSTPATH, "ChanDir").Parens(n.Dot("Dir")) }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return jen.Qual("go/ast", "ChanDir").Parens(n.Dot("Dir")) }),
+			},
 		},
 	},
 	/*
@@ -1044,13 +1015,12 @@ var Info = map[string][]Part{
 	"BadStmt": {
 		Ignored{
 			Length: Double{
-				Ast: jen.Int().Parens(jen.Id("n").Dot("End").Call().Op("-").Id("n").Dot("Pos").Call()),
-				Dst: jen.Id("n").Dot("Length"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement {
+					return jen.Int().Parens(jen.Add(n).Dot("End").Call().Op("-").Add(n).Dot("Pos").Call())
+				}),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Length") }),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("From"),
-				Set: jen.Id("n").Dot("From").Op("=").Id("pos"),
-			},
+			PositionField: Field{"From"},
 		},
 	},
 	/*
@@ -1060,9 +1030,16 @@ var Info = map[string][]Part{
 		}
 	*/
 	"DeclStmt": {
+		Decoration{
+			Name: "Start",
+		},
 		Node{
-			Name: "Decl",
-			Type: Type{"Decl", false},
+			Name:  "Decl",
+			Field: Field{"Decl"},
+			Type:  Type{"Decl", false},
+		},
+		Decoration{
+			Name: "End",
 		},
 	},
 	/*
@@ -1077,16 +1054,14 @@ var Info = map[string][]Part{
 	*/
 	"EmptyStmt": {
 		Token{
-			Name:   "Semicolon",
-			Token:  Single{jen.Qual("go/token", "ARROW")},
-			Exists: Single{jen.Op("!").Id("n").Dot("Implicit")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Semicolon"),
-				Set: jen.Id("n").Dot("Semicolon").Op("=").Id("pos"),
-			},
+			Name:          "Semicolon",
+			Token:         Basic{jen.Qual("go/token", "ARROW")},
+			Exists:        Expr(func(n *jen.Statement) *jen.Statement { return jen.Op("!").Add(n).Dot("Implicit") }),
+			PositionField: Field{"Semicolon"},
 		},
 		Value{
-			Name: "Implicit",
+			Name:  "Implicit",
+			Field: Field{"Implicit"},
 		},
 	},
 	/*
@@ -1102,26 +1077,25 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "Label",
-			Type: Type{"Ident", true},
+			Name:  "Label",
+			Field: Field{"Label"},
+			Type:  Type{"Ident", true},
 		},
 		Decoration{
 			Name: "AfterLabel",
 		},
 		Token{
-			Name:  "Colon",
-			Token: Single{jen.Qual("go/token", "COLON")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Colon"),
-				Set: jen.Id("n").Dot("Colon").Op("=").Id("pos"),
-			},
+			Name:          "Colon",
+			Token:         Basic{jen.Qual("go/token", "COLON")},
+			PositionField: Field{"Colon"},
 		},
 		Decoration{
 			Name: "AfterColon",
 		},
 		Node{
-			Name: "Stmt",
-			Type: Type{"Stmt", false},
+			Name:  "Stmt",
+			Field: Field{"Stmt"},
+			Type:  Type{"Stmt", false},
 		},
 		Decoration{
 			Name: "End",
@@ -1136,9 +1110,16 @@ var Info = map[string][]Part{
 		}
 	*/
 	"ExprStmt": {
+		Decoration{
+			Name: "Start",
+		},
 		Node{
-			Name: "X",
-			Type: Type{"Expr", false},
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Type{"Expr", false},
+		},
+		Decoration{
+			Name: "End",
 		},
 	},
 	/*
@@ -1156,26 +1137,25 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "Chan",
-			Type: Type{"Expr", false},
+			Name:  "Chan",
+			Field: Field{"Chan"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterChan",
 		},
 		Token{
-			Name:  "Arrow",
-			Token: Single{jen.Qual("go/token", "ARROW")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Arrow"),
-				Set: jen.Id("n").Dot("Arrow").Op("=").Id("pos"),
-			},
+			Name:          "Arrow",
+			Token:         Basic{jen.Qual("go/token", "ARROW")},
+			PositionField: Field{"Arrow"},
 		},
 		Decoration{
 			Name: "AfterArrow",
 		},
 		Node{
-			Name: "Value",
-			Type: Type{"Expr", false},
+			Name:  "Value",
+			Field: Field{"Value"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "End",
@@ -1194,19 +1174,18 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "X",
-			Type: Type{"Expr", false},
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterX",
 		},
 		Token{
-			Name:  "Tok",
-			Token: Single{jen.Id("n").Dot("Tok")},
-			Position: Position{
-				Get: jen.Id("n").Dot("TokPos"),
-				Set: jen.Id("n").Dot("TokPos").Op("=").Id("pos"),
-			},
+			Name:          "Tok",
+			TokenField:    Field{"Tok"},
+			Token:         Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Tok") }),
+			PositionField: Field{"TokPos"},
 		},
 		Decoration{
 			Name: "End",
@@ -1229,6 +1208,7 @@ var Info = map[string][]Part{
 		},
 		List{
 			Name:      "Lhs",
+			Field:     Field{"Lhs"},
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
@@ -1236,18 +1216,17 @@ var Info = map[string][]Part{
 			Name: "AfterLhs",
 		},
 		Token{
-			Name:  "Tok",
-			Token: Single{jen.Id("n").Dot("Tok")},
-			Position: Position{
-				Get: jen.Id("n").Dot("TokPos"),
-				Set: jen.Id("n").Dot("TokPos").Op("=").Id("pos"),
-			},
+			Name:          "Tok",
+			TokenField:    Field{"Tok"},
+			Token:         Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Tok") }),
+			PositionField: Field{"TokPos"},
 		},
 		Decoration{
 			Name: "AfterTok",
 		},
 		List{
 			Name:      "Rhs",
+			Field:     Field{"Rhs"},
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
@@ -1267,19 +1246,17 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Go",
-			Token: Single{jen.Qual("go/token", "GO")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Go"),
-				Set: jen.Id("n").Dot("Go").Op("=").Id("pos"),
-			},
+			Name:          "Go",
+			Token:         Basic{jen.Qual("go/token", "GO")},
+			PositionField: Field{"Go"},
 		},
 		Decoration{
 			Name: "AfterGo",
 		},
 		Node{
-			Name: "Call",
-			Type: Type{"CallExpr", true},
+			Name:  "Call",
+			Field: Field{"Call"},
+			Type:  Type{"CallExpr", true},
 		},
 		Decoration{
 			Name: "End",
@@ -1297,19 +1274,17 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Defer",
-			Token: Single{jen.Qual("go/token", "DEFER")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Defer"),
-				Set: jen.Id("n").Dot("Defer").Op("=").Id("pos"),
-			},
+			Name:          "Defer",
+			Token:         Basic{jen.Qual("go/token", "DEFER")},
+			PositionField: Field{"Defer"},
 		},
 		Decoration{
 			Name: "AfterDefer",
 		},
 		Node{
-			Name: "Call",
-			Type: Type{"CallExpr", true},
+			Name:  "Call",
+			Field: Field{"Call"},
+			Type:  Type{"CallExpr", true},
 		},
 		Decoration{
 			Name: "End",
@@ -1327,18 +1302,16 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Return",
-			Token: Single{jen.Qual("go/token", "RETURN")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Return"),
-				Set: jen.Id("n").Dot("Return").Op("=").Id("pos"),
-			},
+			Name:          "Return",
+			Token:         Basic{jen.Qual("go/token", "RETURN")},
+			PositionField: Field{"Return"},
 		},
 		Decoration{
 			Name: "AfterReturn",
 		},
 		List{
 			Name:      "Results",
+			Field:     Field{"Results"},
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
@@ -1361,20 +1334,19 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Tok",
-			Token: Single{jen.Id("n").Dot("Tok")},
-			Position: Position{
-				Get: jen.Id("n").Dot("TokPos"),
-				Set: jen.Id("n").Dot("TokPos").Op("=").Id("pos"),
-			},
+			Name:          "Tok",
+			TokenField:    Field{"Tok"},
+			Token:         Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Tok") }),
+			PositionField: Field{"TokPos"},
 		},
 		Decoration{
 			Name: "AfterTok",
-			Use:  Single{jen.Id("n").Dot("Label").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Label").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Label",
-			Type: Type{"Ident", true},
+			Name:  "Label",
+			Field: Field{"Label"},
+			Type:  Type{"Ident", true},
 		},
 		Decoration{
 			Name: "End",
@@ -1393,28 +1365,23 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Lbrace",
-			Token: Single{jen.Qual("go/token", "LBRACE")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Lbrace"),
-				Set: jen.Id("n").Dot("Lbrace").Op("=").Id("pos"),
-			},
+			Name:          "Lbrace",
+			Token:         Basic{jen.Qual("go/token", "LBRACE")},
+			PositionField: Field{"Lbrace"},
 		},
 		Decoration{
 			Name: "AfterLbrace",
 		},
 		List{
 			Name:      "List",
+			Field:     Field{"List"},
 			Elem:      Type{"Stmt", false},
 			Separator: token.SEMICOLON,
 		},
 		Token{
-			Name:  "Rbrace",
-			Token: Single{jen.Qual("go/token", "RBRACE")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Rbrace"),
-				Set: jen.Id("n").Dot("Rbrace").Op("=").Id("pos"),
-			},
+			Name:          "Rbrace",
+			Token:         Basic{jen.Qual("go/token", "RBRACE")},
+			PositionField: Field{"Rbrace"},
 		},
 		Decoration{
 			Name: "End",
@@ -1435,47 +1402,48 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "If",
-			Token: Single{jen.Qual("go/token", "IF")},
-			Position: Position{
-				Get: jen.Id("n").Dot("If"),
-				Set: jen.Id("n").Dot("If").Op("=").Id("pos"),
-			},
+			Name:          "If",
+			Token:         Basic{jen.Qual("go/token", "IF")},
+			PositionField: Field{"If"},
 		},
 		Decoration{
 			Name: "AfterIf",
 		},
 		Node{
-			Name: "Init",
-			Type: Type{"Stmt", false},
+			Name:  "Init",
+			Field: Field{"Init"},
+			Type:  Type{"Stmt", false},
 		},
 		Decoration{
 			Name: "AfterInit",
-			Use:  Single{jen.Id("n").Dot("Init").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Init").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Cond",
-			Type: Type{"Expr", false},
+			Name:  "Cond",
+			Field: Field{"Cond"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterCond",
 		},
 		Node{
-			Name: "Body",
-			Type: Type{"BlockStmt", true},
+			Name:  "Body",
+			Field: Field{"Body"},
+			Type:  Type{"BlockStmt", true},
 		},
 		Token{
 			Name:   "ElseTok",
-			Token:  Single{jen.Qual("go/token", "ELSE")},
-			Exists: Single{jen.Id("n").Dot("Else").Op("!=").Nil()},
+			Token:  Basic{jen.Qual("go/token", "ELSE")},
+			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Else").Op("!=").Nil() }),
 		},
 		Decoration{
 			Name: "AfterElse",
-			Use:  Single{jen.Id("n").Dot("Else").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Else").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Else",
-			Type: Type{"Stmt", false},
+			Name:  "Else",
+			Field: Field{"Else"},
+			Type:  Type{"Stmt", false},
 		},
 		Decoration{
 			Name: "End",
@@ -1495,38 +1463,36 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Case",
-			Token: Single{jen.Func().Params().Qual("go/token", "Token").Block(jen.If(jen.Id("n").Dot("List").Op("==").Nil()).Block(jen.Return(jen.Qual("go/token", "DEFAULT"))).Else().Block(jen.Return(jen.Qual("go/token", "CASE")))).Call()},
-			Position: Position{
-				Get: jen.Id("n").Dot("Case"),
-				Set: jen.Id("n").Dot("Case").Op("=").Id("pos"),
-			},
+			Name: "Case",
+			Token: Expr(func(n *jen.Statement) *jen.Statement {
+				return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("List").Op("==").Nil()).Block(jen.Return(jen.Qual("go/token", "DEFAULT"))).Else().Block(jen.Return(jen.Qual("go/token", "CASE")))).Call()
+			}),
+			PositionField: Field{"Case"},
 		},
 		Decoration{
 			Name: "AfterCase",
 		},
 		List{
 			Name:      "List",
+			Field:     Field{"List"},
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
 		Decoration{
 			Name: "AfterList",
-			Use:  Single{jen.Id("n").Dot("List").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("List").Op("!=").Nil() }),
 		},
 		Token{
-			Name:  "Colon",
-			Token: Single{jen.Qual("go/token", "COLON")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Colon"),
-				Set: jen.Id("n").Dot("Colon").Op("=").Id("pos"),
-			},
+			Name:          "Colon",
+			Token:         Basic{jen.Qual("go/token", "COLON")},
+			PositionField: Field{"Colon"},
 		},
 		Decoration{
 			Name: "AfterColon",
 		},
 		List{
 			Name:      "Body",
+			Field:     Field{"Body"},
 			Elem:      Type{"Stmt", false},
 			Separator: token.SEMICOLON,
 		},
@@ -1547,35 +1513,35 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Switch",
-			Token: Single{jen.Qual("go/token", "SWITCH")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Switch"),
-				Set: jen.Id("n").Dot("Switch").Op("=").Id("pos"),
-			},
+			Name:          "Switch",
+			Token:         Basic{jen.Qual("go/token", "SWITCH")},
+			PositionField: Field{"Switch"},
 		},
 		Decoration{
 			Name: "AfterSwitch",
 		},
 		Node{
-			Name: "Init",
-			Type: Type{"Stmt", false},
+			Name:  "Init",
+			Field: Field{"Init"},
+			Type:  Type{"Stmt", false},
 		},
 		Decoration{
 			Name: "AfterInit",
-			Use:  Single{jen.Id("n").Dot("Init").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Init").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Tag",
-			Type: Type{"Expr", false},
+			Name:  "Tag",
+			Field: Field{"Tag"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterTag",
-			Use:  Single{jen.Id("n").Dot("Tag").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Tag").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Body",
-			Type: Type{"BlockStmt", true},
+			Name:  "Body",
+			Field: Field{"Body"},
+			Type:  Type{"BlockStmt", true},
 		},
 		Decoration{
 			Name: "End",
@@ -1595,34 +1561,34 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Switch",
-			Token: Single{jen.Qual("go/token", "SWITCH")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Switch"),
-				Set: jen.Id("n").Dot("Switch").Op("=").Id("pos"),
-			},
+			Name:          "Switch",
+			Token:         Basic{jen.Qual("go/token", "SWITCH")},
+			PositionField: Field{"Switch"},
 		},
 		Decoration{
 			Name: "AfterSwitch",
 		},
 		Node{
-			Name: "Init",
-			Type: Type{"Stmt", false},
+			Name:  "Init",
+			Field: Field{"Init"},
+			Type:  Type{"Stmt", false},
 		},
 		Decoration{
 			Name: "AfterInit",
-			Use:  Single{jen.Id("n").Dot("Init").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Init").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Assign",
-			Type: Type{"Stmt", false},
+			Name:  "Assign",
+			Field: Field{"Assign"},
+			Type:  Type{"Stmt", false},
 		},
 		Decoration{
 			Name: "AfterAssign",
 		},
 		Node{
-			Name: "Body",
-			Type: Type{"BlockStmt", true},
+			Name:  "Body",
+			Field: Field{"Body"},
+			Type:  Type{"BlockStmt", true},
 		},
 		Decoration{
 			Name: "End",
@@ -1642,37 +1608,35 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Case",
-			Token: Single{jen.Func().Params().Qual("go/token", "Token").Block(jen.If(jen.Id("n").Dot("Comm").Op("==").Nil()).Block(jen.Return(jen.Qual("go/token", "DEFAULT"))).Else().Block(jen.Return(jen.Qual("go/token", "CASE")))).Call()},
-			Position: Position{
-				Get: jen.Id("n").Dot("Case"),
-				Set: jen.Id("n").Dot("Case").Op("=").Id("pos"),
-			},
+			Name: "Case",
+			Token: Expr(func(n *jen.Statement) *jen.Statement {
+				return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Comm").Op("==").Nil()).Block(jen.Return(jen.Qual("go/token", "DEFAULT"))).Else().Block(jen.Return(jen.Qual("go/token", "CASE")))).Call()
+			}),
+			PositionField: Field{"Case"},
 		},
 		Decoration{
 			Name: "AfterCase",
 		},
 		Node{
-			Name: "Comm",
-			Type: Type{"Stmt", false},
+			Name:  "Comm",
+			Field: Field{"Comm"},
+			Type:  Type{"Stmt", false},
 		},
 		Decoration{
 			Name: "AfterComm",
-			Use:  Single{jen.Id("n").Dot("Comm").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Comm").Op("!=").Nil() }),
 		},
 		Token{
-			Name:  "Colon",
-			Token: Single{jen.Qual("go/token", "COLON")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Colon"),
-				Set: jen.Id("n").Dot("Colon").Op("=").Id("pos"),
-			},
+			Name:          "Colon",
+			Token:         Basic{jen.Qual("go/token", "COLON")},
+			PositionField: Field{"Colon"},
 		},
 		Decoration{
 			Name: "AfterColon",
 		},
 		List{
 			Name:      "Body",
+			Field:     Field{"Body"},
 			Elem:      Type{"Stmt", false},
 			Separator: token.SEMICOLON,
 		},
@@ -1691,19 +1655,17 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Select",
-			Token: Single{jen.Qual("go/token", "SELECT")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Select"),
-				Set: jen.Id("n").Dot("Select").Op("=").Id("pos"),
-			},
+			Name:          "Select",
+			Token:         Basic{jen.Qual("go/token", "SELECT")},
+			PositionField: Field{"Select"},
 		},
 		Decoration{
 			Name: "AfterSelect",
 		},
 		Node{
-			Name: "Body",
-			Type: Type{"BlockStmt", true},
+			Name:  "Body",
+			Field: Field{"Body"},
+			Type:  Type{"BlockStmt", true},
 		},
 		Decoration{
 			Name: "End",
@@ -1724,53 +1686,54 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "For",
-			Token: Single{jen.Qual("go/token", "FOR")},
-			Position: Position{
-				Get: jen.Id("n").Dot("For"),
-				Set: jen.Id("n").Dot("For").Op("=").Id("pos"),
-			},
+			Name:          "For",
+			Token:         Basic{jen.Qual("go/token", "FOR")},
+			PositionField: Field{"For"},
 		},
 		Decoration{
 			Name: "AfterFor",
 		},
 		Node{
-			Name: "Init",
-			Type: Type{"Stmt", false},
+			Name:  "Init",
+			Field: Field{"Init"},
+			Type:  Type{"Stmt", false},
 		},
 		Token{
 			Name:   "InitSemicolon",
-			Token:  Single{jen.Qual("go/token", "SEMICOLON")},
-			Exists: Single{jen.Id("n").Dot("Init").Op("!=").Nil()},
+			Token:  Basic{jen.Qual("go/token", "SEMICOLON")},
+			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Init").Op("!=").Nil() }),
 		},
 		Decoration{
 			Name: "AfterInit",
-			Use:  Single{jen.Id("n").Dot("Init").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Init").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Cond",
-			Type: Type{"Expr", false},
+			Name:  "Cond",
+			Field: Field{"Cond"},
+			Type:  Type{"Expr", false},
 		},
 		Token{
 			Name:   "CondSemicolon",
-			Token:  Single{jen.Qual("go/token", "SEMICOLON")},
-			Exists: Single{jen.Id("n").Dot("Post").Op("!=").Nil()},
+			Token:  Basic{jen.Qual("go/token", "SEMICOLON")},
+			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Post").Op("!=").Nil() }),
 		},
 		Decoration{
 			Name: "AfterCond",
-			Use:  Single{jen.Id("n").Dot("Cond").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Cond").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Post",
-			Type: Type{"Stmt", false},
+			Name:  "Post",
+			Field: Field{"Post"},
+			Type:  Type{"Stmt", false},
 		},
 		Decoration{
 			Name: "AfterPost",
-			Use:  Single{jen.Id("n").Dot("Post").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Post").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Body",
-			Type: Type{"BlockStmt", true},
+			Name:  "Body",
+			Field: Field{"Body"},
+			Type:  Type{"BlockStmt", true},
 		},
 		Decoration{
 			Name: "End",
@@ -1792,63 +1755,63 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "For",
-			Token: Single{jen.Qual("go/token", "FOR")},
-			Position: Position{
-				Get: jen.Id("n").Dot("For"),
-				Set: jen.Id("n").Dot("For").Op("=").Id("pos"),
-			},
+			Name:          "For",
+			Token:         Basic{jen.Qual("go/token", "FOR")},
+			PositionField: Field{"For"},
 		},
 		Decoration{
 			Name: "AfterFor",
-			Use:  Single{jen.Id("n").Dot("Key").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Key").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Key",
-			Type: Type{"Expr", false},
+			Name:  "Key",
+			Field: Field{"Key"},
+			Type:  Type{"Expr", false},
 		},
 		Token{
 			Name:   "Comma",
-			Exists: Single{jen.Id("n").Dot("Value").Op("!=").Nil()},
+			Token:  Basic{jen.Qual("go/token", "COMMA")},
+			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Value").Op("!=").Nil() }),
 		},
 		Decoration{
 			Name: "AfterKey",
-			Use:  Single{jen.Id("n").Dot("Key").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Key").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Value",
-			Type: Type{"Expr", false},
+			Name:  "Value",
+			Field: Field{"Value"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterValue",
-			Use:  Single{jen.Id("n").Dot("Value").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Value").Op("!=").Nil() }),
 		},
 		Token{
-			Name:   "Tok",
-			Exists: Single{jen.Id("n").Dot("Tok").Dot("IsValid").Call()},
-			Token:  Single{jen.Id("n").Dot("Tok")},
-			Position: Position{
-				Get: jen.Id("n").Dot("TokPos"),
-				Set: jen.Id("n").Dot("TokPos").Op("=").Id("pos"),
-			},
+			Name:          "Tok",
+			TokenField:    Field{"Tok"},
+			Token:         Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Tok") }),
+			Exists:        Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Tok").Op("!=").Qual("go/token", "ILLEGAL") }),
+			PositionField: Field{"TokPos"},
 		},
 		Token{
 			Name:  "Range",
-			Token: Single{jen.Qual("go/token", "RANGE")},
+			Token: Basic{jen.Qual("go/token", "RANGE")},
 		},
 		Decoration{
 			Name: "AfterRange",
 		},
 		Node{
-			Name: "X",
-			Type: Type{"Expr", false},
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "AfterX",
 		},
 		Node{
-			Name: "Body",
-			Type: Type{"BlockStmt", true},
+			Name:  "Body",
+			Field: Field{"Body"},
+			Type:  Type{"BlockStmt", true},
 		},
 		Decoration{
 			Name: "End",
@@ -1870,16 +1833,18 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "Name",
-			Type: Type{"Ident", true},
+			Name:  "Name",
+			Field: Field{"Name"},
+			Type:  Type{"Ident", true},
 		},
 		Decoration{
 			Name: "AfterName",
-			Use:  Single{jen.Id("n").Dot("Name").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Name").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Path",
-			Type: Type{"BasicLit", false},
+			Name:  "Path",
+			Field: Field{"Path"},
+			Type:  Type{"BasicLit", true},
 		},
 		Decoration{
 			Name: "End",
@@ -1903,26 +1868,29 @@ var Info = map[string][]Part{
 		},
 		List{
 			Name:      "Names",
+			Field:     Field{"Names"},
 			Elem:      Type{"Ident", true},
 			Separator: token.COMMA,
 		},
 		Decoration{
 			Name: "AfterNames",
-			Use:  Single{jen.Id("n").Dot("Type").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Type",
-			Type: Type{"Expr", false},
+			Name:  "Type",
+			Field: Field{"Type"},
+			Type:  Type{"Expr", false},
 		},
 		Token{
 			Name:  "Assign",
-			Token: Single{jen.Qual("go/token", "ASSIGN")},
+			Token: Basic{jen.Qual("go/token", "ASSIGN")},
 		},
 		Decoration{
 			Name: "AfterAssign",
 		},
 		List{
-			Name:      "Names",
+			Name:      "Values",
+			Field:     Field{"Values"},
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
@@ -1945,27 +1913,27 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Node{
-			Name: "Name",
-			Type: Type{"Ident", true},
+			Name:  "Name",
+			Field: Field{"Name"},
+			Type:  Type{"Ident", true},
 		},
 		Token{
 			Name:  "Assign",
-			Token: Single{jen.Qual("go/token", "ASSIGN")},
+			Token: Basic{jen.Qual("go/token", "ASSIGN")},
 			Exists: Double{
-				Ast: jen.Id("n").Dot("Assign").Dot("IsValid").Call(),
-				Dst: jen.Id("n").Dot("Assign"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Assign").Dot("IsValid").Call() }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Assign") }),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("Assign"),
-				Set: jen.Id("n").Dot("Assign").Op("=").Id("pos"),
-			},
+			ExistsField:   Field{"Assign"},
+			PositionField: Field{"Assign"},
 		},
 		Decoration{
 			Name: "AfterName",
 		},
 		Node{
-			Name: "Type",
-			Type: Type{"Expr", false},
+			Name:  "Type",
+			Field: Field{"Type"},
+			Type:  Type{"Expr", false},
 		},
 		Decoration{
 			Name: "End",
@@ -1983,13 +1951,12 @@ var Info = map[string][]Part{
 	"BadDecl": {
 		Ignored{
 			Length: Double{
-				Ast: jen.Int().Parens(jen.Id("n").Dot("End").Call().Op("-").Id("n").Dot("Pos").Call()),
-				Dst: jen.Id("n").Dot("Length"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement {
+					return jen.Int().Parens(jen.Add(n).Dot("End").Call().Op("-").Add(n).Dot("Pos").Call())
+				}),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Length") }),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("From"),
-				Set: jen.Id("n").Dot("From").Op("=").Id("pos"),
-			},
+			PositionField: Field{"From"},
 		},
 	},
 	/*
@@ -2018,51 +1985,46 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Tok",
-			Token: Single{jen.Id("n").Dot("Tok")},
-			Position: Position{
-				Get: jen.Id("n").Dot("TokPos"),
-				Set: jen.Id("n").Dot("TokPos").Op("=").Id("pos"),
-			},
+			Name:          "Tok",
+			TokenField:    Field{"Tok"},
+			Token:         Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Tok") }),
+			PositionField: Field{"TokPos"},
 		},
 		Decoration{
 			Name: "AfterTok",
 		},
 		Token{
 			Name:  "Lparen",
-			Token: Single{jen.Id("n").Dot("LPAREN")},
+			Token: Basic{jen.Qual("go/token", "LPAREN")},
 			Exists: Double{
-				Ast: jen.Id("n").Dot("Lparen").Dot("IsValid").Call(),
-				Dst: jen.Id("n").Dot("Lparen"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Lparen").Dot("IsValid").Call() }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Lparen") }),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("Lparen"),
-				Set: jen.Id("n").Dot("Lparen").Op("=").Id("pos"),
-			},
+			ExistsField:   Field{"Lparen"},
+			PositionField: Field{"Lparen"},
 		},
 		Decoration{
 			Name: "AfterLparen",
 			Use: Double{
-				Ast: jen.Id("n").Dot("Lparen").Dot("IsValid").Call(),
-				Dst: jen.Id("n").Dot("Lparen"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Lparen").Dot("IsValid").Call() }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Lparen") }),
 			},
 		},
 		List{
 			Name:      "Specs",
+			Field:     Field{"Specs"},
 			Elem:      Type{"Spec", false},
 			Separator: token.SEMICOLON,
 		},
 		Token{
 			Name:  "Rparen",
-			Token: Single{jen.Id("n").Dot("RPAREN")},
+			Token: Basic{jen.Qual("go/token", "RPAREN")},
 			Exists: Double{
-				Ast: jen.Id("n").Dot("Rparen").Dot("IsValid").Call(),
-				Dst: jen.Id("n").Dot("Rparen"),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Rparen").Dot("IsValid").Call() }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Rparen") }),
 			},
-			Position: Position{
-				Get: jen.Id("n").Dot("Rparen"),
-				Set: jen.Id("n").Dot("Rparen").Op("=").Id("pos"),
-			},
+			ExistsField:   Field{"Rparen"},
+			PositionField: Field{"Rparen"},
 		},
 		Decoration{
 			Name: "End",
@@ -2088,43 +2050,45 @@ var Info = map[string][]Part{
 	"FuncDecl": {
 		Init{
 			// Initializer for "Type"
-			Name: "Type",
-			Type: Type{"FuncType", true},
+			Name:  "Type",
+			Field: Field{"Type"},
+			Type:  Type{"FuncType", true},
 		},
 		Decoration{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Func",
-			Token: Single{jen.Qual("go/token", "FUNC")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Type").Dot("Func"),
-				Set: jen.Id("n").Dot("Type").Dot("Func").Op("=").Id("pos"),
-			},
+			Name:          "Func",
+			Token:         Basic{jen.Qual("go/token", "FUNC")},
+			Exists:        Basic{jen.Lit(true)},
+			ExistsField:   InnerField{"Type", "Func"},
+			PositionField: InnerField{"Type", "Func"},
 		},
 		Decoration{
 			Name: "AfterFunc",
 		},
 		// TODO: render any decorations from n.Type.AfterFunc (but never save them there)
 		Node{
-			Name: "Recv",
-			Type: Type{"FieldList", true},
+			Name:  "Recv",
+			Field: Field{"Recv"},
+			Type:  Type{"FieldList", true},
 		},
 		Decoration{
 			Name: "AfterRecv",
-			Use:  Single{jen.Id("n").Dot("Recv").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Recv").Op("!=").Nil() }),
 		},
 		Node{
-			Name: "Name",
-			Type: Type{"Ident", true},
+			Name:  "Name",
+			Field: Field{"Name"},
+			Type:  Type{"Ident", true},
 		},
 		Decoration{
 			Name: "AfterName",
 		},
 		Node{
 			Name:  "Params",
+			Field: InnerField{"Type", "Params"},
 			Type:  Type{"FieldList", true},
-			Field: "Type",
 		},
 		Decoration{
 			Name: "AfterParams",
@@ -2132,17 +2096,18 @@ var Info = map[string][]Part{
 		// TODO: render any decorations from n.Type.AfterParams (but never save them there)
 		Node{
 			Name:  "Results",
+			Field: InnerField{"Type", "Results"},
 			Type:  Type{"FieldList", true},
-			Field: "Type",
 		},
 		Decoration{
 			Name: "AfterResults",
-			Use:  Single{jen.Id("n").Dot("Type").Dot("Recv").Op("!=").Nil()},
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Dot("Results").Op("!=").Nil() }),
 		},
 		// TODO: render any decorations from n.Type.AfterResults (but never save them there)
 		Node{
-			Name: "Body",
-			Type: Type{"BlockStmt", true},
+			Name:  "Body",
+			Field: Field{"Body"},
+			Type:  Type{"BlockStmt", true},
 		},
 		Decoration{
 			Name: "End",
@@ -2187,25 +2152,24 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Token{
-			Name:  "Package",
-			Token: Single{jen.Qual("go/token", "PACKAGE")},
-			Position: Position{
-				Get: jen.Id("n").Dot("Package"),
-				Set: jen.Id("n").Dot("Package").Op("=").Id("pos"),
-			},
+			Name:          "Package",
+			Token:         Basic{jen.Qual("go/token", "PACKAGE")},
+			PositionField: Field{"Package"},
 		},
 		Decoration{
 			Name: "AfterPackage",
 		},
 		Node{
-			Name: "Name",
-			Type: Type{"Ident", true},
+			Name:  "Name",
+			Field: Field{"Name"},
+			Type:  Type{"Ident", true},
 		},
 		Decoration{
 			Name: "AfterName",
 		},
 		List{
 			Name:      "Decls",
+			Field:     Field{"Decls"},
 			Elem:      Type{"Decl", false},
 			Separator: token.SEMICOLON,
 		},
@@ -2215,8 +2179,9 @@ var Info = map[string][]Part{
 }
 
 type Init struct {
-	Name string
-	Type Type
+	Name  string
+	Field FieldSpec
+	Type  Type
 }
 
 type Decoration struct {
@@ -2225,66 +2190,73 @@ type Decoration struct {
 }
 
 type String struct {
-	Name     string
-	Position Position
+	Name          string
+	ValueField    FieldSpec
+	PositionField FieldSpec
 }
 
 type List struct {
 	Name      string
+	Field     FieldSpec
 	Elem      Type
 	Separator token.Token
 }
 
 type Node struct {
 	Name  string
+	Field FieldSpec
 	Type  Type
-	Field string
 }
 
 type Token struct {
-	Name     string
-	Exists   Code
-	Token    Code
-	Position Position
+	Name          string
+	Exists        Code
+	Token         Code
+	ExistsField   FieldSpec
+	PositionField FieldSpec
+	TokenField    FieldSpec
 }
 
 type Ignored struct {
-	Length   Code
-	Position Position
+	Length        Code
+	PositionField FieldSpec
 }
 
 // Value that must be copied from ast.Node to dst.Node but doesn't result in anything rendered to the output.
 type Value struct {
-	Name string
-}
-
-type Whitespace struct{}
-
-type Position struct {
-	Get *jen.Statement
-	Set *jen.Statement
+	Name  string
+	Field FieldSpec
+	Value Code
 }
 
 type Code interface {
-	GetStatement(ast bool) *jen.Statement
+	Get(id string, ast bool) *jen.Statement
 }
 
-type Single struct{ *jen.Statement }
+type Basic struct {
+	*jen.Statement
+}
 
-func (s Single) GetStatement(ast bool) *jen.Statement {
-	return s.Statement
+func (b Basic) Get(id string, ast bool) *jen.Statement {
+	return b.Statement
+}
+
+type Expr func(n *jen.Statement) *jen.Statement
+
+func (e Expr) Get(id string, ast bool) *jen.Statement {
+	return e(jen.Id(id))
 }
 
 type Double struct {
-	Ast *jen.Statement
-	Dst *jen.Statement
+	Ast Expr
+	Dst Expr
 }
 
-func (d Double) GetStatement(ast bool) *jen.Statement {
+func (d Double) Get(id string, ast bool) *jen.Statement {
 	if ast {
-		return d.Ast
+		return d.Ast(jen.Id(id))
 	}
-	return d.Dst
+	return d.Dst(jen.Id(id))
 }
 
 type Type struct {
@@ -2297,4 +2269,31 @@ func (t Type) Literal(path string) *jen.Statement {
 		return jen.Op("*").Qual(path, t.Name)
 	}
 	return jen.Qual(path, t.Name)
+}
+
+func (t Type) String() string {
+	if t.Pointer {
+		return "*" + t.Name
+	}
+	return t.Name
+}
+
+type FieldSpec interface {
+	Get(id string) *jen.Statement
+}
+
+type Field struct {
+	Name string
+}
+
+func (f Field) Get(id string) *jen.Statement {
+	return jen.Id(id).Dot(f.Name)
+}
+
+type InnerField struct {
+	Inner, Name string
+}
+
+func (f InnerField) Get(id string) *jen.Statement {
+	return jen.Id(id).Dot(f.Inner).Dot(f.Name)
 }

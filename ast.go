@@ -37,7 +37,6 @@ type Node interface {
 
 type Decoration struct {
 	Position string
-	End      bool
 	Text     string
 }
 

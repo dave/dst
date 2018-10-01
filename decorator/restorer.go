@@ -62,7 +62,7 @@ func (r *Restorer) Restore(fname string, dstFile *dst.File) *ast.File {
 
 func (f *FileRestorer) applyDecorations(decorations []dst.Decoration, position string, end bool) {
 	for _, d := range decorations {
-		if d.Position != position || d.End != end {
+		if d.Position != position {
 			continue
 		}
 

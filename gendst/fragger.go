@@ -1,62 +1,72 @@
 package main
 
 import (
+	"fmt"
+
+	"github.com/dave/dst/gendst/fragment"
 	. "github.com/dave/jennifer/jen"
 )
 
-func generateFragger(names []string, nodes map[string]NodeInfo) error {
+func generateFragger(names []string) error {
 	f := NewFile("decorator")
 	f.Func().Params(Id("f").Op("*").Id("Fragger")).Id("ProcessNode").Params(Id("n").Qual("go/ast", "Node")).Block(
-		Id("f").Dot("ProcessToken").Call(Id("n"), Lit(""), Id("n").Dot("Pos").Call(), Lit(false)),
 		Switch(Id("n").Op(":=").Id("n").Assert(Type())).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
 				g.Case(Op("*").Qual("go/ast", nodeName)).BlockFunc(func(g *Group) {
-
-					if nodeName == "FuncDecl" {
-						// SPECIAL CASE
-						g.Id("f").Dot("funcDeclOverride").Call(Id("n"))
-						return
-					}
-
-					for _, frag := range nodes[nodeName].Fragments {
-						g.Comment(frag.Name)
-						switch frag.AstType {
-						case "Pos", "Token", "string":
-							g.If(Id("n").Dot(frag.AstPositionField).Dot("IsValid").Call()).Block(
-								Id("f").Dot("ProcessToken").Call(Id("n"), Lit(frag.Name), Id("n").Dot(frag.AstPositionField), Lit(false)),
-								Id("f").Dot("ProcessToken").Call(Id("n"), Lit(frag.Name), Id("n").Dot(frag.AstPositionField), Lit(true)),
+					for _, frag := range fragment.Info[nodeName] {
+						switch frag := frag.(type) {
+						case fragment.Decoration:
+							g.Line().Commentf("Decoration: %s", frag.Name)
+							var process *Statement
+							if frag.Name == "Start" {
+								process = Id("f").Dot("AddStart").Call(Id("n"), Id("n").Dot("Pos").Call())
+							} else {
+								process = Id("f").Dot("AddDecoration").Call(Id("n"), Lit(frag.Name))
+							}
+							if frag.Use != nil {
+								g.If(frag.Use.Get("n", true)).Block(process)
+							} else {
+								g.Add(process)
+							}
+						case fragment.Node:
+							g.Line().Commentf("Node: %s", frag.Name)
+							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
+								Id("f").Dot("ProcessNode").Call(frag.Field.Get("n")),
 							)
-						case "Node":
-							g.If(Id("n").Dot(frag.Name).Op("!=").Nil()).Block(
-								Id("f").Dot("ProcessToken").Call(Id("n"), Lit(frag.Name), Id("n").Dot(frag.Name).Dot("Pos").Call(), Lit(false)),
-								Id("f").Dot("ProcessNode").Call(Id("n").Dot(frag.Name)),
-								Id("f").Dot("ProcessToken").Call(Id("n"), Lit(frag.Name), Id("n").Dot(frag.Name).Dot("End").Call(), Lit(true)),
+						case fragment.List:
+							g.Line().Commentf("List: %s", frag.Name)
+							g.For(List(Id("_"), Id("v")).Op(":=").Range().Id("n").Dot(frag.Name)).Block(
+								Id("f").Dot("ProcessNode").Call(Id("v")),
 							)
-						case "[]Node":
-							g.If(Id("n").Dot(frag.Name).Op("!=").Nil()).BlockFunc(func(g *Group) {
-								//surround := !sub.IsStmt && !sub.IsDecl && sub.Type != "Field"
-								surround := false // TODO
-								if surround {
-									g.Id("f").Dot("ProcessToken").Call(Id("n"), Lit(frag.Name), Id("n").Dot(frag.Name).Index(Lit(0)).Dot("Pos").Call(), Lit(false))
-								}
-								g.For(List(Id("_"), Id("v")).Op(":=").Range().Id("n").Dot(frag.Name)).Block(
-									Id("f").Dot("ProcessNode").Call(Id("v")),
-								)
-								if surround {
-									g.Id("f").Dot("ProcessToken").Call(Id("n"), Lit(frag.Name), Id("n").Dot(frag.Name).Index(Len(Id("n").Dot(frag.Name)).Op("-").Lit(1)).Dot("End").Call(), Lit(true))
-								}
-							})
+						case fragment.Token:
+							g.Line().Commentf("Token: %s", frag.Name)
+							pos := Qual("go/token", "NoPos")
+							if frag.PositionField != nil {
+								pos = frag.PositionField.Get("n")
+							}
+							process := Id("f").Dot("AddToken").Call(Id("n"), frag.Token.Get("n", true), pos)
+							if frag.Exists != nil {
+								g.If(frag.Exists.Get("n", true)).Block(process)
+							} else {
+								g.Add(process)
+							}
+						case fragment.String:
+							g.Line().Commentf("String: %s", frag.Name)
+							pos := Qual("go/token", "NoPos")
+							if frag.PositionField != nil {
+								pos = frag.PositionField.Get("n")
+							}
+							g.Id("f").Dot("AddString").Call(Id("n"), Id("n").Dot(frag.Name), pos)
+						case fragment.Ignored, fragment.Init, fragment.Value:
+							// do nothing
 						default:
-							panic("fragment type " + frag.AstType)
+							panic(fmt.Sprintf("unknown fragment type %T", frag))
 						}
 					}
+					g.Line()
 				})
 			}
 		}),
-		Id("f").Dot("ProcessToken").Call(Id("n"), Lit(""), Id("n").Dot("End").Call(), Lit(true)),
 	)
-	if err := f.Save("./decorator/fragger-generated.go"); err != nil {
-		return err
-	}
-	return nil
+	return f.Save("./decorator/fragger-generated.go")
 }
