@@ -10,21 +10,26 @@ import (
 func New() *Decorator {
 	return &Decorator{
 		nodes:       map[ast.Node]dst.Node{},
-		decorations: map[ast.Node][]dst.Decoration{},
+		decorations: map[ast.Node]map[string][]string{},
 	}
 }
 
 type Decorator struct {
 	nodes       map[ast.Node]dst.Node
-	decorations map[ast.Node][]dst.Decoration
+	decorations map[ast.Node]map[string][]string
 }
 
 func (d *Decorator) Decorate(f *ast.File, fset *token.FileSet) *dst.File {
-	p := &Fragger{}
-	p.Fragment(f, fset)
+	fragger := &Fragger{}
+	fragger.Fragment(f, fset)
 
 	//p.debug(os.Stdout, fset)
 
-	d.decorations = p.Link()
+	d.decorations = fragger.Link()
 	return d.DecorateNode(f).(*dst.File)
+}
+
+type decorationInfo struct {
+	name string
+	decs []string
 }

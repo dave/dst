@@ -27,8 +27,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Elt = d.DecorateNode(n.Elt).(dst.Expr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterLbrack"]; ok {
+				out.Decs.AfterLbrack = decs
+			}
+			if decs, ok := nd["AfterLen"]; ok {
+				out.Decs.AfterLen = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -49,8 +60,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Rhs = append(out.Rhs, d.DecorateNode(v).(dst.Expr))
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterLhs"]; ok {
+				out.Decs.AfterLhs = decs
+			}
+			if decs, ok := nd["AfterTok"]; ok {
+				out.Decs.AfterTok = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -58,27 +80,15 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 	case *ast.BadDecl:
 		out := &dst.BadDecl{}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
-		}
-
 		d.nodes[n] = out
 		return out
 	case *ast.BadExpr:
 		out := &dst.BadExpr{}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
-		}
-
 		d.nodes[n] = out
 		return out
 	case *ast.BadStmt:
 		out := &dst.BadStmt{}
-
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
-		}
 
 		d.nodes[n] = out
 		return out
@@ -91,8 +101,13 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		// Value: Kind
 		out.Kind = n.Kind
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -113,8 +128,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Y = d.DecorateNode(n.Y).(dst.Expr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterX"]; ok {
+				out.Decs.AfterX = decs
+			}
+			if decs, ok := nd["AfterOp"]; ok {
+				out.Decs.AfterOp = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -131,8 +157,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Token: Rbrace
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterLbrace"]; ok {
+				out.Decs.AfterLbrace = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -148,8 +182,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Label = d.DecorateNode(n.Label).(*dst.Ident)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterTok"]; ok {
+				out.Decs.AfterTok = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -174,8 +216,25 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Token: Rparen
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterFun"]; ok {
+				out.Decs.AfterFun = decs
+			}
+			if decs, ok := nd["AfterLparen"]; ok {
+				out.Decs.AfterLparen = decs
+			}
+			if decs, ok := nd["AfterArgs"]; ok {
+				out.Decs.AfterArgs = decs
+			}
+			if decs, ok := nd["AfterEllipsis"]; ok {
+				out.Decs.AfterEllipsis = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -197,8 +256,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Body = append(out.Body, d.DecorateNode(v).(dst.Stmt))
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterCase"]; ok {
+				out.Decs.AfterCase = decs
+			}
+			if decs, ok := nd["AfterList"]; ok {
+				out.Decs.AfterList = decs
+			}
+			if decs, ok := nd["AfterColon"]; ok {
+				out.Decs.AfterColon = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -220,8 +290,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		// Value: Dir
 		out.Dir = dst.ChanDir(n.Dir)
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterBegin"]; ok {
+				out.Decs.AfterBegin = decs
+			}
+			if decs, ok := nd["AfterArrow"]; ok {
+				out.Decs.AfterArrow = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -243,8 +324,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Body = append(out.Body, d.DecorateNode(v).(dst.Stmt))
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterCase"]; ok {
+				out.Decs.AfterCase = decs
+			}
+			if decs, ok := nd["AfterComm"]; ok {
+				out.Decs.AfterComm = decs
+			}
+			if decs, ok := nd["AfterColon"]; ok {
+				out.Decs.AfterColon = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -269,8 +361,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		// Value: Incomplete
 		out.Incomplete = n.Incomplete
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterType"]; ok {
+				out.Decs.AfterType = decs
+			}
+			if decs, ok := nd["AfterLbrace"]; ok {
+				out.Decs.AfterLbrace = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -283,8 +386,13 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Decl = d.DecorateNode(n.Decl).(dst.Decl)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -299,8 +407,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Call = d.DecorateNode(n.Call).(*dst.CallExpr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterDefer"]; ok {
+				out.Decs.AfterDefer = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -315,8 +431,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Elt = d.DecorateNode(n.Elt).(dst.Expr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterEllipsis"]; ok {
+				out.Decs.AfterEllipsis = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -329,10 +453,6 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		// Value: Implicit
 		out.Implicit = n.Implicit
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
-		}
-
 		d.nodes[n] = out
 		return out
 	case *ast.ExprStmt:
@@ -343,8 +463,13 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.X = d.DecorateNode(n.X).(dst.Expr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -367,8 +492,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Tag = d.DecorateNode(n.Tag).(*dst.BasicLit)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterNames"]; ok {
+				out.Decs.AfterNames = decs
+			}
+			if decs, ok := nd["AfterType"]; ok {
+				out.Decs.AfterType = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -387,8 +523,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		// Token: Closing
 		out.Closing = n.Closing.IsValid()
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterOpening"]; ok {
+				out.Decs.AfterOpening = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -408,8 +552,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Decls = append(out.Decls, d.DecorateNode(v).(dst.Decl))
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterPackage"]; ok {
+				out.Decs.AfterPackage = decs
+			}
+			if decs, ok := nd["AfterName"]; ok {
+				out.Decs.AfterName = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -443,8 +595,25 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterFor"]; ok {
+				out.Decs.AfterFor = decs
+			}
+			if decs, ok := nd["AfterInit"]; ok {
+				out.Decs.AfterInit = decs
+			}
+			if decs, ok := nd["AfterCond"]; ok {
+				out.Decs.AfterCond = decs
+			}
+			if decs, ok := nd["AfterPost"]; ok {
+				out.Decs.AfterPost = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -483,8 +652,28 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterFunc"]; ok {
+				out.Decs.AfterFunc = decs
+			}
+			if decs, ok := nd["AfterRecv"]; ok {
+				out.Decs.AfterRecv = decs
+			}
+			if decs, ok := nd["AfterName"]; ok {
+				out.Decs.AfterName = decs
+			}
+			if decs, ok := nd["AfterParams"]; ok {
+				out.Decs.AfterParams = decs
+			}
+			if decs, ok := nd["AfterResults"]; ok {
+				out.Decs.AfterResults = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -502,8 +691,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterType"]; ok {
+				out.Decs.AfterType = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -524,8 +721,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Results = d.DecorateNode(n.Results).(*dst.FieldList)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterFunc"]; ok {
+				out.Decs.AfterFunc = decs
+			}
+			if decs, ok := nd["AfterParams"]; ok {
+				out.Decs.AfterParams = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -547,8 +755,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		// Token: Rparen
 		out.Rparen = n.Rparen.IsValid()
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterTok"]; ok {
+				out.Decs.AfterTok = decs
+			}
+			if decs, ok := nd["AfterLparen"]; ok {
+				out.Decs.AfterLparen = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -563,8 +782,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Call = d.DecorateNode(n.Call).(*dst.CallExpr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterGo"]; ok {
+				out.Decs.AfterGo = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -575,8 +802,13 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		// String: Name
 		out.Name = n.Name
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -608,8 +840,25 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Else = d.DecorateNode(n.Else).(dst.Stmt)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterIf"]; ok {
+				out.Decs.AfterIf = decs
+			}
+			if decs, ok := nd["AfterInit"]; ok {
+				out.Decs.AfterInit = decs
+			}
+			if decs, ok := nd["AfterCond"]; ok {
+				out.Decs.AfterCond = decs
+			}
+			if decs, ok := nd["AfterElse"]; ok {
+				out.Decs.AfterElse = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -627,8 +876,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Path = d.DecorateNode(n.Path).(*dst.BasicLit)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterName"]; ok {
+				out.Decs.AfterName = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -644,8 +901,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		// Token: Tok
 		out.Tok = n.Tok
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterX"]; ok {
+				out.Decs.AfterX = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -667,8 +932,22 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Token: Rbrack
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterX"]; ok {
+				out.Decs.AfterX = decs
+			}
+			if decs, ok := nd["AfterLbrack"]; ok {
+				out.Decs.AfterLbrack = decs
+			}
+			if decs, ok := nd["AfterIndex"]; ok {
+				out.Decs.AfterIndex = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -686,8 +965,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		// Value: Incomplete
 		out.Incomplete = n.Incomplete
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterInterface"]; ok {
+				out.Decs.AfterInterface = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -707,8 +994,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Value = d.DecorateNode(n.Value).(dst.Expr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterKey"]; ok {
+				out.Decs.AfterKey = decs
+			}
+			if decs, ok := nd["AfterColon"]; ok {
+				out.Decs.AfterColon = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -728,8 +1026,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Stmt = d.DecorateNode(n.Stmt).(dst.Stmt)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterLabel"]; ok {
+				out.Decs.AfterLabel = decs
+			}
+			if decs, ok := nd["AfterColon"]; ok {
+				out.Decs.AfterColon = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -753,8 +1062,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Value = d.DecorateNode(n.Value).(dst.Expr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterMap"]; ok {
+				out.Decs.AfterMap = decs
+			}
+			if decs, ok := nd["AfterKey"]; ok {
+				out.Decs.AfterKey = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -771,8 +1091,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Token: Rparen
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterLparen"]; ok {
+				out.Decs.AfterLparen = decs
+			}
+			if decs, ok := nd["AfterX"]; ok {
+				out.Decs.AfterX = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -809,8 +1140,28 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterFor"]; ok {
+				out.Decs.AfterFor = decs
+			}
+			if decs, ok := nd["AfterKey"]; ok {
+				out.Decs.AfterKey = decs
+			}
+			if decs, ok := nd["AfterValue"]; ok {
+				out.Decs.AfterValue = decs
+			}
+			if decs, ok := nd["AfterRange"]; ok {
+				out.Decs.AfterRange = decs
+			}
+			if decs, ok := nd["AfterX"]; ok {
+				out.Decs.AfterX = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -825,8 +1176,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Results = append(out.Results, d.DecorateNode(v).(dst.Expr))
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterReturn"]; ok {
+				out.Decs.AfterReturn = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -841,8 +1200,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterSelect"]; ok {
+				out.Decs.AfterSelect = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -862,8 +1229,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Sel = d.DecorateNode(n.Sel).(*dst.Ident)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterX"]; ok {
+				out.Decs.AfterX = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -883,8 +1258,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Value = d.DecorateNode(n.Value).(dst.Expr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterChan"]; ok {
+				out.Decs.AfterChan = decs
+			}
+			if decs, ok := nd["AfterArrow"]; ok {
+				out.Decs.AfterArrow = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -923,8 +1309,28 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		// Value: Slice3
 		out.Slice3 = n.Slice3
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterX"]; ok {
+				out.Decs.AfterX = decs
+			}
+			if decs, ok := nd["AfterLbrack"]; ok {
+				out.Decs.AfterLbrack = decs
+			}
+			if decs, ok := nd["AfterLow"]; ok {
+				out.Decs.AfterLow = decs
+			}
+			if decs, ok := nd["AfterHigh"]; ok {
+				out.Decs.AfterHigh = decs
+			}
+			if decs, ok := nd["AfterMax"]; ok {
+				out.Decs.AfterMax = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -939,8 +1345,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.X = d.DecorateNode(n.X).(dst.Expr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterStar"]; ok {
+				out.Decs.AfterStar = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -958,8 +1372,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		// Value: Incomplete
 		out.Incomplete = n.Incomplete
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterStruct"]; ok {
+				out.Decs.AfterStruct = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -984,8 +1406,22 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterSwitch"]; ok {
+				out.Decs.AfterSwitch = decs
+			}
+			if decs, ok := nd["AfterInit"]; ok {
+				out.Decs.AfterInit = decs
+			}
+			if decs, ok := nd["AfterTag"]; ok {
+				out.Decs.AfterTag = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -1011,8 +1447,22 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Token: Rparen
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterX"]; ok {
+				out.Decs.AfterX = decs
+			}
+			if decs, ok := nd["AfterLparen"]; ok {
+				out.Decs.AfterLparen = decs
+			}
+			if decs, ok := nd["AfterType"]; ok {
+				out.Decs.AfterType = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -1033,8 +1483,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Type = d.DecorateNode(n.Type).(dst.Expr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterName"]; ok {
+				out.Decs.AfterName = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -1059,8 +1517,22 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterSwitch"]; ok {
+				out.Decs.AfterSwitch = decs
+			}
+			if decs, ok := nd["AfterInit"]; ok {
+				out.Decs.AfterInit = decs
+			}
+			if decs, ok := nd["AfterAssign"]; ok {
+				out.Decs.AfterAssign = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -1076,8 +1548,16 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.X = d.DecorateNode(n.X).(dst.Expr)
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterOp"]; ok {
+				out.Decs.AfterOp = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out
@@ -1102,8 +1582,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 			out.Values = append(out.Values, d.DecorateNode(v).(dst.Expr))
 		}
 
-		if decs, ok := d.decorations[n]; ok {
-			out.Decs = decs
+		if nd, ok := d.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["AfterNames"]; ok {
+				out.Decs.AfterNames = decs
+			}
+			if decs, ok := nd["AfterAssign"]; ok {
+				out.Decs.AfterAssign = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		d.nodes[n] = out

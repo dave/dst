@@ -60,15 +60,12 @@ func (r *Restorer) Restore(fname string, dstFile *dst.File) *ast.File {
 	return astFile
 }
 
-func (f *FileRestorer) applyDecorations(decorations []dst.Decoration, position string) {
+func (f *FileRestorer) applyDecorations(decorations dst.Decorations) {
 	for _, d := range decorations {
-		if d.Position != position {
-			continue
-		}
 
 		// for multi-line comments, add a newline for each \n
-		if strings.HasPrefix(d.Text, "/*") && strings.Contains(d.Text, "\n") {
-			for i, c := range d.Text {
+		if strings.HasPrefix(d, "/*") && strings.Contains(d, "\n") {
+			for i, c := range d {
 				if c == '\n' {
 					f.Lines = append(f.Lines, int(f.cursor)+i)
 				}
@@ -76,13 +73,13 @@ func (f *FileRestorer) applyDecorations(decorations []dst.Decoration, position s
 		}
 
 		// if the decoration is a comment, add it and advance the cursor
-		if d.Text != "\n" {
-			f.Comments = append(f.Comments, &ast.CommentGroup{List: []*ast.Comment{{Slash: f.cursor, Text: d.Text}}})
-			f.cursor += token.Pos(len(d.Text))
+		if d != "\n" {
+			f.Comments = append(f.Comments, &ast.CommentGroup{List: []*ast.Comment{{Slash: f.cursor, Text: d}}})
+			f.cursor += token.Pos(len(d))
 		}
 
 		// for newline decorations and also line-comments, add a newline
-		if strings.HasPrefix(d.Text, "//") || d.Text == "\n" {
+		if strings.HasPrefix(d, "//") || d == "\n" {
 			f.Lines = append(f.Lines, int(f.cursor))
 			f.cursor++
 		}
