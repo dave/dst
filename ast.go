@@ -32,12 +32,7 @@ import (
 
 // All node types implement the Node interface.
 type Node interface {
-	Decorations() []Decoration
-}
-
-type Decoration struct {
-	Position string
-	Text     string
+	isNode()
 }
 
 // All expression nodes implement the Expr interface.
@@ -71,7 +66,7 @@ type Field struct {
 	Names []*Ident  // field/method/parameter names; or nil
 	Type  Expr      // field/method/parameter type
 	Tag   *BasicLit // field tag; or nil
-	Decs  []Decoration
+	Decs  FieldDecorations
 }
 
 // A FieldList represents a list of Fields, enclosed by parentheses or braces.
@@ -79,7 +74,7 @@ type FieldList struct {
 	Opening bool
 	List    []*Field // field list; or nil
 	Closing bool
-	Decs    []Decoration
+	Decs    FieldListDecorations
 }
 
 // NumFields returns the number of parameters or struct fields represented by a FieldList.
@@ -107,14 +102,14 @@ type (
 	//
 	BadExpr struct {
 		Length int // position range of bad expression
-		Decs   []Decoration
+		Decs   BadExprDecorations
 	}
 
 	// An Ident node represents an identifier.
 	Ident struct {
 		Name string  // identifier name
 		Obj  *Object // denoted object; or nil
-		Decs []Decoration
+		Decs IdentDecorations
 	}
 
 	// An Ellipsis node stands for the "..." type in a
@@ -122,21 +117,21 @@ type (
 	//
 	Ellipsis struct {
 		Elt  Expr // ellipsis element type (parameter lists only); or nil
-		Decs []Decoration
+		Decs EllipsisDecorations
 	}
 
 	// A BasicLit node represents a literal of basic type.
 	BasicLit struct {
 		Kind  token.Token // token.INT, token.FLOAT, token.IMAG, token.CHAR, or token.STRING
 		Value string      // literal string; e.g. 42, 0x7f, 3.14, 1e-9, 2.4i, 'a', '\x7f', "foo" or `\m\n\o`
-		Decs  []Decoration
+		Decs  BasicLitDecorations
 	}
 
 	// A FuncLit node represents a function literal.
 	FuncLit struct {
 		Type *FuncType  // function type
 		Body *BlockStmt // function body
-		Decs []Decoration
+		Decs FuncLitDecorations
 	}
 
 	// A CompositeLit node represents a composite literal.
@@ -144,27 +139,27 @@ type (
 		Type       Expr   // literal type; or nil
 		Elts       []Expr // list of composite elements; or nil
 		Incomplete bool   // true if (source) expressions are missing in the Elts list
-		Decs       []Decoration
+		Decs       CompositeLitDecorations
 	}
 
 	// A ParenExpr node represents a parenthesized expression.
 	ParenExpr struct {
 		X    Expr // parenthesized expression
-		Decs []Decoration
+		Decs ParenExprDecorations
 	}
 
 	// A SelectorExpr node represents an expression followed by a selector.
 	SelectorExpr struct {
 		X    Expr   // expression
 		Sel  *Ident // field selector
-		Decs []Decoration
+		Decs SelectorExprDecorations
 	}
 
 	// An IndexExpr node represents an expression followed by an index.
 	IndexExpr struct {
 		X     Expr // expression
 		Index Expr // index expression
-		Decs  []Decoration
+		Decs  IndexExprDecorations
 	}
 
 	// An SliceExpr node represents an expression followed by slice indices.
@@ -174,7 +169,7 @@ type (
 		High   Expr // end of slice range; or nil
 		Max    Expr // maximum capacity of slice; or nil
 		Slice3 bool // true if 3-index slice (2 colons present)
-		Decs   []Decoration
+		Decs   SliceExprDecorations
 	}
 
 	// A TypeAssertExpr node represents an expression followed by a
@@ -183,7 +178,7 @@ type (
 	TypeAssertExpr struct {
 		X    Expr // expression
 		Type Expr // asserted type; nil means type switch X.(type)
-		Decs []Decoration
+		Decs TypeAssertExprDecorations
 	}
 
 	// A CallExpr node represents an expression followed by an argument list.
@@ -191,7 +186,7 @@ type (
 		Fun      Expr   // function expression
 		Args     []Expr // function arguments; or nil
 		Ellipsis bool
-		Decs     []Decoration
+		Decs     CallExprDecorations
 	}
 
 	// A StarExpr node represents an expression of the form "*" Expression.
@@ -199,7 +194,7 @@ type (
 	//
 	StarExpr struct {
 		X    Expr // operand
-		Decs []Decoration
+		Decs StarExprDecorations
 	}
 
 	// A UnaryExpr node represents a unary expression.
@@ -208,7 +203,7 @@ type (
 	UnaryExpr struct {
 		Op   token.Token // operator
 		X    Expr        // operand
-		Decs []Decoration
+		Decs UnaryExprDecorations
 	}
 
 	// A BinaryExpr node represents a binary expression.
@@ -216,7 +211,7 @@ type (
 		X    Expr        // left operand
 		Op   token.Token // operator
 		Y    Expr        // right operand
-		Decs []Decoration
+		Decs BinaryExprDecorations
 	}
 
 	// A KeyValueExpr node represents (key : value) pairs
@@ -225,7 +220,7 @@ type (
 	KeyValueExpr struct {
 		Key   Expr
 		Value Expr
-		Decs  []Decoration
+		Decs  KeyValueExprDecorations
 	}
 )
 
@@ -248,14 +243,14 @@ type (
 	ArrayType struct {
 		Len  Expr // Ellipsis node for [...]T array types, nil for slice types
 		Elt  Expr // element type
-		Decs []Decoration
+		Decs ArrayTypeDecorations
 	}
 
 	// A StructType node represents a struct type.
 	StructType struct {
 		Fields     *FieldList // list of field declarations
 		Incomplete bool       // true if (source) fields are missing in the Fields list
-		Decs       []Decoration
+		Decs       StructTypeDecorations
 	}
 
 	// Pointer types are represented via StarExpr nodes.
@@ -265,28 +260,28 @@ type (
 		Func    bool
 		Params  *FieldList // (incoming) parameters; non-nil
 		Results *FieldList // (outgoing) results; or nil
-		Decs    []Decoration
+		Decs    FuncTypeDecorations
 	}
 
 	// An InterfaceType node represents an interface type.
 	InterfaceType struct {
 		Methods    *FieldList // list of methods
 		Incomplete bool       // true if (source) methods are missing in the Methods list
-		Decs       []Decoration
+		Decs       InterfaceTypeDecorations
 	}
 
 	// A MapType node represents a map type.
 	MapType struct {
 		Key   Expr
 		Value Expr
-		Decs  []Decoration
+		Decs  MapTypeDecorations
 	}
 
 	// A ChanType node represents a channel type.
 	ChanType struct {
 		Dir   ChanDir // channel direction
 		Value Expr    // value type
-		Decs  []Decoration
+		Decs  ChanTypeDecorations
 	}
 )
 
@@ -323,7 +318,7 @@ func (*ChanType) exprNode()      {}
 // NewIdent creates a new Ident without position.
 // Useful for ASTs generated by code other than the Go parser.
 //
-func NewIdent(name string) *Ident { return &Ident{name, nil, nil} }
+func NewIdent(name string) *Ident { return &Ident{name, nil, IdentDecorations{}} }
 
 // IsExported reports whether name is an exported Go symbol
 // (that is, whether it begins with an upper-case letter).
@@ -355,7 +350,7 @@ type (
 	// DecorationStmt is for comments in a statement list that are
 	// separated from other statements by a blank line.
 	DecorationStmt struct {
-		Decs []Decoration
+		Decs DecorationStmtDecorations
 	}
 
 	// A BadStmt node is a placeholder for statements containing
@@ -364,13 +359,13 @@ type (
 	//
 	BadStmt struct {
 		Length int // position range of bad statement
-		Decs   []Decoration
+		Decs   BadStmtDecorations
 	}
 
 	// A DeclStmt node represents a declaration in a statement list.
 	DeclStmt struct {
 		Decl Decl // *GenDecl with CONST, TYPE, or VAR token
-		Decs []Decoration
+		Decs DeclStmtDecorations
 	}
 
 	// An EmptyStmt node represents an empty statement.
@@ -379,14 +374,14 @@ type (
 	//
 	EmptyStmt struct {
 		Implicit bool // if set, ";" was omitted in the source
-		Decs     []Decoration
+		Decs     EmptyStmtDecorations
 	}
 
 	// A LabeledStmt node represents a labeled statement.
 	LabeledStmt struct {
 		Label *Ident
 		Stmt  Stmt
-		Decs  []Decoration
+		Decs  LabeledStmtDecorations
 	}
 
 	// An ExprStmt node represents a (stand-alone) expression
@@ -394,21 +389,21 @@ type (
 	//
 	ExprStmt struct {
 		X    Expr // expression
-		Decs []Decoration
+		Decs ExprStmtDecorations
 	}
 
 	// A SendStmt node represents a send statement.
 	SendStmt struct {
 		Chan  Expr
 		Value Expr
-		Decs  []Decoration
+		Decs  SendStmtDecorations
 	}
 
 	// An IncDecStmt node represents an increment or decrement statement.
 	IncDecStmt struct {
 		X    Expr
 		Tok  token.Token // INC or DEC
-		Decs []Decoration
+		Decs IncDecStmtDecorations
 	}
 
 	// An AssignStmt node represents an assignment or
@@ -418,25 +413,25 @@ type (
 		Lhs  []Expr
 		Tok  token.Token // assignment token, DEFINE
 		Rhs  []Expr
-		Decs []Decoration
+		Decs AssignStmtDecorations
 	}
 
 	// A GoStmt node represents a go statement.
 	GoStmt struct {
 		Call *CallExpr
-		Decs []Decoration
+		Decs GoStmtDecorations
 	}
 
 	// A DeferStmt node represents a defer statement.
 	DeferStmt struct {
 		Call *CallExpr
-		Decs []Decoration
+		Decs DeferStmtDecorations
 	}
 
 	// A ReturnStmt node represents a return statement.
 	ReturnStmt struct {
 		Results []Expr // result expressions; or nil
-		Decs    []Decoration
+		Decs    ReturnStmtDecorations
 	}
 
 	// A BranchStmt node represents a break, continue, goto,
@@ -445,13 +440,13 @@ type (
 	BranchStmt struct {
 		Tok   token.Token // keyword token (BREAK, CONTINUE, GOTO, FALLTHROUGH)
 		Label *Ident      // label name; or nil
-		Decs  []Decoration
+		Decs  BranchStmtDecorations
 	}
 
 	// A BlockStmt node represents a braced statement list.
 	BlockStmt struct {
 		List []Stmt
-		Decs []Decoration
+		Decs BlockStmtDecorations
 	}
 
 	// An IfStmt node represents an if statement.
@@ -460,14 +455,14 @@ type (
 		Cond Expr // condition
 		Body *BlockStmt
 		Else Stmt // else branch; or nil
-		Decs []Decoration
+		Decs IfStmtDecorations
 	}
 
 	// A CaseClause represents a case of an expression or type switch statement.
 	CaseClause struct {
 		List []Expr // list of expressions or types; nil means default case
 		Body []Stmt // statement list; or nil
-		Decs []Decoration
+		Decs CaseClauseDecorations
 	}
 
 	// A SwitchStmt node represents an expression switch statement.
@@ -475,7 +470,7 @@ type (
 		Init Stmt       // initialization statement; or nil
 		Tag  Expr       // tag expression; or nil
 		Body *BlockStmt // CaseClauses only
-		Decs []Decoration
+		Decs SwitchStmtDecorations
 	}
 
 	// An TypeSwitchStmt node represents a type switch statement.
@@ -483,20 +478,20 @@ type (
 		Init   Stmt       // initialization statement; or nil
 		Assign Stmt       // x := y.(type) or y.(type)
 		Body   *BlockStmt // CaseClauses only
-		Decs   []Decoration
+		Decs   TypeSwitchStmtDecorations
 	}
 
 	// A CommClause node represents a case of a select statement.
 	CommClause struct {
 		Comm Stmt   // send or receive statement; nil means default case
 		Body []Stmt // statement list; or nil
-		Decs []Decoration
+		Decs CommClauseDecorations
 	}
 
 	// An SelectStmt node represents a select statement.
 	SelectStmt struct {
 		Body *BlockStmt // CommClauses only
-		Decs []Decoration
+		Decs SelectStmtDecorations
 	}
 
 	// A ForStmt represents a for statement.
@@ -505,7 +500,7 @@ type (
 		Cond Expr // condition; or nil
 		Post Stmt // post iteration statement; or nil
 		Body *BlockStmt
-		Decs []Decoration
+		Decs ForStmtDecorations
 	}
 
 	// A RangeStmt represents a for statement with a range clause.
@@ -514,7 +509,7 @@ type (
 		Tok        token.Token // ILLEGAL if Key == nil, ASSIGN, DEFINE
 		X          Expr        // value to range over
 		Body       *BlockStmt
-		Decs       []Decoration
+		Decs       RangeStmtDecorations
 	}
 )
 
@@ -561,7 +556,7 @@ type (
 	ImportSpec struct {
 		Name *Ident    // local package name (including "."); or nil
 		Path *BasicLit // import path
-		Decs []Decoration
+		Decs ImportSpecDecorations
 	}
 
 	// A ValueSpec node represents a constant or variable declaration
@@ -571,7 +566,7 @@ type (
 		Names  []*Ident // value names (len(Names) > 0)
 		Type   Expr     // value type; or nil
 		Values []Expr   // initial values; or nil
-		Decs   []Decoration
+		Decs   ValueSpecDecorations
 	}
 
 	// A TypeSpec node represents a type declaration (TypeSpec production).
@@ -579,7 +574,7 @@ type (
 		Name   *Ident // type name
 		Assign bool   // position of '=', if any
 		Type   Expr   // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
-		Decs   []Decoration
+		Decs   TypeSpecDecorations
 	}
 )
 
@@ -598,7 +593,7 @@ type (
 	// DecorationDecl is for comments in a declaration list that are
 	// separated from other declarations by a blank line.
 	DecorationDecl struct {
-		Decs []Decoration
+		Decs DecorationDeclDecorations
 	}
 
 	// A BadDecl node is a placeholder for declarations containing
@@ -607,7 +602,7 @@ type (
 	//
 	BadDecl struct {
 		Length int // position range of bad declaration
-		Decs   []Decoration
+		Decs   BadDeclDecorations
 	}
 
 	// A GenDecl node (generic declaration node) represents an import,
@@ -626,7 +621,7 @@ type (
 		Lparen bool
 		Specs  []Spec
 		Rparen bool
-		Decs   []Decoration
+		Decs   GenDeclDecorations
 	}
 
 	// A FuncDecl node represents a function declaration.
@@ -635,7 +630,7 @@ type (
 		Name *Ident     // function/method name
 		Type *FuncType  // function signature: parameters, results, and position of "func" keyword
 		Body *BlockStmt // function body; or nil for external (non-Go) function
-		Decs []Decoration
+		Decs FuncDeclDecorations
 	}
 )
 
@@ -675,7 +670,7 @@ type File struct {
 	Scope      *Scope        // package scope (this file only)
 	Imports    []*ImportSpec // imports in this file
 	Unresolved []*Ident      // unresolved identifiers in this file
-	Decs       []Decoration
+	Decs       FileDecorations
 }
 
 // A Package node represents a set of source files
@@ -686,14 +681,4 @@ type Package struct {
 	Scope   *Scope             // package scope across all files
 	Imports map[string]*Object // map of package id -> package object
 	Files   map[string]*File   // Go source files by filename
-}
-
-func (v *Package) Decorations() []Decoration {
-	return nil
-}
-func (v *DecorationStmt) Decorations() []Decoration {
-	return v.Decs
-}
-func (v *DecorationDecl) Decorations() []Decoration {
-	return v.Decs
 }

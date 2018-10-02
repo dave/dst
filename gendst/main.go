@@ -22,10 +22,19 @@ func run() error {
 	if err := generateDst(names); err != nil {
 		return err
 	}
+	if err := generateDstDecs(names); err != nil {
+		return err
+	}
+	if err := generateDstDecsGet(names); err != nil {
+		return err
+	}
 	if err := generateFragger(names); err != nil {
 		return err
 	}
 	if err := generateDecorator(names); err != nil {
+		return err
+	}
+	if err := generateDecoratorTestHelper(names); err != nil {
 		return err
 	}
 	if err := generateRestorer(names); err != nil {

@@ -6,6 +6,8 @@ import (
 	/*Start*/ fmt /*AfterName*/ "fmt" /*End*/
 )
 
+// --
+
 var a []int
 var i int
 var b bool
@@ -107,6 +109,8 @@ type X /*Start*/ <-chan /*AfterBegin*/ int /*End*/
 
 // ChanType(2)
 type Y /*Start*/ chan /*AfterBegin*/ <- /*AfterArrow*/ int /*End*/
+
+// --
 
 func Z() {
 	// LabeledStmt
@@ -254,6 +258,8 @@ A /*AfterLabel*/ : /*AfterColon*/
 	var (
 		/*Start*/ m, n /*AfterNames*/ int = /*AfterAssign*/ 1, 2 /*End*/
 	)
+
+	// --
 
 	print(j, k, l, m, n)
 

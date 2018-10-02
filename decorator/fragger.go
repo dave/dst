@@ -7,8 +7,6 @@ import (
 	"io"
 	"sort"
 	"strings"
-
-	"github.com/dave/dst"
 )
 
 type Fragger struct {
@@ -97,8 +95,15 @@ func (f *Fragger) Fragment(file *ast.File, fset *token.FileSet) {
 	})
 }
 
-func (f *Fragger) Link() map[ast.Node][]dst.Decoration {
-	out := map[ast.Node][]dst.Decoration{}
+func appendDecoration(m map[ast.Node]map[string][]string, n ast.Node, pos, val string) {
+	if m[n] == nil {
+		m[n] = map[string][]string{}
+	}
+	m[n][pos] = append(m[n][pos], val)
+}
+
+func (f *Fragger) Link() map[ast.Node]map[string][]string {
+	out := map[ast.Node]map[string][]string{}
 	var lastIndex int
 	var lastDecoration DecorationFragment
 	for i, frag := range f.Fragments {
@@ -108,7 +113,7 @@ func (f *Fragger) Link() map[ast.Node][]dst.Decoration {
 			if i < lastIndex {
 				// If we've already moved something forward past this index, always move this to the
 				// same decoration
-				out[lastDecoration.Node] = append(out[lastDecoration.Node], dst.Decoration{Position: lastDecoration.Name, Text: frag.Text})
+				appendDecoration(out, lastDecoration.Node, lastDecoration.Name, frag.Text)
 				continue
 			}
 
@@ -138,7 +143,7 @@ func (f *Fragger) Link() map[ast.Node][]dst.Decoration {
 					panic("no decoration found for " + frag.Text)
 				}
 			}
-			out[dec.Node] = append(out[dec.Node], dst.Decoration{Position: dec.Name, Text: frag.Text})
+			appendDecoration(out, dec.Node, dec.Name, frag.Text)
 			lastIndex = index
 			lastDecoration = dec
 
@@ -147,7 +152,7 @@ func (f *Fragger) Link() map[ast.Node][]dst.Decoration {
 			if i < lastIndex {
 				// If we've already moved something forward past this index, always move this to the
 				// same decoration
-				out[lastDecoration.Node] = append(out[lastDecoration.Node], dst.Decoration{Position: lastDecoration.Name, Text: "\n"})
+				appendDecoration(out, lastDecoration.Node, lastDecoration.Name, "\n")
 				continue
 			}
 
@@ -174,7 +179,7 @@ func (f *Fragger) Link() map[ast.Node][]dst.Decoration {
 					panic("no decoration found for newline")
 				}
 			}
-			out[dec.Node] = append(out[dec.Node], dst.Decoration{Position: dec.Name, Text: "\n"})
+			appendDecoration(out, dec.Node, dec.Name, "\n")
 			lastIndex = index
 			lastDecoration = dec
 		}
