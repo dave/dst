@@ -945,16 +945,16 @@ var Info = map[string][]Part{
 		Decoration{
 			Name: "Start",
 		},
-		// This is rather a kludge. In SEND variation, we emit "<-" followed by "chan". Otherwise we
+		// This is rather a kludge. In RECV variation, we emit "<-" followed by "chan". Otherwise we
 		// just emit "chan".
 		Token{
 			Name: "Begin",
 			Token: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement {
-					return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Dir").Op("==").Qual("go/ast", "SEND")).Block(jen.Return(jen.Qual("go/token", "ARROW"))).Else().Block(jen.Return(jen.Qual("go/token", "CHAN")))).Call()
+					return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Dir").Op("==").Qual("go/ast", "RECV")).Block(jen.Return(jen.Qual("go/token", "ARROW"))).Else().Block(jen.Return(jen.Qual("go/token", "CHAN")))).Call()
 				}),
 				Dst: Expr(func(n *jen.Statement) *jen.Statement {
-					return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Dir").Op("==").Qual(DSTPATH, "SEND")).Block(jen.Return(jen.Qual("go/token", "ARROW"))).Else().Block(jen.Return(jen.Qual("go/token", "CHAN")))).Call()
+					return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Dir").Op("==").Qual(DSTPATH, "RECV")).Block(jen.Return(jen.Qual("go/token", "ARROW"))).Else().Block(jen.Return(jen.Qual("go/token", "CHAN")))).Call()
 				}),
 			},
 			PositionField: Field{"Begin"},
@@ -963,8 +963,8 @@ var Info = map[string][]Part{
 			Name:  "Chan",
 			Token: Basic{jen.Qual("go/token", "CHAN")},
 			Exists: Double{
-				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual("go/ast", "SEND") }),
-				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual(DSTPATH, "SEND") }),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual("go/ast", "RECV") }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual(DSTPATH, "RECV") }),
 			},
 		},
 		Decoration{
@@ -974,16 +974,16 @@ var Info = map[string][]Part{
 			Name:  "Arrow",
 			Token: Basic{jen.Qual("go/token", "ARROW")},
 			Exists: Double{
-				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual("go/ast", "RECV") }),
-				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual(DSTPATH, "RECV") }),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual("go/ast", "SEND") }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual(DSTPATH, "SEND") }),
 			},
 			PositionField: Field{"Arrow"},
 		},
 		Decoration{
 			Name: "AfterArrow",
 			Use: Double{
-				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual("go/ast", "RECV") }),
-				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual(DSTPATH, "RECV") }),
+				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual("go/ast", "SEND") }),
+				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual(DSTPATH, "SEND") }),
 			},
 		},
 		Node{

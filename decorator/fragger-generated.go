@@ -239,7 +239,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Token: Begin
 		f.AddToken(n, func() token.Token {
-			if n.Dir == ast.SEND {
+			if n.Dir == ast.RECV {
 				return token.ARROW
 			} else {
 				return token.CHAN
@@ -247,7 +247,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}(), n.Begin)
 
 		// Token: Chan
-		if n.Dir == ast.SEND {
+		if n.Dir == ast.RECV {
 			f.AddToken(n, token.CHAN, token.NoPos)
 		}
 
@@ -255,12 +255,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		f.AddDecoration(n, "AfterBegin")
 
 		// Token: Arrow
-		if n.Dir == ast.RECV {
+		if n.Dir == ast.SEND {
 			f.AddToken(n, token.ARROW, n.Arrow)
 		}
 
 		// Decoration: AfterArrow
-		if n.Dir == ast.RECV {
+		if n.Dir == ast.SEND {
 			f.AddDecoration(n, "AfterArrow")
 		}
 

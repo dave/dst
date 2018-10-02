@@ -20,6 +20,7 @@ type Decorator struct {
 }
 
 func (d *Decorator) Decorate(f *ast.File, fset *token.FileSet) *dst.File {
+	//ast.Print(fset, f)
 	p := &Fragger{}
 	p.Fragment(f, fset)
 
