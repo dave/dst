@@ -17,7 +17,3 @@ type DecorationStmtDecorations struct {
 type DecorationDeclDecorations struct {
 	Start Decorations
 }
-
-type DecorationHolder interface {
-	Get(string) *Decorations
-}

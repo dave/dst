@@ -25,9 +25,6 @@ func run() error {
 	if err := generateDstDecs(names); err != nil {
 		return err
 	}
-	if err := generateDstDecsGet(names); err != nil {
-		return err
-	}
 	if err := generateFragger(names); err != nil {
 		return err
 	}

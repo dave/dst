@@ -103,23 +103,3 @@ func generateDstDecs(names []string) error {
 	}
 	return f.Save("./generated-decs.go")
 }
-
-func generateDstDecsGet(names []string) error {
-	f := NewFile("dst")
-	for _, name := range names {
-		f.Func().Params(Id("d").Op("*").Id(name+"Decorations")).Id("Get").Params(Id("name").String()).Op("*").Id("Decorations").Block(
-			Switch(Id("name")).BlockFunc(func(g *Group) {
-				for _, frag := range fragment.Info[name] {
-					switch frag := frag.(type) {
-					case fragment.Decoration:
-						g.Case(Lit(frag.Name)).Block(
-							Return(Op("&").Id("d").Dot(frag.Name)),
-						)
-					}
-				}
-			}),
-			Return(Nil()),
-		)
-	}
-	return f.Save("./generated-decs-get.go")
-}
