@@ -1566,7 +1566,9 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 		}
 
 		// Token: Assign
-		r.cursor += token.Pos(len(token.ASSIGN.String()))
+		if n.Values != nil {
+			r.cursor += token.Pos(len(token.ASSIGN.String()))
+		}
 
 		// Decoration: AfterAssign
 		r.applyDecorations(n.Decs.AfterAssign)

@@ -1426,10 +1426,14 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Token: Assign
-		f.AddToken(n, token.ASSIGN, token.NoPos)
+		if n.Values != nil {
+			f.AddToken(n, token.ASSIGN, token.NoPos)
+		}
 
 		// Decoration: AfterAssign
-		f.AddDecoration(n, "AfterAssign")
+		if n.Values != nil {
+			f.AddDecoration(n, "AfterAssign")
+		}
 
 		// List: Values
 		for _, v := range n.Values {

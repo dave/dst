@@ -27,7 +27,7 @@ func (d *Decorator) Decorate(f *ast.File, fset *token.FileSet) *dst.File {
 	fragger := &Fragger{}
 	fragger.Fragment(f, fset)
 
-	//p.debug(os.Stdout, fset)
+	//fragger.debug(os.Stdout, fset)
 
 	d.decorations = fragger.Link()
 	return d.DecorateNode(f).(*dst.File)

@@ -21,6 +21,17 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "value spec",
+			code: `package main
+
+				func main() {
+					var foo int
+				}`,
+			expect: `File [AfterName "\n" "\n"]
+            BlockStmt [AfterLbrace "\n"]
+            DeclStmt [End "\n"]`,
+		},
+		{
 			name: "chan type",
 			code: `package main
 
@@ -247,6 +258,10 @@ func TestDecorator(t *testing.T) {
 			if normalize(string(b)) != normalize(test.code) {
 				t.Fatalf("code changed after gofmt. before: \n%s\nafter:\n%s", test.code, string(b))
 			}
+
+			// use the formatted version (correct indents etc.)
+			test.code = string(b)
+
 			fset := token.NewFileSet()
 			f, err := parser.ParseFile(fset, "main.go", test.code, parser.ParseComments)
 			if err != nil {

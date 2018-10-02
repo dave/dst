@@ -2,8 +2,12 @@ package dst
 
 type Decorations []string
 
-func (d *Decorations) Add(text string) {
-	*d = append(*d, text)
+func (d *Decorations) Add(decs ...string) {
+	*d = append(*d, decs...)
+}
+
+func (d *Decorations) Replace(decs ...string) {
+	*d = decs
 }
 
 func (d *Decorations) Clear() {

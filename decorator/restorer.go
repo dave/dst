@@ -73,8 +73,14 @@ func (r *Restorer) Restore(fname string, dstFile *dst.File) *ast.File {
 func (f *FileRestorer) applyDecorations(decorations dst.Decorations) {
 	for _, d := range decorations {
 
+		isNewline := d == "\n"
+		isLineComment := strings.HasPrefix(d, "//")
+		isInlineComment := strings.HasPrefix(d, "/*")
+		isComment := isLineComment || isInlineComment
+		isMultiLineComment := isInlineComment && strings.Contains(d, "\n")
+
 		// for multi-line comments, add a newline for each \n
-		if strings.HasPrefix(d, "/*") && strings.Contains(d, "\n") {
+		if isMultiLineComment {
 			for i, c := range d {
 				if c == '\n' {
 					f.Lines = append(f.Lines, int(f.cursor)+i)
@@ -83,13 +89,13 @@ func (f *FileRestorer) applyDecorations(decorations dst.Decorations) {
 		}
 
 		// if the decoration is a comment, add it and advance the cursor
-		if d != "\n" {
+		if isComment {
 			f.Comments = append(f.Comments, &ast.CommentGroup{List: []*ast.Comment{{Slash: f.cursor, Text: d}}})
 			f.cursor += token.Pos(len(d))
 		}
 
 		// for newline decorations and also line-comments, add a newline
-		if strings.HasPrefix(d, "//") || d == "\n" {
+		if isLineComment || isNewline {
 			f.Lines = append(f.Lines, int(f.cursor))
 			f.cursor++
 		}

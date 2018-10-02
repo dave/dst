@@ -8,7 +8,6 @@ package dst
 
 import (
 	"fmt"
-	"go/token"
 	"io"
 	"os"
 	"reflect"
@@ -36,15 +35,14 @@ func NotNilFilter(_ string, v reflect.Value) bool {
 // struct fields for which f(fieldname, fieldvalue) is true are
 // printed; all others are filtered from the output. Unexported
 // struct fields are never printed.
-func Fprint(w io.Writer, fset *token.FileSet, x interface{}, f FieldFilter) error {
-	return fprint(w, fset, x, f)
+func Fprint(w io.Writer, x interface{}, f FieldFilter) error {
+	return fprint(w, x, f)
 }
 
-func fprint(w io.Writer, fset *token.FileSet, x interface{}, f FieldFilter) (err error) {
+func fprint(w io.Writer, x interface{}, f FieldFilter) (err error) {
 	// setup printer
 	p := printer{
 		output: w,
-		fset:   fset,
 		filter: f,
 		ptrmap: make(map[interface{}]int),
 		last:   '\n', // force printing of line number on first line
@@ -70,13 +68,12 @@ func fprint(w io.Writer, fset *token.FileSet, x interface{}, f FieldFilter) (err
 
 // Print prints x to standard output, skipping nil fields.
 // Print(fset, x) is the same as Fprint(os.Stdout, fset, x, NotNilFilter).
-func Print(fset *token.FileSet, x interface{}) error {
-	return Fprint(os.Stdout, fset, x, NotNilFilter)
+func Print(x interface{}) error {
+	return Fprint(os.Stdout, x, NotNilFilter)
 }
 
 type printer struct {
 	output io.Writer
-	fset   *token.FileSet
 	filter FieldFilter
 	ptrmap map[interface{}]int // *T -> line number
 	indent int                 // current indentation level
@@ -241,12 +238,6 @@ func (p *printer) print(x reflect.Value) {
 			// print strings in quotes
 			p.printf("%q", v)
 			return
-		case token.Pos:
-			// position values can be printed nicely if we have a file set
-			if p.fset != nil {
-				p.printf("%s", p.fset.Position(v))
-				return
-			}
 		}
 		// default
 		p.printf("%v", v)

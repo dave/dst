@@ -5,6 +5,51 @@
 The `dst` package attempts to provide a work-arround for [go/ast: Free-floating comments are 
 single-biggest issue when manipulating the AST](https://github.com/golang/go/issues/20744).
 
+### Example:
+
+```go
+func Example_Decorations() {
+	code := `package main
+
+	func main() {
+		var a int
+		a++
+		print(a)
+	}`
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, "a.go", code, parser.ParseComments)
+	if err != nil {
+		panic(err)
+	}
+	df := decorator.Decorate(f, fset)
+	df = dstutil.Apply(df, func(c *dstutil.Cursor) bool {
+		switch n := c.Node().(type) {
+		case *dst.DeclStmt:
+			n.Decs.End.Replace("// foo")
+		case *dst.IncDecStmt:
+			n.Decs.AfterX.Add("/* bar */")
+		case *dst.CallExpr:
+			n.Decs.AfterLparen.Add("\n")
+			n.Decs.AfterArgs.Add("\n")
+		}
+		return true
+	}, nil).(*dst.File)
+	f, fset = decorator.Restore(df)
+	format.Node(os.Stdout, fset, f)
+
+	//Output:
+	//package main
+	//
+	//func main() {
+	//	var a int // foo
+	//	a /* bar */ ++
+	//	print(
+	//		a,
+	//	)
+	//}
+}
+```
+
 ### Progress as of 2nd October
 
 I've just finished a massive reorganisation of the code generation package. Instead of scanning the 

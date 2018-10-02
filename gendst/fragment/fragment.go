@@ -1887,11 +1887,13 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Token{
-			Name:  "Assign",
-			Token: Basic{jen.Qual("go/token", "ASSIGN")},
+			Name:   "Assign",
+			Token:  Basic{jen.Qual("go/token", "ASSIGN")},
+			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Values").Op("!=").Nil() }),
 		},
 		Decoration{
 			Name: "AfterAssign",
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Values").Op("!=").Nil() }),
 		},
 		List{
 			Name:      "Values",
