@@ -48,6 +48,18 @@ func TestRestorer(t *testing.T) {
 			}`,
 		},
 		{
+			name: "non indented comment in case",
+			code: `package main
+
+			func main() {
+				switch true {
+				case true:
+				// a
+				case false:
+				}
+			}`,
+		},
+		{
 			name: "comment in final case",
 			code: `package main
 
