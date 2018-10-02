@@ -4,7 +4,7 @@ import (
 	. "github.com/dave/jennifer/jen"
 )
 
-func generateDst(names []string, nodes map[string]NodeInfo) error {
+func generateDst(names []string) error {
 	f := NewFile("dst")
 	for _, name := range names {
 		// func (v *<name>) Decorations() []Decoration {

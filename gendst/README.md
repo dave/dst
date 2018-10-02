@@ -1,3 +1,24 @@
+Lists:
+```
+Field.Names:        []*Ident ","
+FieldList.List:     []*Field "\n" or ";"
+CompositeLit.Elts:  []Expr   ","
+CallExpr.Args:      []Expr   ","
+AssignStmt.Lhs:     []Expr   ","
+AssignStmt.Rhs:     []Expr   ","
+ReturnStmt.Results: []Expr   ","
+BlockStmt.List:     []Stmt   "\n" or ";"
+CaseClause:List:    []Expr   ","
+CaseClause.Body:    []Stmt   "\n" or ";"
+CommClause.Body:    []Stmt   "\n" or ";"
+ValueSpec.Names:    []*Ident ","
+ValueSpec.Values:   []Expr   ","
+GenDecl.Specs:      []Spec   "\n" or ";"
+File.Decls:         []Decl   "\n" or ";"
+File.Imports:       []*ImportSpec "\n" or ";"?
+```
+
+
 Fragments:
 ```
 Opening [FieldList(Pos)]

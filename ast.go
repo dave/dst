@@ -9,7 +9,6 @@ package dst
 
 import (
 	"go/token"
-	"strings"
 	"unicode"
 	"unicode/utf8"
 )
@@ -38,7 +37,6 @@ type Node interface {
 
 type Decoration struct {
 	Position string
-	End      bool
 	Text     string
 }
 
@@ -61,93 +59,6 @@ type Decl interface {
 }
 
 // ----------------------------------------------------------------------------
-// Comments
-
-// A Comment node represents a single //-style or /*-style comment.
-type Comment struct {
-	Text string // comment text (excluding '\n' for //-style comments)
-	Decs []Decoration
-}
-
-// A CommentGroup represents a sequence of comments
-// with no other tokens and no empty lines between.
-//
-type CommentGroup struct {
-	List []*Comment // len(List) > 0
-	Decs []Decoration
-}
-
-func isWhitespace(ch byte) bool { return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' }
-
-func stripTrailingWhitespace(s string) string {
-	i := len(s)
-	for i > 0 && isWhitespace(s[i-1]) {
-		i--
-	}
-	return s[0:i]
-}
-
-// Text returns the text of the comment.
-// Comment markers (//, /*, and */), the first space of a line comment, and
-// leading and trailing empty lines are removed. Multiple empty lines are
-// reduced to one, and trailing space on lines is trimmed. Unless the result
-// is empty, it is newline-terminated.
-//
-func (g *CommentGroup) Text() string {
-	if g == nil {
-		return ""
-	}
-	comments := make([]string, len(g.List))
-	for i, c := range g.List {
-		comments[i] = c.Text
-	}
-
-	lines := make([]string, 0, 10) // most comments are less than 10 lines
-	for _, c := range comments {
-		// Remove comment markers.
-		// The parser has given us exactly the comment text.
-		switch c[1] {
-		case '/':
-			//-style comment (no newline at the end)
-			c = c[2:]
-			// strip first space - required for Example tests
-			if len(c) > 0 && c[0] == ' ' {
-				c = c[1:]
-			}
-		case '*':
-			/*-style comment */
-			c = c[2 : len(c)-2]
-		}
-
-		// Split on newlines.
-		cl := strings.Split(c, "\n")
-
-		// Walk lines, stripping trailing white space and adding to list.
-		for _, l := range cl {
-			lines = append(lines, stripTrailingWhitespace(l))
-		}
-	}
-
-	// Remove leading blank lines; convert runs of
-	// interior blank lines to a single blank line.
-	n := 0
-	for _, line := range lines {
-		if line != "" || n > 0 && lines[n-1] != "" {
-			lines[n] = line
-			n++
-		}
-	}
-	lines = lines[0:n]
-
-	// Add final "" entry to get trailing newline from Join.
-	if n > 0 && lines[n-1] != "" {
-		lines = append(lines, "")
-	}
-
-	return strings.Join(lines, "\n")
-}
-
-// ----------------------------------------------------------------------------
 // Expressions and types
 
 // A Field represents a Field declaration list in a struct type,
@@ -157,12 +68,10 @@ func (g *CommentGroup) Text() string {
 // and embedded struct fields. In the latter case, the field name is the type name.
 //
 type Field struct {
-	Doc     *CommentGroup // associated documentation; or nil
-	Names   []*Ident      // field/method/parameter names; or nil
-	Type    Expr          // field/method/parameter type
-	Tag     *BasicLit     // field tag; or nil
-	Comment *CommentGroup // line comments; or nil
-	Decs    []Decoration
+	Names []*Ident  // field/method/parameter names; or nil
+	Type  Expr      // field/method/parameter type
+	Tag   *BasicLit // field tag; or nil
+	Decs  []Decoration
 }
 
 // A FieldList represents a list of Fields, enclosed by parentheses or braces.
@@ -443,11 +352,10 @@ func (id *Ident) String() string {
 // or more of the following concrete statement nodes.
 //
 type (
-	// CommentStmt is for comments in a statement list that are
+	// DecorationStmt is for comments in a statement list that are
 	// separated from other statements by a blank line.
-	CommentStmt struct {
-		Comment *CommentGroup
-		Decs    []Decoration
+	DecorationStmt struct {
+		Decs []Decoration
 	}
 
 	// A BadStmt node is a placeholder for statements containing
@@ -634,7 +542,7 @@ func (*CommClause) stmtNode()     {}
 func (*SelectStmt) stmtNode()     {}
 func (*ForStmt) stmtNode()        {}
 func (*RangeStmt) stmtNode()      {}
-func (*CommentStmt) stmtNode()    {}
+func (*DecorationStmt) stmtNode() {}
 
 // ----------------------------------------------------------------------------
 // Declarations
@@ -651,33 +559,27 @@ type (
 
 	// An ImportSpec node represents a single package import.
 	ImportSpec struct {
-		Doc     *CommentGroup // associated documentation; or nil
-		Name    *Ident        // local package name (including "."); or nil
-		Path    *BasicLit     // import path
-		Comment *CommentGroup // line comments; or nil
-		Decs    []Decoration
+		Name *Ident    // local package name (including "."); or nil
+		Path *BasicLit // import path
+		Decs []Decoration
 	}
 
 	// A ValueSpec node represents a constant or variable declaration
 	// (ConstSpec or VarSpec production).
 	//
 	ValueSpec struct {
-		Doc     *CommentGroup // associated documentation; or nil
-		Names   []*Ident      // value names (len(Names) > 0)
-		Type    Expr          // value type; or nil
-		Values  []Expr        // initial values; or nil
-		Comment *CommentGroup // line comments; or nil
-		Decs    []Decoration
+		Names  []*Ident // value names (len(Names) > 0)
+		Type   Expr     // value type; or nil
+		Values []Expr   // initial values; or nil
+		Decs   []Decoration
 	}
 
 	// A TypeSpec node represents a type declaration (TypeSpec production).
 	TypeSpec struct {
-		Doc     *CommentGroup // associated documentation; or nil
-		Name    *Ident        // type name
-		Assign  bool          // position of '=', if any
-		Type    Expr          // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
-		Comment *CommentGroup // line comments; or nil
-		Decs    []Decoration
+		Name   *Ident // type name
+		Assign bool   // position of '=', if any
+		Type   Expr   // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
+		Decs   []Decoration
 	}
 )
 
@@ -693,6 +595,12 @@ func (*TypeSpec) specNode()   {}
 // A declaration is represented by one of the following declaration nodes.
 //
 type (
+	// DecorationDecl is for comments in a declaration list that are
+	// separated from other declarations by a blank line.
+	DecorationDecl struct {
+		Decs []Decoration
+	}
+
 	// A BadDecl node is a placeholder for declarations containing
 	// syntax errors for which no correct declaration nodes can be
 	// created.
@@ -714,8 +622,7 @@ type (
 	//	token.VAR     *ValueSpec
 	//
 	GenDecl struct {
-		Doc    *CommentGroup // associated documentation; or nil
-		Tok    token.Token   // IMPORT, CONST, TYPE, VAR
+		Tok    token.Token // IMPORT, CONST, TYPE, VAR
 		Lparen bool
 		Specs  []Spec
 		Rparen bool
@@ -724,11 +631,10 @@ type (
 
 	// A FuncDecl node represents a function declaration.
 	FuncDecl struct {
-		Doc  *CommentGroup // associated documentation; or nil
-		Recv *FieldList    // receiver (methods); or nil (functions)
-		Name *Ident        // function/method name
-		Type *FuncType     // function signature: parameters, results, and position of "func" keyword
-		Body *BlockStmt    // function body; or nil for external (non-Go) function
+		Recv *FieldList // receiver (methods); or nil (functions)
+		Name *Ident     // function/method name
+		Type *FuncType  // function signature: parameters, results, and position of "func" keyword
+		Body *BlockStmt // function body; or nil for external (non-Go) function
 		Decs []Decoration
 	}
 )
@@ -736,9 +642,10 @@ type (
 // declNode() ensures that only declaration nodes can be
 // assigned to a Decl.
 //
-func (*BadDecl) declNode()  {}
-func (*GenDecl) declNode()  {}
-func (*FuncDecl) declNode() {}
+func (*DecorationDecl) declNode() {}
+func (*BadDecl) declNode()        {}
+func (*GenDecl) declNode()        {}
+func (*FuncDecl) declNode()       {}
 
 // ----------------------------------------------------------------------------
 // Files and packages
@@ -763,13 +670,11 @@ func (*FuncDecl) declNode() {}
 // are "free-floating" (see also issues #18593, #20744).
 //
 type File struct {
-	Doc        *CommentGroup   // associated documentation; or nil
-	Name       *Ident          // package name
-	Decls      []Decl          // top-level declarations; or nil
-	Scope      *Scope          // package scope (this file only)
-	Imports    []*ImportSpec   // imports in this file
-	Unresolved []*Ident        // unresolved identifiers in this file
-	Comments   []*CommentGroup // list of all comments in the source file
+	Name       *Ident        // package name
+	Decls      []Decl        // top-level declarations; or nil
+	Scope      *Scope        // package scope (this file only)
+	Imports    []*ImportSpec // imports in this file
+	Unresolved []*Ident      // unresolved identifiers in this file
 	Decs       []Decoration
 }
 
@@ -785,4 +690,10 @@ type Package struct {
 
 func (v *Package) Decorations() []Decoration {
 	return nil
+}
+func (v *DecorationStmt) Decorations() []Decoration {
+	return v.Decs
+}
+func (v *DecorationDecl) Decorations() []Decoration {
+	return v.Decs
 }

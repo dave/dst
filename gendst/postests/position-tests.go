@@ -1,4 +1,5 @@
-package postests
+// File
+/*Start*/ package /*AfterPackage*/ postests /*AfterName*/
 
 // ImportSpec
 import (
@@ -14,8 +15,14 @@ var c chan int
 
 // Field
 type A struct {
-	/*Start*/ A /*AfterName*/ int /*AfterType*/ `a:"a"` /*End*/
+	/*Start*/ A /*AfterNames*/ int /*AfterType*/ `a:"a"` /*End*/
 }
+
+// FieldList
+type A1 struct /*Start*/ { /*AfterOpening*/
+	a, b int
+	c    string
+} /*End*/
 
 // Ellipsis
 func B(a /*Start*/ ... /*AfterEllipsis*/ int /*End*/) {}
@@ -24,21 +31,36 @@ func B(a /*Start*/ ... /*AfterEllipsis*/ int /*End*/) {}
 var C = /*Start*/ func(a int, b ...int) (c int) /*AfterType*/ { return 0 } /*End*/
 
 // CompositeLit
-var D = /*Start*/ A /*AfterType*/ { /*AfterLbrace*/ A: 0 /*AfterElts*/} /*End*/
+var D = /*Start*/ A /*AfterType*/ { /*AfterLbrace*/ A: 0} /*End*/
 
 // ParenExpr
 var E = /*Start*/ ( /*AfterLparen*/ 1 + 1 /*AfterX*/) /*End*/ / 2
 
-// SelectorExpr (no comment possible before period).
+// SelectorExpr
 var F = /*Start*/ fmt. /*AfterX*/ Sprint /*End*/ (0)
 
 // IndexExpr
 var G = /*Start*/ []int{0} /*AfterX*/ [ /*AfterLbrack*/ 0 /*AfterIndex*/] /*End*/
 
-// SliceExpr (no comment possible before colons)
+// SliceExpr(0)
 var H = /*Start*/ []int{0} /*AfterX*/ [ /*AfterLbrack*/ 1: /*AfterLow*/ 2: /*AfterHigh*/ 3 /*AfterMax*/] /*End*/
 
-// TypeAssertExpr (no comment possible before period)
+// SliceExpr(1)
+var H1 = /*Start*/ []int{0} /*AfterX*/ [ /*AfterLbrack*/ 1: /*AfterLow*/ 2 /*AfterHigh*/] /*End*/
+
+// SliceExpr(2)
+var H2 = /*Start*/ []int{0} /*AfterX*/ [: /*AfterLow*/] /*End*/
+
+// SliceExpr(3)
+var H3 = /*Start*/ []int{0} /*AfterX*/ [ /*AfterLbrack*/ 1: /*AfterLow*/] /*End*/
+
+// SliceExpr(4)
+var H4 = /*Start*/ []int{0} /*AfterX*/ [: /*AfterLow*/ 2 /*AfterHigh*/] /*End*/
+
+// SliceExpr(5)
+var H5 = /*Start*/ []int{0} /*AfterX*/ [: /*AfterLow*/ 2: /*AfterHigh*/ 3 /*AfterMax*/] /*End*/
+
+// TypeAssertExpr
 var J = /*Start*/ f. /*AfterX*/ ( /*AfterLparen*/ int /*AfterType*/) /*End*/
 
 // CallExpr
@@ -53,12 +75,12 @@ var O = /*Start*/ ^ /*AfterOp*/ 1 /*End*/
 // BinaryExpr
 var P = /*Start*/ 1 /*AfterX*/ & /*AfterOp*/ 2 /*End*/
 
-// KeyValueExpr (no comment possible before comma)
+// KeyValueExpr
 var Q = map[string]string{
 	/*Start*/ "a" /*AfterKey*/ : /*AfterColon*/ "a", /*End*/
 }
 
-// ArrayType (no comment possible before closing bracket)
+// ArrayType
 type R /*Start*/ [ /*AfterLbrack*/ 1] /*AfterLen*/ int /*End*/
 
 // StructType
@@ -74,21 +96,27 @@ type U /*Start*/ interface /*AfterInterface*/ {
 	A()
 } /*End*/
 
-// MapType (no comment possible before opening/closing bracket)
+// MapType
 type V /*Start*/ map[ /*AfterMap*/ int] /*AfterKey*/ int /*End*/
 
-// ChanType (no comment is possible between "<-" and "chan" in SEND variation
+// ChanType(0)
 type W /*Start*/ chan /*AfterBegin*/ int /*End*/
 
+// ChanType(1)
 type X /*Start*/ <-chan /*AfterBegin*/ int /*End*/
 
+// ChanType(2)
 type Y /*Start*/ chan /*AfterBegin*/ <- /*AfterArrow*/ int /*End*/
 
 func Z() {
-	// LabeledStmt (gofmt has a bug moving the start comment to a weird place)
+	// LabeledStmt
 			/*Start*/
 A /*AfterLabel*/ : /*AfterColon*/
 	print("Stmt") /*End*/
+
+	// BranchStmt
+	/*Start*/
+	goto /*AfterTok*/ A /*End*/
 
 	// SendStmt
 	/*Start*/
@@ -115,18 +143,15 @@ A /*AfterLabel*/ : /*AfterColon*/
 		/*Start*/ return /*AfterReturn*/ 1 /*End*/
 	}()
 
-	// BranchStmt
-	/*Start*/
-	goto /*AfterTok*/ A /*End*/
-
-	// BlockStmt
+	// BlockStmt(0)
 	if true /*Start*/ { /*AfterLbrace*/
 		i++
 	} /*End*/
 
+	// BlockStmt(1)
 	func() /*Start*/ { /*AfterLbrace*/ i++ } /*End*/ ()
 
-	// IfStmt (no comment possible before semicolon)
+	// IfStmt
 	/*Start*/
 	if /*AfterIf*/ a := b; /*AfterInit*/ a /*AfterCond*/ {
 		i++
@@ -137,29 +162,32 @@ A /*AfterLabel*/ : /*AfterColon*/
 	// CaseClause
 	switch i {
 	/*Start*/ case /*AfterCase*/ 1 /*AfterList*/ : /*AfterColon*/
-		i++ /*End*/
+		i++
 	}
 
-	// SwitchStmt (no comment possible before semicolon)
+	// SwitchStmt(0)
 	/*Start*/
 	switch /*AfterSwitch*/ i /*AfterTag*/ {
 	} /*End*/
 
+	// SwitchStmt(1)
 	/*Start*/
 	switch /*AfterSwitch*/ a := i; /*AfterInit*/ a /*AfterTag*/ {
 	} /*End*/
 
-	// TypeSwitchStmt
+	// TypeSwitchStmt(0)
 	/*Start*/
 	switch /*AfterSwitch*/ f.(type) /*AfterAssign*/ {
 	} /*End*/
 
+	// TypeSwitchStmt(1)
 	/*Start*/
 	switch /*AfterSwitch*/ g := f.(type) /*AfterAssign*/ {
 	case int:
 		print(g)
 	} /*End*/
 
+	// TypeSwitchStmt(2)
 	/*Start*/
 	switch /*AfterSwitch*/ g := f; /*AfterInit*/ g := g.(type) /*AfterAssign*/ {
 	case int:
@@ -169,7 +197,7 @@ A /*AfterLabel*/ : /*AfterColon*/
 	// CommClause
 	select {
 	/*Start*/ case /*AfterCase*/ a := <-c /*AfterComm*/ : /*AfterColon*/
-		print(a) /*End*/
+		print(a)
 	}
 
 	// SelectStmt
@@ -177,67 +205,95 @@ A /*AfterLabel*/ : /*AfterColon*/
 	select /*AfterSelect*/ {
 	} /*End*/
 
-	// ForStmt
+	// ForStmt(0)
 	/*Start*/
 	for /*AfterFor*/ {
 		i++
 	} /*End*/
 
+	// ForStmt(1)
 	/*Start*/
 	for /*AfterFor*/ i < 1 /*AfterCond*/ {
 		i++
 	} /*End*/
 
+	// ForStmt(2)
 	/*Start*/
 	for /*AfterFor*/ i = 0; /*AfterInit*/ i < 10; /*AfterCond*/ i++ /*AfterPost*/ {
 		i++
 	} /*End*/
 
-	// RangeStmt (no comment possible before "range" if Key == nil, or between ":=" and "range")
+	// RangeStmt(0)
 	/*Start*/
-	for range /*AfterFor*/ a /*AfterX*/ {
+	for range /*AfterRange*/ a /*AfterX*/ {
 	} /*End*/
 
+	// RangeStmt(1)
 	/*Start*/
-	for /*AfterFor*/ k /*AfterKey*/ := range /*AfterTok*/ a /*AfterX*/ {
+	for /*AfterFor*/ k /*AfterKey*/ := range /*AfterRange*/ a /*AfterX*/ {
 		print(k)
 	} /*End*/
 
+	// RangeStmt(2)
 	/*Start*/
-	for /*AfterFor*/ k /*AfterKey*/, v /*AfterValue*/ := range /*AfterTok*/ a /*AfterX*/ {
+	for /*AfterFor*/ k /*AfterKey*/, v /*AfterValue*/ := range /*AfterRange*/ a /*AfterX*/ {
 		print(k, v)
 	} /*End*/
 
-	// ValueSpec (no comment possible before "=")
-	/*Start*/
-	var /*AfterDoc*/ j = /*AfterNames*/ 1 /*End*/
+	// ValueSpec(0)
+	var (
+		/*Start*/ j = /*AfterAssign*/ 1 /*End*/
+	)
 
-	/*Start*/
-	var /*AfterDoc*/ k, l = /*AfterNames*/ 1, 2 /*End*/
+	// ValueSpec(1)
+	var (
+		/*Start*/ k, l = /*AfterAssign*/ 1, 2 /*End*/
+	)
 
-	/*Start*/
-	var /*AfterDoc*/ m, n /*AfterNames*/ int = /*AfterType*/ 1, 2 /*End*/
+	// ValueSpec(2)
+	var (
+		/*Start*/ m, n /*AfterNames*/ int = /*AfterAssign*/ 1, 2 /*End*/
+	)
 
 	print(j, k, l, m, n)
 
-	// TypeSpec (no comment possible before "=")
-	/*Start*/
-	type /*AfterDoc*/ T1 /*AfterName*/ []int /*End*/
+	// TypeSpec(0)
+	type (
+		/*Start*/ T1 /*AfterName*/ []int /*End*/
+	)
 
-	/*Start*/
-	type /*AfterDoc*/ T2 = /*AfterName*/ T1 /*End*/
+	// TypeSpec(1)
+	type (
+		/*Start*/ T2 = /*AfterName*/ T1 /*End*/
+	)
 
-	// GenDecl
+	// GenDecl(0)
 	/*Start*/
 	const /*AfterTok*/ ( /*AfterLparen*/
 		a, b = 1, 2
 		c    = 3
 	) /*End*/
 
+	// GenDecl(1)
+	/*Start*/
+	const /*AfterTok*/ d = 1 /*End*/
+
 }
 
-// FuncDecl
+// FuncDecl(0)
 /*Start*/
-func /*AfterDoc*/ (a *A) /*AfterRecv*/ c /*AfterName*/ (d, e int) (f, g int) /*AfterType*/ {
+func /*AfterFunc*/ d /*AfterName*/ (d, e int) /*AfterParams*/ {
+	return
+} /*End*/
+
+// FuncDecl(1)
+/*Start*/
+func /*AfterFunc*/ (a *A) /*AfterRecv*/ e /*AfterName*/ (d, e int) /*AfterParams*/ {
+	return
+} /*End*/
+
+// FuncDecl(2)
+/*Start*/
+func /*AfterFunc*/ (a *A) /*AfterRecv*/ f /*AfterName*/ (d, e int) /*AfterParams*/ (f, g int) /*AfterResults*/ {
 	return
 } /*End*/

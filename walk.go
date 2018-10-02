@@ -57,26 +57,11 @@ func Walk(v Visitor, node Node) {
 	// (the order of the cases matches the order
 	// of the corresponding node types in ast.go)
 	switch n := node.(type) {
-	// Comments and fields
-	case *Comment:
-		// nothing to do
-
-	case *CommentGroup:
-		for _, c := range n.List {
-			Walk(v, c)
-		}
-
 	case *Field:
-		if n.Doc != nil {
-			Walk(v, n.Doc)
-		}
 		walkIdentList(v, n.Names)
 		Walk(v, n.Type)
 		if n.Tag != nil {
 			Walk(v, n.Tag)
-		}
-		if n.Comment != nil {
-			Walk(v, n.Comment)
 		}
 
 	case *FieldList:
@@ -286,55 +271,31 @@ func Walk(v Visitor, node Node) {
 
 	// Declarations
 	case *ImportSpec:
-		if n.Doc != nil {
-			Walk(v, n.Doc)
-		}
 		if n.Name != nil {
 			Walk(v, n.Name)
 		}
 		Walk(v, n.Path)
-		if n.Comment != nil {
-			Walk(v, n.Comment)
-		}
 
 	case *ValueSpec:
-		if n.Doc != nil {
-			Walk(v, n.Doc)
-		}
 		walkIdentList(v, n.Names)
 		if n.Type != nil {
 			Walk(v, n.Type)
 		}
 		walkExprList(v, n.Values)
-		if n.Comment != nil {
-			Walk(v, n.Comment)
-		}
 
 	case *TypeSpec:
-		if n.Doc != nil {
-			Walk(v, n.Doc)
-		}
 		Walk(v, n.Name)
 		Walk(v, n.Type)
-		if n.Comment != nil {
-			Walk(v, n.Comment)
-		}
 
 	case *BadDecl:
 		// nothing to do
 
 	case *GenDecl:
-		if n.Doc != nil {
-			Walk(v, n.Doc)
-		}
 		for _, s := range n.Specs {
 			Walk(v, s)
 		}
 
 	case *FuncDecl:
-		if n.Doc != nil {
-			Walk(v, n.Doc)
-		}
 		if n.Recv != nil {
 			Walk(v, n.Recv)
 		}
@@ -346,9 +307,6 @@ func Walk(v Visitor, node Node) {
 
 	// Files and packages
 	case *File:
-		if n.Doc != nil {
-			Walk(v, n.Doc)
-		}
 		Walk(v, n.Name)
 		walkDeclList(v, n.Decls)
 		// don't walk n.Comments - they have been

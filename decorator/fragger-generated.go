@@ -1,920 +1,1443 @@
 package decorator
 
-import "go/ast"
+import (
+	"go/ast"
+	"go/token"
+)
 
 func (f *Fragger) ProcessNode(n ast.Node) {
-	f.ProcessToken(n, "", n.Pos(), false)
 	switch n := n.(type) {
 	case *ast.ArrayType:
-		// Lbrack
-		if n.Lbrack.IsValid() {
-			f.ProcessToken(n, "Lbrack", n.Lbrack, false)
-			f.ProcessToken(n, "Lbrack", n.Lbrack, true)
-		}
-		// Len
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Lbrack
+		f.AddToken(n, token.LBRACK, n.Lbrack)
+
+		// Decoration: AfterLbrack
+		f.AddDecoration(n, "AfterLbrack")
+
+		// Node: Len
 		if n.Len != nil {
-			f.ProcessToken(n, "Len", n.Len.Pos(), false)
 			f.ProcessNode(n.Len)
-			f.ProcessToken(n, "Len", n.Len.End(), true)
 		}
-		// Elt
+
+		// Token: Rbrack
+		f.AddToken(n, token.RBRACK, token.NoPos)
+
+		// Decoration: AfterLen
+		f.AddDecoration(n, "AfterLen")
+
+		// Node: Elt
 		if n.Elt != nil {
-			f.ProcessToken(n, "Elt", n.Elt.Pos(), false)
 			f.ProcessNode(n.Elt)
-			f.ProcessToken(n, "Elt", n.Elt.End(), true)
 		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.AssignStmt:
-		// Lhs
-		if n.Lhs != nil {
-			for _, v := range n.Lhs {
-				f.ProcessNode(v)
-			}
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// List: Lhs
+		for _, v := range n.Lhs {
+			f.ProcessNode(v)
 		}
-		// Tok
-		if n.TokPos.IsValid() {
-			f.ProcessToken(n, "Tok", n.TokPos, false)
-			f.ProcessToken(n, "Tok", n.TokPos, true)
+
+		// Decoration: AfterLhs
+		f.AddDecoration(n, "AfterLhs")
+
+		// Token: Tok
+		f.AddToken(n, n.Tok, n.TokPos)
+
+		// Decoration: AfterTok
+		f.AddDecoration(n, "AfterTok")
+
+		// List: Rhs
+		for _, v := range n.Rhs {
+			f.ProcessNode(v)
 		}
-		// Rhs
-		if n.Rhs != nil {
-			for _, v := range n.Rhs {
-				f.ProcessNode(v)
-			}
-		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.BadDecl:
+
 	case *ast.BadExpr:
+
 	case *ast.BadStmt:
+
 	case *ast.BasicLit:
-		// Value
-		if n.ValuePos.IsValid() {
-			f.ProcessToken(n, "Value", n.ValuePos, false)
-			f.ProcessToken(n, "Value", n.ValuePos, true)
-		}
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// String: Value
+		f.AddString(n, n.Value, n.ValuePos)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.BinaryExpr:
-		// X
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: X
 		if n.X != nil {
-			f.ProcessToken(n, "X", n.X.Pos(), false)
 			f.ProcessNode(n.X)
-			f.ProcessToken(n, "X", n.X.End(), true)
 		}
-		// Op
-		if n.OpPos.IsValid() {
-			f.ProcessToken(n, "Op", n.OpPos, false)
-			f.ProcessToken(n, "Op", n.OpPos, true)
-		}
-		// Y
+
+		// Decoration: AfterX
+		f.AddDecoration(n, "AfterX")
+
+		// Token: Op
+		f.AddToken(n, n.Op, n.OpPos)
+
+		// Decoration: AfterOp
+		f.AddDecoration(n, "AfterOp")
+
+		// Node: Y
 		if n.Y != nil {
-			f.ProcessToken(n, "Y", n.Y.Pos(), false)
 			f.ProcessNode(n.Y)
-			f.ProcessToken(n, "Y", n.Y.End(), true)
 		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.BlockStmt:
-		// Lbrace
-		if n.Lbrace.IsValid() {
-			f.ProcessToken(n, "Lbrace", n.Lbrace, false)
-			f.ProcessToken(n, "Lbrace", n.Lbrace, true)
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Lbrace
+		f.AddToken(n, token.LBRACE, n.Lbrace)
+
+		// Decoration: AfterLbrace
+		f.AddDecoration(n, "AfterLbrace")
+
+		// List: List
+		for _, v := range n.List {
+			f.ProcessNode(v)
 		}
-		// List
-		if n.List != nil {
-			for _, v := range n.List {
-				f.ProcessNode(v)
-			}
-		}
-		// Rbrace
-		if n.Rbrace.IsValid() {
-			f.ProcessToken(n, "Rbrace", n.Rbrace, false)
-			f.ProcessToken(n, "Rbrace", n.Rbrace, true)
-		}
+
+		// Token: Rbrace
+		f.AddToken(n, token.RBRACE, n.Rbrace)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.BranchStmt:
-		// Tok
-		if n.TokPos.IsValid() {
-			f.ProcessToken(n, "Tok", n.TokPos, false)
-			f.ProcessToken(n, "Tok", n.TokPos, true)
-		}
-		// Label
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Tok
+		f.AddToken(n, n.Tok, n.TokPos)
+
+		// Decoration: AfterTok
 		if n.Label != nil {
-			f.ProcessToken(n, "Label", n.Label.Pos(), false)
-			f.ProcessNode(n.Label)
-			f.ProcessToken(n, "Label", n.Label.End(), true)
+			f.AddDecoration(n, "AfterTok")
 		}
+
+		// Node: Label
+		if n.Label != nil {
+			f.ProcessNode(n.Label)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.CallExpr:
-		// Fun
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: Fun
 		if n.Fun != nil {
-			f.ProcessToken(n, "Fun", n.Fun.Pos(), false)
 			f.ProcessNode(n.Fun)
-			f.ProcessToken(n, "Fun", n.Fun.End(), true)
 		}
-		// Lparen
-		if n.Lparen.IsValid() {
-			f.ProcessToken(n, "Lparen", n.Lparen, false)
-			f.ProcessToken(n, "Lparen", n.Lparen, true)
+
+		// Decoration: AfterFun
+		f.AddDecoration(n, "AfterFun")
+
+		// Token: Lparen
+		f.AddToken(n, token.LPAREN, n.Lparen)
+
+		// Decoration: AfterLparen
+		f.AddDecoration(n, "AfterLparen")
+
+		// List: Args
+		for _, v := range n.Args {
+			f.ProcessNode(v)
 		}
-		// Args
-		if n.Args != nil {
-			for _, v := range n.Args {
-				f.ProcessNode(v)
-			}
-		}
-		// Ellipsis
+
+		// Decoration: AfterArgs
+		f.AddDecoration(n, "AfterArgs")
+
+		// Token: Ellipsis
 		if n.Ellipsis.IsValid() {
-			f.ProcessToken(n, "Ellipsis", n.Ellipsis, false)
-			f.ProcessToken(n, "Ellipsis", n.Ellipsis, true)
+			f.AddToken(n, token.ELLIPSIS, n.Ellipsis)
 		}
-		// Rparen
-		if n.Rparen.IsValid() {
-			f.ProcessToken(n, "Rparen", n.Rparen, false)
-			f.ProcessToken(n, "Rparen", n.Rparen, true)
+
+		// Decoration: AfterEllipsis
+		if n.Ellipsis.IsValid() {
+			f.AddDecoration(n, "AfterEllipsis")
 		}
+
+		// Token: Rparen
+		f.AddToken(n, token.RPAREN, n.Rparen)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.CaseClause:
-		// Case
-		if n.Case.IsValid() {
-			f.ProcessToken(n, "Case", n.Case, false)
-			f.ProcessToken(n, "Case", n.Case, true)
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Case
+		f.AddToken(n, func() token.Token {
+			if n.List == nil {
+				return token.DEFAULT
+			} else {
+				return token.CASE
+			}
+		}(), n.Case)
+
+		// Decoration: AfterCase
+		f.AddDecoration(n, "AfterCase")
+
+		// List: List
+		for _, v := range n.List {
+			f.ProcessNode(v)
 		}
-		// List
+
+		// Decoration: AfterList
 		if n.List != nil {
-			for _, v := range n.List {
-				f.ProcessNode(v)
-			}
+			f.AddDecoration(n, "AfterList")
 		}
-		// Colon
-		if n.Colon.IsValid() {
-			f.ProcessToken(n, "Colon", n.Colon, false)
-			f.ProcessToken(n, "Colon", n.Colon, true)
+
+		// Token: Colon
+		f.AddToken(n, token.COLON, n.Colon)
+
+		// Decoration: AfterColon
+		f.AddDecoration(n, "AfterColon")
+
+		// List: Body
+		for _, v := range n.Body {
+			f.ProcessNode(v)
 		}
-		// Body
-		if n.Body != nil {
-			for _, v := range n.Body {
-				f.ProcessNode(v)
-			}
-		}
+
 	case *ast.ChanType:
-		// Begin
-		if n.Begin.IsValid() {
-			f.ProcessToken(n, "Begin", n.Begin, false)
-			f.ProcessToken(n, "Begin", n.Begin, true)
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Begin
+		f.AddToken(n, func() token.Token {
+			if n.Dir == ast.RECV {
+				return token.ARROW
+			} else {
+				return token.CHAN
+			}
+		}(), n.Begin)
+
+		// Token: Chan
+		if n.Dir == ast.RECV {
+			f.AddToken(n, token.CHAN, token.NoPos)
 		}
-		// Arrow
-		if n.Arrow.IsValid() {
-			f.ProcessToken(n, "Arrow", n.Arrow, false)
-			f.ProcessToken(n, "Arrow", n.Arrow, true)
+
+		// Decoration: AfterBegin
+		f.AddDecoration(n, "AfterBegin")
+
+		// Token: Arrow
+		if n.Dir == ast.SEND {
+			f.AddToken(n, token.ARROW, n.Arrow)
 		}
-		// Value
+
+		// Decoration: AfterArrow
+		if n.Dir == ast.SEND {
+			f.AddDecoration(n, "AfterArrow")
+		}
+
+		// Node: Value
 		if n.Value != nil {
-			f.ProcessToken(n, "Value", n.Value.Pos(), false)
 			f.ProcessNode(n.Value)
-			f.ProcessToken(n, "Value", n.Value.End(), true)
 		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.CommClause:
-		// Case
-		if n.Case.IsValid() {
-			f.ProcessToken(n, "Case", n.Case, false)
-			f.ProcessToken(n, "Case", n.Case, true)
-		}
-		// Comm
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Case
+		f.AddToken(n, func() token.Token {
+			if n.Comm == nil {
+				return token.DEFAULT
+			} else {
+				return token.CASE
+			}
+		}(), n.Case)
+
+		// Decoration: AfterCase
+		f.AddDecoration(n, "AfterCase")
+
+		// Node: Comm
 		if n.Comm != nil {
-			f.ProcessToken(n, "Comm", n.Comm.Pos(), false)
 			f.ProcessNode(n.Comm)
-			f.ProcessToken(n, "Comm", n.Comm.End(), true)
 		}
-		// Colon
-		if n.Colon.IsValid() {
-			f.ProcessToken(n, "Colon", n.Colon, false)
-			f.ProcessToken(n, "Colon", n.Colon, true)
+
+		// Decoration: AfterComm
+		if n.Comm != nil {
+			f.AddDecoration(n, "AfterComm")
 		}
-		// Body
-		if n.Body != nil {
-			for _, v := range n.Body {
-				f.ProcessNode(v)
-			}
+
+		// Token: Colon
+		f.AddToken(n, token.COLON, n.Colon)
+
+		// Decoration: AfterColon
+		f.AddDecoration(n, "AfterColon")
+
+		// List: Body
+		for _, v := range n.Body {
+			f.ProcessNode(v)
 		}
-	case *ast.Comment:
-		// Text
-		if n.Slash.IsValid() {
-			f.ProcessToken(n, "Text", n.Slash, false)
-			f.ProcessToken(n, "Text", n.Slash, true)
-		}
-	case *ast.CommentGroup:
-		// List
-		if n.List != nil {
-			for _, v := range n.List {
-				f.ProcessNode(v)
-			}
-		}
+
 	case *ast.CompositeLit:
-		// Type
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: Type
 		if n.Type != nil {
-			f.ProcessToken(n, "Type", n.Type.Pos(), false)
 			f.ProcessNode(n.Type)
-			f.ProcessToken(n, "Type", n.Type.End(), true)
 		}
-		// Lbrace
-		if n.Lbrace.IsValid() {
-			f.ProcessToken(n, "Lbrace", n.Lbrace, false)
-			f.ProcessToken(n, "Lbrace", n.Lbrace, true)
+
+		// Decoration: AfterType
+		if n.Type != nil {
+			f.AddDecoration(n, "AfterType")
 		}
-		// Elts
-		if n.Elts != nil {
-			for _, v := range n.Elts {
-				f.ProcessNode(v)
-			}
+
+		// Token: Lbrace
+		f.AddToken(n, token.LBRACE, n.Lbrace)
+
+		// Decoration: AfterLbrace
+		f.AddDecoration(n, "AfterLbrace")
+
+		// List: Elts
+		for _, v := range n.Elts {
+			f.ProcessNode(v)
 		}
-		// Rbrace
-		if n.Rbrace.IsValid() {
-			f.ProcessToken(n, "Rbrace", n.Rbrace, false)
-			f.ProcessToken(n, "Rbrace", n.Rbrace, true)
-		}
+
+		// Token: Rbrace
+		f.AddToken(n, token.RBRACE, n.Rbrace)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.DeclStmt:
-		// Decl
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: Decl
 		if n.Decl != nil {
-			f.ProcessToken(n, "Decl", n.Decl.Pos(), false)
 			f.ProcessNode(n.Decl)
-			f.ProcessToken(n, "Decl", n.Decl.End(), true)
 		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.DeferStmt:
-		// Defer
-		if n.Defer.IsValid() {
-			f.ProcessToken(n, "Defer", n.Defer, false)
-			f.ProcessToken(n, "Defer", n.Defer, true)
-		}
-		// Call
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Defer
+		f.AddToken(n, token.DEFER, n.Defer)
+
+		// Decoration: AfterDefer
+		f.AddDecoration(n, "AfterDefer")
+
+		// Node: Call
 		if n.Call != nil {
-			f.ProcessToken(n, "Call", n.Call.Pos(), false)
 			f.ProcessNode(n.Call)
-			f.ProcessToken(n, "Call", n.Call.End(), true)
 		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.Ellipsis:
-		// Ellipsis
-		if n.Ellipsis.IsValid() {
-			f.ProcessToken(n, "Ellipsis", n.Ellipsis, false)
-			f.ProcessToken(n, "Ellipsis", n.Ellipsis, true)
-		}
-		// Elt
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Ellipsis
+		f.AddToken(n, token.ELLIPSIS, n.Ellipsis)
+
+		// Decoration: AfterEllipsis
 		if n.Elt != nil {
-			f.ProcessToken(n, "Elt", n.Elt.Pos(), false)
+			f.AddDecoration(n, "AfterEllipsis")
+		}
+
+		// Node: Elt
+		if n.Elt != nil {
 			f.ProcessNode(n.Elt)
-			f.ProcessToken(n, "Elt", n.Elt.End(), true)
 		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.EmptyStmt:
-		// Semicolon
-		if n.Semicolon.IsValid() {
-			f.ProcessToken(n, "Semicolon", n.Semicolon, false)
-			f.ProcessToken(n, "Semicolon", n.Semicolon, true)
+
+		// Token: Semicolon
+		if !n.Implicit {
+			f.AddToken(n, token.ARROW, n.Semicolon)
 		}
+
 	case *ast.ExprStmt:
-		// X
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: X
 		if n.X != nil {
-			f.ProcessToken(n, "X", n.X.Pos(), false)
 			f.ProcessNode(n.X)
-			f.ProcessToken(n, "X", n.X.End(), true)
 		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.Field:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// List: Names
+		for _, v := range n.Names {
+			f.ProcessNode(v)
 		}
-		// Names
-		if n.Names != nil {
-			for _, v := range n.Names {
-				f.ProcessNode(v)
-			}
-		}
-		// Type
+
+		// Decoration: AfterNames
+		f.AddDecoration(n, "AfterNames")
+
+		// Node: Type
 		if n.Type != nil {
-			f.ProcessToken(n, "Type", n.Type.Pos(), false)
 			f.ProcessNode(n.Type)
-			f.ProcessToken(n, "Type", n.Type.End(), true)
 		}
-		// Tag
+
+		// Decoration: AfterType
 		if n.Tag != nil {
-			f.ProcessToken(n, "Tag", n.Tag.Pos(), false)
+			f.AddDecoration(n, "AfterType")
+		}
+
+		// Node: Tag
+		if n.Tag != nil {
 			f.ProcessNode(n.Tag)
-			f.ProcessToken(n, "Tag", n.Tag.End(), true)
 		}
-		// Comment
-		if n.Comment != nil {
-			f.ProcessToken(n, "Comment", n.Comment.Pos(), false)
-			f.ProcessNode(n.Comment)
-			f.ProcessToken(n, "Comment", n.Comment.End(), true)
-		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.FieldList:
-		// Opening
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Opening
 		if n.Opening.IsValid() {
-			f.ProcessToken(n, "Opening", n.Opening, false)
-			f.ProcessToken(n, "Opening", n.Opening, true)
+			f.AddToken(n, token.LPAREN, n.Opening)
 		}
-		// List
-		if n.List != nil {
-			for _, v := range n.List {
-				f.ProcessNode(v)
-			}
+
+		// Decoration: AfterOpening
+		f.AddDecoration(n, "AfterOpening")
+
+		// List: List
+		for _, v := range n.List {
+			f.ProcessNode(v)
 		}
-		// Closing
+
+		// Token: Closing
 		if n.Closing.IsValid() {
-			f.ProcessToken(n, "Closing", n.Closing, false)
-			f.ProcessToken(n, "Closing", n.Closing, true)
+			f.AddToken(n, token.RPAREN, n.Closing)
 		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	case *ast.File:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
-		}
-		// Package
-		if n.Package.IsValid() {
-			f.ProcessToken(n, "Package", n.Package, false)
-			f.ProcessToken(n, "Package", n.Package, true)
-		}
-		// Name
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Package
+		f.AddToken(n, token.PACKAGE, n.Package)
+
+		// Decoration: AfterPackage
+		f.AddDecoration(n, "AfterPackage")
+
+		// Node: Name
 		if n.Name != nil {
-			f.ProcessToken(n, "Name", n.Name.Pos(), false)
 			f.ProcessNode(n.Name)
-			f.ProcessToken(n, "Name", n.Name.End(), true)
 		}
-		// Decls
-		if n.Decls != nil {
-			for _, v := range n.Decls {
-				f.ProcessNode(v)
-			}
+
+		// Decoration: AfterName
+		f.AddDecoration(n, "AfterName")
+
+		// List: Decls
+		for _, v := range n.Decls {
+			f.ProcessNode(v)
 		}
+
 	case *ast.ForStmt:
-		// For
-		if n.For.IsValid() {
-			f.ProcessToken(n, "For", n.For, false)
-			f.ProcessToken(n, "For", n.For, true)
-		}
-		// Init
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: For
+		f.AddToken(n, token.FOR, n.For)
+
+		// Decoration: AfterFor
+		f.AddDecoration(n, "AfterFor")
+
+		// Node: Init
 		if n.Init != nil {
-			f.ProcessToken(n, "Init", n.Init.Pos(), false)
 			f.ProcessNode(n.Init)
-			f.ProcessToken(n, "Init", n.Init.End(), true)
 		}
-		// Cond
+
+		// Token: InitSemicolon
+		if n.Init != nil {
+			f.AddToken(n, token.SEMICOLON, token.NoPos)
+		}
+
+		// Decoration: AfterInit
+		if n.Init != nil {
+			f.AddDecoration(n, "AfterInit")
+		}
+
+		// Node: Cond
 		if n.Cond != nil {
-			f.ProcessToken(n, "Cond", n.Cond.Pos(), false)
 			f.ProcessNode(n.Cond)
-			f.ProcessToken(n, "Cond", n.Cond.End(), true)
 		}
-		// Post
+
+		// Token: CondSemicolon
 		if n.Post != nil {
-			f.ProcessToken(n, "Post", n.Post.Pos(), false)
-			f.ProcessNode(n.Post)
-			f.ProcessToken(n, "Post", n.Post.End(), true)
+			f.AddToken(n, token.SEMICOLON, token.NoPos)
 		}
-		// Body
-		if n.Body != nil {
-			f.ProcessToken(n, "Body", n.Body.Pos(), false)
-			f.ProcessNode(n.Body)
-			f.ProcessToken(n, "Body", n.Body.End(), true)
-		}
-	case *ast.FuncDecl:
-		f.funcDeclOverride(n)
-	case *ast.FuncLit:
-		// Type
-		if n.Type != nil {
-			f.ProcessToken(n, "Type", n.Type.Pos(), false)
-			f.ProcessNode(n.Type)
-			f.ProcessToken(n, "Type", n.Type.End(), true)
-		}
-		// Body
-		if n.Body != nil {
-			f.ProcessToken(n, "Body", n.Body.Pos(), false)
-			f.ProcessNode(n.Body)
-			f.ProcessToken(n, "Body", n.Body.End(), true)
-		}
-	case *ast.FuncType:
-		// Func
-		if n.Func.IsValid() {
-			f.ProcessToken(n, "Func", n.Func, false)
-			f.ProcessToken(n, "Func", n.Func, true)
-		}
-		// Params
-		if n.Params != nil {
-			f.ProcessToken(n, "Params", n.Params.Pos(), false)
-			f.ProcessNode(n.Params)
-			f.ProcessToken(n, "Params", n.Params.End(), true)
-		}
-		// Results
-		if n.Results != nil {
-			f.ProcessToken(n, "Results", n.Results.Pos(), false)
-			f.ProcessNode(n.Results)
-			f.ProcessToken(n, "Results", n.Results.End(), true)
-		}
-	case *ast.GenDecl:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
-		}
-		// Tok
-		if n.TokPos.IsValid() {
-			f.ProcessToken(n, "Tok", n.TokPos, false)
-			f.ProcessToken(n, "Tok", n.TokPos, true)
-		}
-		// Lparen
-		if n.Lparen.IsValid() {
-			f.ProcessToken(n, "Lparen", n.Lparen, false)
-			f.ProcessToken(n, "Lparen", n.Lparen, true)
-		}
-		// Specs
-		if n.Specs != nil {
-			for _, v := range n.Specs {
-				f.ProcessNode(v)
-			}
-		}
-		// Rparen
-		if n.Rparen.IsValid() {
-			f.ProcessToken(n, "Rparen", n.Rparen, false)
-			f.ProcessToken(n, "Rparen", n.Rparen, true)
-		}
-	case *ast.GoStmt:
-		// Go
-		if n.Go.IsValid() {
-			f.ProcessToken(n, "Go", n.Go, false)
-			f.ProcessToken(n, "Go", n.Go, true)
-		}
-		// Call
-		if n.Call != nil {
-			f.ProcessToken(n, "Call", n.Call.Pos(), false)
-			f.ProcessNode(n.Call)
-			f.ProcessToken(n, "Call", n.Call.End(), true)
-		}
-	case *ast.Ident:
-		// Name
-		if n.NamePos.IsValid() {
-			f.ProcessToken(n, "Name", n.NamePos, false)
-			f.ProcessToken(n, "Name", n.NamePos, true)
-		}
-	case *ast.IfStmt:
-		// If
-		if n.If.IsValid() {
-			f.ProcessToken(n, "If", n.If, false)
-			f.ProcessToken(n, "If", n.If, true)
-		}
-		// Init
-		if n.Init != nil {
-			f.ProcessToken(n, "Init", n.Init.Pos(), false)
-			f.ProcessNode(n.Init)
-			f.ProcessToken(n, "Init", n.Init.End(), true)
-		}
-		// Cond
+
+		// Decoration: AfterCond
 		if n.Cond != nil {
-			f.ProcessToken(n, "Cond", n.Cond.Pos(), false)
-			f.ProcessNode(n.Cond)
-			f.ProcessToken(n, "Cond", n.Cond.End(), true)
+			f.AddDecoration(n, "AfterCond")
 		}
-		// Body
+
+		// Node: Post
+		if n.Post != nil {
+			f.ProcessNode(n.Post)
+		}
+
+		// Decoration: AfterPost
+		if n.Post != nil {
+			f.AddDecoration(n, "AfterPost")
+		}
+
+		// Node: Body
 		if n.Body != nil {
-			f.ProcessToken(n, "Body", n.Body.Pos(), false)
 			f.ProcessNode(n.Body)
-			f.ProcessToken(n, "Body", n.Body.End(), true)
 		}
-		// Else
-		if n.Else != nil {
-			f.ProcessToken(n, "Else", n.Else.Pos(), false)
-			f.ProcessNode(n.Else)
-			f.ProcessToken(n, "Else", n.Else.End(), true)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.FuncDecl:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Func
+		if true {
+			f.AddToken(n, token.FUNC, n.Type.Func)
 		}
-	case *ast.ImportSpec:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
+
+		// Decoration: AfterFunc
+		f.AddDecoration(n, "AfterFunc")
+
+		// Node: Recv
+		if n.Recv != nil {
+			f.ProcessNode(n.Recv)
 		}
-		// Name
+
+		// Decoration: AfterRecv
+		if n.Recv != nil {
+			f.AddDecoration(n, "AfterRecv")
+		}
+
+		// Node: Name
 		if n.Name != nil {
-			f.ProcessToken(n, "Name", n.Name.Pos(), false)
 			f.ProcessNode(n.Name)
-			f.ProcessToken(n, "Name", n.Name.End(), true)
 		}
-		// Path
-		if n.Path != nil {
-			f.ProcessToken(n, "Path", n.Path.Pos(), false)
-			f.ProcessNode(n.Path)
-			f.ProcessToken(n, "Path", n.Path.End(), true)
+
+		// Decoration: AfterName
+		f.AddDecoration(n, "AfterName")
+
+		// Node: Params
+		if n.Type.Params != nil {
+			f.ProcessNode(n.Type.Params)
 		}
-		// Comment
-		if n.Comment != nil {
-			f.ProcessToken(n, "Comment", n.Comment.Pos(), false)
-			f.ProcessNode(n.Comment)
-			f.ProcessToken(n, "Comment", n.Comment.End(), true)
+
+		// Decoration: AfterParams
+		f.AddDecoration(n, "AfterParams")
+
+		// Node: Results
+		if n.Type.Results != nil {
+			f.ProcessNode(n.Type.Results)
 		}
-	case *ast.IncDecStmt:
-		// X
-		if n.X != nil {
-			f.ProcessToken(n, "X", n.X.Pos(), false)
-			f.ProcessNode(n.X)
-			f.ProcessToken(n, "X", n.X.End(), true)
+
+		// Decoration: AfterResults
+		if n.Type.Results != nil {
+			f.AddDecoration(n, "AfterResults")
 		}
-		// Tok
-		if n.TokPos.IsValid() {
-			f.ProcessToken(n, "Tok", n.TokPos, false)
-			f.ProcessToken(n, "Tok", n.TokPos, true)
-		}
-	case *ast.IndexExpr:
-		// X
-		if n.X != nil {
-			f.ProcessToken(n, "X", n.X.Pos(), false)
-			f.ProcessNode(n.X)
-			f.ProcessToken(n, "X", n.X.End(), true)
-		}
-		// Lbrack
-		if n.Lbrack.IsValid() {
-			f.ProcessToken(n, "Lbrack", n.Lbrack, false)
-			f.ProcessToken(n, "Lbrack", n.Lbrack, true)
-		}
-		// Index
-		if n.Index != nil {
-			f.ProcessToken(n, "Index", n.Index.Pos(), false)
-			f.ProcessNode(n.Index)
-			f.ProcessToken(n, "Index", n.Index.End(), true)
-		}
-		// Rbrack
-		if n.Rbrack.IsValid() {
-			f.ProcessToken(n, "Rbrack", n.Rbrack, false)
-			f.ProcessToken(n, "Rbrack", n.Rbrack, true)
-		}
-	case *ast.InterfaceType:
-		// Interface
-		if n.Interface.IsValid() {
-			f.ProcessToken(n, "Interface", n.Interface, false)
-			f.ProcessToken(n, "Interface", n.Interface, true)
-		}
-		// Methods
-		if n.Methods != nil {
-			f.ProcessToken(n, "Methods", n.Methods.Pos(), false)
-			f.ProcessNode(n.Methods)
-			f.ProcessToken(n, "Methods", n.Methods.End(), true)
-		}
-	case *ast.KeyValueExpr:
-		// Key
-		if n.Key != nil {
-			f.ProcessToken(n, "Key", n.Key.Pos(), false)
-			f.ProcessNode(n.Key)
-			f.ProcessToken(n, "Key", n.Key.End(), true)
-		}
-		// Colon
-		if n.Colon.IsValid() {
-			f.ProcessToken(n, "Colon", n.Colon, false)
-			f.ProcessToken(n, "Colon", n.Colon, true)
-		}
-		// Value
-		if n.Value != nil {
-			f.ProcessToken(n, "Value", n.Value.Pos(), false)
-			f.ProcessNode(n.Value)
-			f.ProcessToken(n, "Value", n.Value.End(), true)
-		}
-	case *ast.LabeledStmt:
-		// Label
-		if n.Label != nil {
-			f.ProcessToken(n, "Label", n.Label.Pos(), false)
-			f.ProcessNode(n.Label)
-			f.ProcessToken(n, "Label", n.Label.End(), true)
-		}
-		// Colon
-		if n.Colon.IsValid() {
-			f.ProcessToken(n, "Colon", n.Colon, false)
-			f.ProcessToken(n, "Colon", n.Colon, true)
-		}
-		// Stmt
-		if n.Stmt != nil {
-			f.ProcessToken(n, "Stmt", n.Stmt.Pos(), false)
-			f.ProcessNode(n.Stmt)
-			f.ProcessToken(n, "Stmt", n.Stmt.End(), true)
-		}
-	case *ast.MapType:
-		// Map
-		if n.Map.IsValid() {
-			f.ProcessToken(n, "Map", n.Map, false)
-			f.ProcessToken(n, "Map", n.Map, true)
-		}
-		// Key
-		if n.Key != nil {
-			f.ProcessToken(n, "Key", n.Key.Pos(), false)
-			f.ProcessNode(n.Key)
-			f.ProcessToken(n, "Key", n.Key.End(), true)
-		}
-		// Value
-		if n.Value != nil {
-			f.ProcessToken(n, "Value", n.Value.Pos(), false)
-			f.ProcessNode(n.Value)
-			f.ProcessToken(n, "Value", n.Value.End(), true)
-		}
-	case *ast.ParenExpr:
-		// Lparen
-		if n.Lparen.IsValid() {
-			f.ProcessToken(n, "Lparen", n.Lparen, false)
-			f.ProcessToken(n, "Lparen", n.Lparen, true)
-		}
-		// X
-		if n.X != nil {
-			f.ProcessToken(n, "X", n.X.Pos(), false)
-			f.ProcessNode(n.X)
-			f.ProcessToken(n, "X", n.X.End(), true)
-		}
-		// Rparen
-		if n.Rparen.IsValid() {
-			f.ProcessToken(n, "Rparen", n.Rparen, false)
-			f.ProcessToken(n, "Rparen", n.Rparen, true)
-		}
-	case *ast.RangeStmt:
-		// For
-		if n.For.IsValid() {
-			f.ProcessToken(n, "For", n.For, false)
-			f.ProcessToken(n, "For", n.For, true)
-		}
-		// Key
-		if n.Key != nil {
-			f.ProcessToken(n, "Key", n.Key.Pos(), false)
-			f.ProcessNode(n.Key)
-			f.ProcessToken(n, "Key", n.Key.End(), true)
-		}
-		// Value
-		if n.Value != nil {
-			f.ProcessToken(n, "Value", n.Value.Pos(), false)
-			f.ProcessNode(n.Value)
-			f.ProcessToken(n, "Value", n.Value.End(), true)
-		}
-		// Tok
-		if n.TokPos.IsValid() {
-			f.ProcessToken(n, "Tok", n.TokPos, false)
-			f.ProcessToken(n, "Tok", n.TokPos, true)
-		}
-		// X
-		if n.X != nil {
-			f.ProcessToken(n, "X", n.X.Pos(), false)
-			f.ProcessNode(n.X)
-			f.ProcessToken(n, "X", n.X.End(), true)
-		}
-		// Body
+
+		// Node: Body
 		if n.Body != nil {
-			f.ProcessToken(n, "Body", n.Body.Pos(), false)
 			f.ProcessNode(n.Body)
-			f.ProcessToken(n, "Body", n.Body.End(), true)
 		}
-	case *ast.ReturnStmt:
-		// Return
-		if n.Return.IsValid() {
-			f.ProcessToken(n, "Return", n.Return, false)
-			f.ProcessToken(n, "Return", n.Return, true)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.FuncLit:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: Type
+		if n.Type != nil {
+			f.ProcessNode(n.Type)
 		}
-		// Results
+
+		// Decoration: AfterType
+		f.AddDecoration(n, "AfterType")
+
+		// Node: Body
+		if n.Body != nil {
+			f.ProcessNode(n.Body)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.FuncType:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Func
+		if n.Func.IsValid() {
+			f.AddToken(n, token.FUNC, n.Func)
+		}
+
+		// Decoration: AfterFunc
+		if n.Func.IsValid() {
+			f.AddDecoration(n, "AfterFunc")
+		}
+
+		// Node: Params
+		if n.Params != nil {
+			f.ProcessNode(n.Params)
+		}
+
+		// Decoration: AfterParams
 		if n.Results != nil {
-			for _, v := range n.Results {
-				f.ProcessNode(v)
-			}
+			f.AddDecoration(n, "AfterParams")
 		}
-	case *ast.SelectStmt:
-		// Select
-		if n.Select.IsValid() {
-			f.ProcessToken(n, "Select", n.Select, false)
-			f.ProcessToken(n, "Select", n.Select, true)
+
+		// Node: Results
+		if n.Results != nil {
+			f.ProcessNode(n.Results)
 		}
-		// Body
-		if n.Body != nil {
-			f.ProcessToken(n, "Body", n.Body.Pos(), false)
-			f.ProcessNode(n.Body)
-			f.ProcessToken(n, "Body", n.Body.End(), true)
-		}
-	case *ast.SelectorExpr:
-		// X
-		if n.X != nil {
-			f.ProcessToken(n, "X", n.X.Pos(), false)
-			f.ProcessNode(n.X)
-			f.ProcessToken(n, "X", n.X.End(), true)
-		}
-		// Sel
-		if n.Sel != nil {
-			f.ProcessToken(n, "Sel", n.Sel.Pos(), false)
-			f.ProcessNode(n.Sel)
-			f.ProcessToken(n, "Sel", n.Sel.End(), true)
-		}
-	case *ast.SendStmt:
-		// Chan
-		if n.Chan != nil {
-			f.ProcessToken(n, "Chan", n.Chan.Pos(), false)
-			f.ProcessNode(n.Chan)
-			f.ProcessToken(n, "Chan", n.Chan.End(), true)
-		}
-		// Arrow
-		if n.Arrow.IsValid() {
-			f.ProcessToken(n, "Arrow", n.Arrow, false)
-			f.ProcessToken(n, "Arrow", n.Arrow, true)
-		}
-		// Value
-		if n.Value != nil {
-			f.ProcessToken(n, "Value", n.Value.Pos(), false)
-			f.ProcessNode(n.Value)
-			f.ProcessToken(n, "Value", n.Value.End(), true)
-		}
-	case *ast.SliceExpr:
-		// X
-		if n.X != nil {
-			f.ProcessToken(n, "X", n.X.Pos(), false)
-			f.ProcessNode(n.X)
-			f.ProcessToken(n, "X", n.X.End(), true)
-		}
-		// Lbrack
-		if n.Lbrack.IsValid() {
-			f.ProcessToken(n, "Lbrack", n.Lbrack, false)
-			f.ProcessToken(n, "Lbrack", n.Lbrack, true)
-		}
-		// Low
-		if n.Low != nil {
-			f.ProcessToken(n, "Low", n.Low.Pos(), false)
-			f.ProcessNode(n.Low)
-			f.ProcessToken(n, "Low", n.Low.End(), true)
-		}
-		// High
-		if n.High != nil {
-			f.ProcessToken(n, "High", n.High.Pos(), false)
-			f.ProcessNode(n.High)
-			f.ProcessToken(n, "High", n.High.End(), true)
-		}
-		// Max
-		if n.Max != nil {
-			f.ProcessToken(n, "Max", n.Max.Pos(), false)
-			f.ProcessNode(n.Max)
-			f.ProcessToken(n, "Max", n.Max.End(), true)
-		}
-		// Rbrack
-		if n.Rbrack.IsValid() {
-			f.ProcessToken(n, "Rbrack", n.Rbrack, false)
-			f.ProcessToken(n, "Rbrack", n.Rbrack, true)
-		}
-	case *ast.StarExpr:
-		// Star
-		if n.Star.IsValid() {
-			f.ProcessToken(n, "Star", n.Star, false)
-			f.ProcessToken(n, "Star", n.Star, true)
-		}
-		// X
-		if n.X != nil {
-			f.ProcessToken(n, "X", n.X.Pos(), false)
-			f.ProcessNode(n.X)
-			f.ProcessToken(n, "X", n.X.End(), true)
-		}
-	case *ast.StructType:
-		// Struct
-		if n.Struct.IsValid() {
-			f.ProcessToken(n, "Struct", n.Struct, false)
-			f.ProcessToken(n, "Struct", n.Struct, true)
-		}
-		// Fields
-		if n.Fields != nil {
-			f.ProcessToken(n, "Fields", n.Fields.Pos(), false)
-			f.ProcessNode(n.Fields)
-			f.ProcessToken(n, "Fields", n.Fields.End(), true)
-		}
-	case *ast.SwitchStmt:
-		// Switch
-		if n.Switch.IsValid() {
-			f.ProcessToken(n, "Switch", n.Switch, false)
-			f.ProcessToken(n, "Switch", n.Switch, true)
-		}
-		// Init
-		if n.Init != nil {
-			f.ProcessToken(n, "Init", n.Init.Pos(), false)
-			f.ProcessNode(n.Init)
-			f.ProcessToken(n, "Init", n.Init.End(), true)
-		}
-		// Tag
-		if n.Tag != nil {
-			f.ProcessToken(n, "Tag", n.Tag.Pos(), false)
-			f.ProcessNode(n.Tag)
-			f.ProcessToken(n, "Tag", n.Tag.End(), true)
-		}
-		// Body
-		if n.Body != nil {
-			f.ProcessToken(n, "Body", n.Body.Pos(), false)
-			f.ProcessNode(n.Body)
-			f.ProcessToken(n, "Body", n.Body.End(), true)
-		}
-	case *ast.TypeAssertExpr:
-		// X
-		if n.X != nil {
-			f.ProcessToken(n, "X", n.X.Pos(), false)
-			f.ProcessNode(n.X)
-			f.ProcessToken(n, "X", n.X.End(), true)
-		}
-		// Lparen
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.GenDecl:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Tok
+		f.AddToken(n, n.Tok, n.TokPos)
+
+		// Decoration: AfterTok
+		f.AddDecoration(n, "AfterTok")
+
+		// Token: Lparen
 		if n.Lparen.IsValid() {
-			f.ProcessToken(n, "Lparen", n.Lparen, false)
-			f.ProcessToken(n, "Lparen", n.Lparen, true)
+			f.AddToken(n, token.LPAREN, n.Lparen)
 		}
-		// Type
-		if n.Type != nil {
-			f.ProcessToken(n, "Type", n.Type.Pos(), false)
-			f.ProcessNode(n.Type)
-			f.ProcessToken(n, "Type", n.Type.End(), true)
+
+		// Decoration: AfterLparen
+		if n.Lparen.IsValid() {
+			f.AddDecoration(n, "AfterLparen")
 		}
-		// Rparen
+
+		// List: Specs
+		for _, v := range n.Specs {
+			f.ProcessNode(v)
+		}
+
+		// Token: Rparen
 		if n.Rparen.IsValid() {
-			f.ProcessToken(n, "Rparen", n.Rparen, false)
-			f.ProcessToken(n, "Rparen", n.Rparen, true)
+			f.AddToken(n, token.RPAREN, n.Rparen)
 		}
-	case *ast.TypeSpec:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.GoStmt:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Go
+		f.AddToken(n, token.GO, n.Go)
+
+		// Decoration: AfterGo
+		f.AddDecoration(n, "AfterGo")
+
+		// Node: Call
+		if n.Call != nil {
+			f.ProcessNode(n.Call)
 		}
-		// Name
-		if n.Name != nil {
-			f.ProcessToken(n, "Name", n.Name.Pos(), false)
-			f.ProcessNode(n.Name)
-			f.ProcessToken(n, "Name", n.Name.End(), true)
-		}
-		// Assign
-		if n.Assign.IsValid() {
-			f.ProcessToken(n, "Assign", n.Assign, false)
-			f.ProcessToken(n, "Assign", n.Assign, true)
-		}
-		// Type
-		if n.Type != nil {
-			f.ProcessToken(n, "Type", n.Type.Pos(), false)
-			f.ProcessNode(n.Type)
-			f.ProcessToken(n, "Type", n.Type.End(), true)
-		}
-		// Comment
-		if n.Comment != nil {
-			f.ProcessToken(n, "Comment", n.Comment.Pos(), false)
-			f.ProcessNode(n.Comment)
-			f.ProcessToken(n, "Comment", n.Comment.End(), true)
-		}
-	case *ast.TypeSwitchStmt:
-		// Switch
-		if n.Switch.IsValid() {
-			f.ProcessToken(n, "Switch", n.Switch, false)
-			f.ProcessToken(n, "Switch", n.Switch, true)
-		}
-		// Init
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.Ident:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// String: Name
+		f.AddString(n, n.Name, n.NamePos)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.IfStmt:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: If
+		f.AddToken(n, token.IF, n.If)
+
+		// Decoration: AfterIf
+		f.AddDecoration(n, "AfterIf")
+
+		// Node: Init
 		if n.Init != nil {
-			f.ProcessToken(n, "Init", n.Init.Pos(), false)
 			f.ProcessNode(n.Init)
-			f.ProcessToken(n, "Init", n.Init.End(), true)
 		}
-		// Assign
-		if n.Assign != nil {
-			f.ProcessToken(n, "Assign", n.Assign.Pos(), false)
-			f.ProcessNode(n.Assign)
-			f.ProcessToken(n, "Assign", n.Assign.End(), true)
+
+		// Decoration: AfterInit
+		if n.Init != nil {
+			f.AddDecoration(n, "AfterInit")
 		}
-		// Body
+
+		// Node: Cond
+		if n.Cond != nil {
+			f.ProcessNode(n.Cond)
+		}
+
+		// Decoration: AfterCond
+		f.AddDecoration(n, "AfterCond")
+
+		// Node: Body
 		if n.Body != nil {
-			f.ProcessToken(n, "Body", n.Body.Pos(), false)
 			f.ProcessNode(n.Body)
-			f.ProcessToken(n, "Body", n.Body.End(), true)
 		}
-	case *ast.UnaryExpr:
-		// Op
-		if n.OpPos.IsValid() {
-			f.ProcessToken(n, "Op", n.OpPos, false)
-			f.ProcessToken(n, "Op", n.OpPos, true)
+
+		// Token: ElseTok
+		if n.Else != nil {
+			f.AddToken(n, token.ELSE, token.NoPos)
 		}
-		// X
+
+		// Decoration: AfterElse
+		if n.Else != nil {
+			f.AddDecoration(n, "AfterElse")
+		}
+
+		// Node: Else
+		if n.Else != nil {
+			f.ProcessNode(n.Else)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.ImportSpec:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: Name
+		if n.Name != nil {
+			f.ProcessNode(n.Name)
+		}
+
+		// Decoration: AfterName
+		if n.Name != nil {
+			f.AddDecoration(n, "AfterName")
+		}
+
+		// Node: Path
+		if n.Path != nil {
+			f.ProcessNode(n.Path)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.IncDecStmt:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: X
 		if n.X != nil {
-			f.ProcessToken(n, "X", n.X.Pos(), false)
 			f.ProcessNode(n.X)
-			f.ProcessToken(n, "X", n.X.End(), true)
 		}
-	case *ast.ValueSpec:
-		// Doc
-		if n.Doc != nil {
-			f.ProcessToken(n, "Doc", n.Doc.Pos(), false)
-			f.ProcessNode(n.Doc)
-			f.ProcessToken(n, "Doc", n.Doc.End(), true)
+
+		// Decoration: AfterX
+		f.AddDecoration(n, "AfterX")
+
+		// Token: Tok
+		f.AddToken(n, n.Tok, n.TokPos)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.IndexExpr:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: X
+		if n.X != nil {
+			f.ProcessNode(n.X)
 		}
-		// Names
-		if n.Names != nil {
-			for _, v := range n.Names {
-				f.ProcessNode(v)
-			}
+
+		// Decoration: AfterX
+		f.AddDecoration(n, "AfterX")
+
+		// Token: Lbrack
+		f.AddToken(n, token.LBRACK, n.Lbrack)
+
+		// Decoration: AfterLbrack
+		f.AddDecoration(n, "AfterLbrack")
+
+		// Node: Index
+		if n.Index != nil {
+			f.ProcessNode(n.Index)
 		}
-		// Type
+
+		// Decoration: AfterIndex
+		f.AddDecoration(n, "AfterIndex")
+
+		// Token: Rbrack
+		f.AddToken(n, token.RBRACK, n.Rbrack)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.InterfaceType:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Interface
+		f.AddToken(n, token.INTERFACE, n.Interface)
+
+		// Decoration: AfterInterface
+		f.AddDecoration(n, "AfterInterface")
+
+		// Node: Methods
+		if n.Methods != nil {
+			f.ProcessNode(n.Methods)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.KeyValueExpr:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: Key
+		if n.Key != nil {
+			f.ProcessNode(n.Key)
+		}
+
+		// Decoration: AfterKey
+		f.AddDecoration(n, "AfterKey")
+
+		// Token: Colon
+		f.AddToken(n, token.COLON, n.Colon)
+
+		// Decoration: AfterColon
+		f.AddDecoration(n, "AfterColon")
+
+		// Node: Value
+		if n.Value != nil {
+			f.ProcessNode(n.Value)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.LabeledStmt:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: Label
+		if n.Label != nil {
+			f.ProcessNode(n.Label)
+		}
+
+		// Decoration: AfterLabel
+		f.AddDecoration(n, "AfterLabel")
+
+		// Token: Colon
+		f.AddToken(n, token.COLON, n.Colon)
+
+		// Decoration: AfterColon
+		f.AddDecoration(n, "AfterColon")
+
+		// Node: Stmt
+		if n.Stmt != nil {
+			f.ProcessNode(n.Stmt)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.MapType:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Map
+		f.AddToken(n, token.MAP, n.Map)
+
+		// Token: Lbrack
+		f.AddToken(n, token.LBRACK, token.NoPos)
+
+		// Decoration: AfterMap
+		f.AddDecoration(n, "AfterMap")
+
+		// Node: Key
+		if n.Key != nil {
+			f.ProcessNode(n.Key)
+		}
+
+		// Token: Rbrack
+		f.AddToken(n, token.RBRACK, token.NoPos)
+
+		// Decoration: AfterKey
+		f.AddDecoration(n, "AfterKey")
+
+		// Node: Value
+		if n.Value != nil {
+			f.ProcessNode(n.Value)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.ParenExpr:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Lparen
+		f.AddToken(n, token.LPAREN, n.Lparen)
+
+		// Decoration: AfterLparen
+		f.AddDecoration(n, "AfterLparen")
+
+		// Node: X
+		if n.X != nil {
+			f.ProcessNode(n.X)
+		}
+
+		// Decoration: AfterX
+		f.AddDecoration(n, "AfterX")
+
+		// Token: Rparen
+		f.AddToken(n, token.RPAREN, n.Rparen)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.RangeStmt:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: For
+		f.AddToken(n, token.FOR, n.For)
+
+		// Decoration: AfterFor
+		if n.Key != nil {
+			f.AddDecoration(n, "AfterFor")
+		}
+
+		// Node: Key
+		if n.Key != nil {
+			f.ProcessNode(n.Key)
+		}
+
+		// Token: Comma
+		if n.Value != nil {
+			f.AddToken(n, token.COMMA, token.NoPos)
+		}
+
+		// Decoration: AfterKey
+		if n.Key != nil {
+			f.AddDecoration(n, "AfterKey")
+		}
+
+		// Node: Value
+		if n.Value != nil {
+			f.ProcessNode(n.Value)
+		}
+
+		// Decoration: AfterValue
+		if n.Value != nil {
+			f.AddDecoration(n, "AfterValue")
+		}
+
+		// Token: Tok
+		if n.Tok != token.ILLEGAL {
+			f.AddToken(n, n.Tok, n.TokPos)
+		}
+
+		// Token: Range
+		f.AddToken(n, token.RANGE, token.NoPos)
+
+		// Decoration: AfterRange
+		f.AddDecoration(n, "AfterRange")
+
+		// Node: X
+		if n.X != nil {
+			f.ProcessNode(n.X)
+		}
+
+		// Decoration: AfterX
+		f.AddDecoration(n, "AfterX")
+
+		// Node: Body
+		if n.Body != nil {
+			f.ProcessNode(n.Body)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.ReturnStmt:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Return
+		f.AddToken(n, token.RETURN, n.Return)
+
+		// Decoration: AfterReturn
+		f.AddDecoration(n, "AfterReturn")
+
+		// List: Results
+		for _, v := range n.Results {
+			f.ProcessNode(v)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.SelectStmt:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Select
+		f.AddToken(n, token.SELECT, n.Select)
+
+		// Decoration: AfterSelect
+		f.AddDecoration(n, "AfterSelect")
+
+		// Node: Body
+		if n.Body != nil {
+			f.ProcessNode(n.Body)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.SelectorExpr:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: X
+		if n.X != nil {
+			f.ProcessNode(n.X)
+		}
+
+		// Token: Period
+		f.AddToken(n, token.PERIOD, token.NoPos)
+
+		// Decoration: AfterX
+		f.AddDecoration(n, "AfterX")
+
+		// Node: Sel
+		if n.Sel != nil {
+			f.ProcessNode(n.Sel)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.SendStmt:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: Chan
+		if n.Chan != nil {
+			f.ProcessNode(n.Chan)
+		}
+
+		// Decoration: AfterChan
+		f.AddDecoration(n, "AfterChan")
+
+		// Token: Arrow
+		f.AddToken(n, token.ARROW, n.Arrow)
+
+		// Decoration: AfterArrow
+		f.AddDecoration(n, "AfterArrow")
+
+		// Node: Value
+		if n.Value != nil {
+			f.ProcessNode(n.Value)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.SliceExpr:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: X
+		if n.X != nil {
+			f.ProcessNode(n.X)
+		}
+
+		// Decoration: AfterX
+		f.AddDecoration(n, "AfterX")
+
+		// Token: Lbrack
+		f.AddToken(n, token.LBRACK, n.Lbrack)
+
+		// Decoration: AfterLbrack
+		if n.Low != nil {
+			f.AddDecoration(n, "AfterLbrack")
+		}
+
+		// Node: Low
+		if n.Low != nil {
+			f.ProcessNode(n.Low)
+		}
+
+		// Token: Colon1
+		f.AddToken(n, token.COLON, token.NoPos)
+
+		// Decoration: AfterLow
+		f.AddDecoration(n, "AfterLow")
+
+		// Node: High
+		if n.High != nil {
+			f.ProcessNode(n.High)
+		}
+
+		// Token: Colon2
+		if n.Slice3 {
+			f.AddToken(n, token.COLON, token.NoPos)
+		}
+
+		// Decoration: AfterHigh
+		if n.High != nil {
+			f.AddDecoration(n, "AfterHigh")
+		}
+
+		// Node: Max
+		if n.Max != nil {
+			f.ProcessNode(n.Max)
+		}
+
+		// Decoration: AfterMax
+		if n.Max != nil {
+			f.AddDecoration(n, "AfterMax")
+		}
+
+		// Token: Rbrack
+		f.AddToken(n, token.RBRACK, n.Rbrack)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.StarExpr:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Star
+		f.AddToken(n, token.MUL, n.Star)
+
+		// Decoration: AfterStar
+		f.AddDecoration(n, "AfterStar")
+
+		// Node: X
+		if n.X != nil {
+			f.ProcessNode(n.X)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.StructType:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Struct
+		f.AddToken(n, token.STRUCT, n.Struct)
+
+		// Decoration: AfterStruct
+		f.AddDecoration(n, "AfterStruct")
+
+		// Node: Fields
+		if n.Fields != nil {
+			f.ProcessNode(n.Fields)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.SwitchStmt:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Switch
+		f.AddToken(n, token.SWITCH, n.Switch)
+
+		// Decoration: AfterSwitch
+		f.AddDecoration(n, "AfterSwitch")
+
+		// Node: Init
+		if n.Init != nil {
+			f.ProcessNode(n.Init)
+		}
+
+		// Decoration: AfterInit
+		if n.Init != nil {
+			f.AddDecoration(n, "AfterInit")
+		}
+
+		// Node: Tag
+		if n.Tag != nil {
+			f.ProcessNode(n.Tag)
+		}
+
+		// Decoration: AfterTag
+		if n.Tag != nil {
+			f.AddDecoration(n, "AfterTag")
+		}
+
+		// Node: Body
+		if n.Body != nil {
+			f.ProcessNode(n.Body)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.TypeAssertExpr:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: X
+		if n.X != nil {
+			f.ProcessNode(n.X)
+		}
+
+		// Token: Period
+		f.AddToken(n, token.PERIOD, token.NoPos)
+
+		// Decoration: AfterX
+		f.AddDecoration(n, "AfterX")
+
+		// Token: Lparen
+		f.AddToken(n, token.LPAREN, n.Lparen)
+
+		// Decoration: AfterLparen
+		f.AddDecoration(n, "AfterLparen")
+
+		// Node: Type
 		if n.Type != nil {
-			f.ProcessToken(n, "Type", n.Type.Pos(), false)
 			f.ProcessNode(n.Type)
-			f.ProcessToken(n, "Type", n.Type.End(), true)
 		}
-		// Values
-		if n.Values != nil {
-			for _, v := range n.Values {
-				f.ProcessNode(v)
-			}
+
+		// Token: TypeToken
+		if n.Type == nil {
+			f.AddToken(n, token.TYPE, token.NoPos)
 		}
-		// Comment
-		if n.Comment != nil {
-			f.ProcessToken(n, "Comment", n.Comment.Pos(), false)
-			f.ProcessNode(n.Comment)
-			f.ProcessToken(n, "Comment", n.Comment.End(), true)
+
+		// Decoration: AfterType
+		f.AddDecoration(n, "AfterType")
+
+		// Token: Rparen
+		f.AddToken(n, token.RPAREN, n.Rparen)
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.TypeSpec:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Node: Name
+		if n.Name != nil {
+			f.ProcessNode(n.Name)
 		}
+
+		// Token: Assign
+		if n.Assign.IsValid() {
+			f.AddToken(n, token.ASSIGN, n.Assign)
+		}
+
+		// Decoration: AfterName
+		f.AddDecoration(n, "AfterName")
+
+		// Node: Type
+		if n.Type != nil {
+			f.ProcessNode(n.Type)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.TypeSwitchStmt:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Switch
+		f.AddToken(n, token.SWITCH, n.Switch)
+
+		// Decoration: AfterSwitch
+		f.AddDecoration(n, "AfterSwitch")
+
+		// Node: Init
+		if n.Init != nil {
+			f.ProcessNode(n.Init)
+		}
+
+		// Decoration: AfterInit
+		if n.Init != nil {
+			f.AddDecoration(n, "AfterInit")
+		}
+
+		// Node: Assign
+		if n.Assign != nil {
+			f.ProcessNode(n.Assign)
+		}
+
+		// Decoration: AfterAssign
+		f.AddDecoration(n, "AfterAssign")
+
+		// Node: Body
+		if n.Body != nil {
+			f.ProcessNode(n.Body)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.UnaryExpr:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// Token: Op
+		f.AddToken(n, n.Op, n.OpPos)
+
+		// Decoration: AfterOp
+		f.AddDecoration(n, "AfterOp")
+
+		// Node: X
+		if n.X != nil {
+			f.ProcessNode(n.X)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
+	case *ast.ValueSpec:
+
+		// Decoration: Start
+		f.AddStart(n, n.Pos())
+
+		// List: Names
+		for _, v := range n.Names {
+			f.ProcessNode(v)
+		}
+
+		// Decoration: AfterNames
+		if n.Type != nil {
+			f.AddDecoration(n, "AfterNames")
+		}
+
+		// Node: Type
+		if n.Type != nil {
+			f.ProcessNode(n.Type)
+		}
+
+		// Token: Assign
+		f.AddToken(n, token.ASSIGN, token.NoPos)
+
+		// Decoration: AfterAssign
+		f.AddDecoration(n, "AfterAssign")
+
+		// List: Values
+		for _, v := range n.Values {
+			f.ProcessNode(v)
+		}
+
+		// Decoration: End
+		f.AddDecoration(n, "End")
+
 	}
-	f.ProcessToken(n, "", n.End(), true)
 }

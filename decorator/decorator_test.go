@@ -6,10 +6,13 @@ import (
 	"go/parser"
 	"go/token"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/andreyvit/diff"
 	"github.com/dave/dst"
+	"golang.org/x/tools/go/loader"
 )
 
 func TestDecorator(t *testing.T) {
@@ -20,6 +23,16 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "chan type",
+			code: `package main
+
+				type Y /*Start*/ chan /*AfterBegin*/ <- /*AfterArrow*/ int /*End*/`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            GenDecl [End "/*End*/"]
+            TypeSpec [AfterName "/*Start*/"]
+            ChanType [AfterBegin "/*AfterBegin*/"] [AfterArrow "/*AfterArrow*/"]`,
+		},
+		{
 			name: "inside if block",
 			code: `package main
 
@@ -28,10 +41,10 @@ func TestDecorator(t *testing.T) {
 						// a
 					}
 				}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            BlockStmt [Lbrace (after) "\n"]
-            IfStmt [(after) "\n"]
-            BlockStmt [Lbrace (after) "\n"] [Rbrace (before) "// a"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            BlockStmt [AfterLbrace "\n"]
+            IfStmt [End "\n"]
+            BlockStmt [AfterLbrace "\n"] [AfterLbrace "// a"]`,
 		},
 		{
 			name: "simple",
@@ -40,9 +53,9 @@ func TestDecorator(t *testing.T) {
 			func main() {
 				i // foo
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            BlockStmt [Lbrace (after) "\n"]
-            ExprStmt [(after) "// foo"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            BlockStmt [AfterLbrace "\n"]
+            ExprStmt [End "// foo"]`,
 		},
 		{
 			name: "inline comment inside node",
@@ -51,9 +64,9 @@ func TestDecorator(t *testing.T) {
 			func main() {
 				i /* foo */ ++
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            BlockStmt [Lbrace (after) "\n"]
-            IncDecStmt [X (after) "/* foo */"] [(after) "\n"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            BlockStmt [AfterLbrace "\n"]
+            IncDecStmt [AfterX "/* foo */"] [End "\n"]`,
 		},
 		{
 			name: "comment statement spaced",
@@ -65,9 +78,9 @@ func TestDecorator(t *testing.T) {
 
 				i
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            BlockStmt [Lbrace (after) "\n"] [Lbrace (after) "\n"]
-            ExprStmt [(before) "// foo"] [(before) "\n"] [(after) "\n"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            BlockStmt [AfterLbrace "\n"] [AfterLbrace "\n"]
+            ExprStmt [Start "// foo"] [Start "\n"] [End "\n"]`,
 		},
 		{
 			name: "comment statement",
@@ -77,9 +90,9 @@ func TestDecorator(t *testing.T) {
 				// foo
 				i
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            BlockStmt [Lbrace (after) "\n"]
-            ExprStmt [(before) "// foo"] [(after) "\n"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            BlockStmt [AfterLbrace "\n"]
+            ExprStmt [Start "// foo"] [End "\n"]`,
 		},
 		{
 			name: "comment after lbrace",
@@ -88,9 +101,9 @@ func TestDecorator(t *testing.T) {
 			func main() { // foo
 				i
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            BlockStmt [Lbrace (after) "// foo"]
-            ExprStmt [(after) "\n"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            BlockStmt [AfterLbrace "// foo"]
+            ExprStmt [End "\n"]`,
 		},
 		{
 			name: "comment after func",
@@ -99,10 +112,10 @@ func TestDecorator(t *testing.T) {
 			func /* foo */ main() {
 				i
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            FuncDecl [Func (after) "/* foo */"]
-            BlockStmt [Lbrace (after) "\n"]
-            ExprStmt [(after) "\n"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            FuncDecl [AfterFunc "/* foo */"]
+            BlockStmt [AfterLbrace "\n"]
+            ExprStmt [End "\n"]`,
 		},
 		{
 			name: "field",
@@ -111,11 +124,9 @@ func TestDecorator(t *testing.T) {
 			type A struct {
 				A /*FieldAfterName*/ int /*FieldAfterType*/ ` + "`" + `a:"a"` + "`" + `
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            FieldList [Opening (after) "\n"]
-            Field [Type (after) "/*FieldAfterType*/"] [(after) "\n"]
-            Ident [(after) "/*FieldAfterName*/"]`,
-			// TODO: Should "FieldAfterName" be attached to Field.Names?
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            FieldList [AfterOpening "\n"]
+            Field [AfterNames "/*FieldAfterName*/"] [AfterType "/*FieldAfterType*/"] [End "\n"]`,
 		},
 		{
 			name: "composite literal",
@@ -125,10 +136,10 @@ func TestDecorator(t *testing.T) {
 				"a": "b",
 				"c": "d", // foo
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            CompositeLit [Lbrace (after) "\n"]
-            KeyValueExpr [(after) "\n"]
-            KeyValueExpr [(after) "// foo"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            CompositeLit [AfterLbrace "\n"]
+            KeyValueExpr [End "\n"]
+            KeyValueExpr [End "// foo"]`,
 		},
 		{
 			name: "composite literal 1",
@@ -139,10 +150,10 @@ func TestDecorator(t *testing.T) {
 				// foo
 				"c": "d",
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            CompositeLit [Lbrace (after) "\n"]
-            KeyValueExpr [(after) "\n"]
-            KeyValueExpr [(before) "// foo"] [(after) "\n"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            CompositeLit [AfterLbrace "\n"]
+            KeyValueExpr [End "\n"]
+            KeyValueExpr [Start "// foo"] [End "\n"]`,
 		},
 		{
 			name: "composite literal 2",
@@ -154,10 +165,10 @@ func TestDecorator(t *testing.T) {
 				// foo
 				"c": "d",
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            CompositeLit [Lbrace (after) "\n"]
-            KeyValueExpr [(after) "\n"] [(after) "\n"]
-            KeyValueExpr [(before) "// foo"] [(after) "\n"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            CompositeLit [AfterLbrace "\n"]
+            KeyValueExpr [End "\n"] [End "\n"]
+            KeyValueExpr [Start "// foo"] [End "\n"]`,
 		},
 		{
 			name: "composite literal 3",
@@ -170,10 +181,10 @@ func TestDecorator(t *testing.T) {
 
 				"c": "d",
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            CompositeLit [Lbrace (after) "\n"]
-            KeyValueExpr [(after) "\n"] [(after) "\n"]
-            KeyValueExpr [(before) "// foo"] [(before) "\n"] [(after) "\n"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            CompositeLit [AfterLbrace "\n"]
+            KeyValueExpr [End "\n"] [End "\n"]
+            KeyValueExpr [Start "// foo"] [Start "\n"] [End "\n"]`,
 		},
 		{
 			name: "composite literal 4",
@@ -185,10 +196,10 @@ func TestDecorator(t *testing.T) {
 
 				"c": "d",
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            CompositeLit [Lbrace (after) "\n"]
-            KeyValueExpr [(after) "\n"]
-            KeyValueExpr [(before) "// foo"] [(before) "\n"] [(after) "\n"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            CompositeLit [AfterLbrace "\n"]
+            KeyValueExpr [End "\n"]
+            KeyValueExpr [Start "// foo"] [Start "\n"] [End "\n"]`,
 			// TODO: Should "foo" be attached to the end of the first KeyValueExpr?
 		},
 		{
@@ -199,21 +210,21 @@ func TestDecorator(t *testing.T) {
 				"a": "b", // foo
 				"c": "d",
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            CompositeLit [Lbrace (after) "\n"]
-            KeyValueExpr [(after) "// foo"]
-            KeyValueExpr [(after) "\n"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            CompositeLit [AfterLbrace "\n"]
+            KeyValueExpr [End "// foo"]
+            KeyValueExpr [End "\n"]`,
 		},
 		{
 			name: "FuncDecl",
 			code: `package main
 			
 			// FuncDecl
-			func /*FuncDeclAfterDoc*/ (a *b) /*FuncDeclAfterRecv*/ c /*FuncDeclAfterName*/ (d, e int) (f, g int) /*FuncDeclAfterType*/ {
+			func /*FuncDeclAfterDoc*/ (a *b) /*FuncDeclAfterRecv*/ c /*FuncDeclAfterName*/ (d, e int) /*FuncDeclAfterParams*/ (f, g int) /*FuncDeclAfterType*/ {
 			}`,
-			expect: `File [Name (after) "\n"] [Name (after) "\n"]
-            FuncDecl [Doc (after) "\n"] [Func (after) "/*FuncDeclAfterDoc*/"] [Recv (after) "/*FuncDeclAfterRecv*/"] [Name (after) "/*FuncDeclAfterName*/"] [Results (after) "/*FuncDeclAfterType*/"]
-            BlockStmt [Lbrace (after) "\n"]`,
+			expect: `File [AfterName "\n"] [AfterName "\n"]
+            FuncDecl [Start "// FuncDecl"] [AfterFunc "/*FuncDeclAfterDoc*/"] [AfterRecv "/*FuncDeclAfterRecv*/"] [AfterName "/*FuncDeclAfterName*/"] [AfterParams "/*FuncDeclAfterParams*/"] [AfterResults "/*FuncDeclAfterType*/"]
+            BlockStmt [AfterLbrace "\n"]`,
 		},
 	}
 	var solo bool
@@ -260,13 +271,7 @@ func TestDecorator(t *testing.T) {
 						if v.Position != "" {
 							pos = v.Position + " "
 						}
-						var rel string
-						if v.End {
-							rel = "(after) "
-						} else {
-							rel = "(before) "
-						}
-						result += fmt.Sprintf(" [%s%s%q]", pos, rel, v.Text)
+						result += fmt.Sprintf(" [%s%q]", pos, v.Text)
 					}
 					result += "\n"
 				}
@@ -274,11 +279,78 @@ func TestDecorator(t *testing.T) {
 			})
 
 			if normalize(test.expect) != normalize(result) {
-				t.Fatalf("expected:\n%s\n\nresult:\n%s", normalize(test.expect), normalize(result))
+				t.Errorf("diff: %s", diff.LineDiff(normalize(test.expect), normalize(result)))
 			}
 
 		})
 	}
+}
+
+func TestPositions(t *testing.T) {
+	path := "github.com/dave/dst/gendst/postests"
+	conf := loader.Config{ParserMode: parser.ParseComments}
+	conf.Import(path)
+	prog, err := conf.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	astFile := prog.Package(path).Files[0]
+
+	d := New()
+	file := d.Decorate(astFile, prog.Fset)
+
+	r1 := regexp.MustCompile(`// ([a-zA-Z]+)\(([0-9])\)`)
+	r2 := regexp.MustCompile(`// ([a-zA-Z]+)`)
+	var currentNodeType string
+	var currentTestIndex int
+	var done bool
+
+	dst.Inspect(file, func(n dst.Node) bool {
+		if n == nil {
+			return false
+		}
+		for _, d := range n.Decorations() {
+			if r1.MatchString(d.Text) || r2.MatchString(d.Text) {
+				if currentNodeType != "" && !done {
+					t.Fatalf("missed %s %d", currentNodeType, currentTestIndex)
+				}
+				if matches := r1.FindStringSubmatch(d.Text); matches != nil {
+					currentNodeType = "*dst." + matches[1]
+					currentTestIndex, _ = strconv.Atoi(matches[2])
+				} else if matches := r2.FindStringSubmatch(d.Text); matches != nil {
+					currentNodeType = "*dst." + matches[1]
+					currentTestIndex = 0
+				}
+				done = false
+				break
+			}
+		}
+		if fmt.Sprintf("%T", n) == currentNodeType {
+			//fmt.Printf("*** Testing %s (%d)\n", currentNodeType, currentTestIndex)
+			for _, d := range n.Decorations() {
+				if !strings.HasPrefix(d.Text, "/*") {
+					continue
+				}
+				text := strings.TrimSuffix(strings.TrimPrefix(d.Text, "/*"), "*/")
+				if text != d.Position {
+					t.Errorf("incorrect position in %s (%d) - expected %s, got %s", currentNodeType, currentTestIndex, text, d.Position)
+				}
+			}
+			done = true
+		} else {
+			for _, d := range n.Decorations() {
+				if !strings.HasPrefix(d.Text, "/*") {
+					continue
+				}
+				text := strings.TrimSuffix(strings.TrimPrefix(d.Text, "/*"), "*/")
+				if text != "Start" && text != "End" {
+					// Only tolerate comments moved to adjacent decorations for Start and End
+					t.Errorf("comment on wrong decoration: %s (%d) %s -> %T %s\n", currentNodeType, currentTestIndex, text, n, d.Position)
+				}
+			}
+		}
+		return true
+	})
 }
 
 var multiSpaces = regexp.MustCompile(" {2,}")
