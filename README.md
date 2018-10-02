@@ -5,6 +5,13 @@
 The `dst` package attempts to provide a work-arround for [go/ast: Free-floating comments are 
 single-biggest issue when manipulating the AST](https://github.com/golang/go/issues/20744).
 
+### Progress as of 2nd October
+
+I've just finished a massive reorganisation of the code generation package. Instead of scanning the 
+`go/ast` package for types, all the data needed to generate the fragger, decorator and restorer now 
+resides in [gendst/fragment](https://github.com/dave/dst/blob/master/gendst/fragment/fragment.go). All 
+the tests that were passing before still pass (we still have some disabled tests).
+
 ### Progress as of 16th September
 
 Big refactor today... I'm a bit happier with the code generation. I still haven't found an 
