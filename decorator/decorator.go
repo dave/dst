@@ -7,6 +7,10 @@ import (
 	"github.com/dave/dst"
 )
 
+func Decorate(file *ast.File, fset *token.FileSet) *dst.File {
+	return New().Decorate(file, fset)
+}
+
 func New() *Decorator {
 	return &Decorator{
 		nodes:       map[ast.Node]dst.Node{},

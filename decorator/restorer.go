@@ -9,6 +9,16 @@ import (
 	"github.com/dave/dst"
 )
 
+func Restore(file *dst.File) (*ast.File, *token.FileSet) {
+	r := NewRestorer()
+	af := r.Restore("a.go", file)
+	return af, r.Fset
+}
+
+func NewRestorer() *Restorer {
+	return &Restorer{}
+}
+
 type Restorer struct {
 	Fset *token.FileSet
 }
