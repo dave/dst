@@ -79,9 +79,7 @@ func TestStdLib(t *testing.T) {
 				}
 
 				if expected.String() != output.String() {
-
 					t.Errorf("diff: %s", diff.LineDiff(expected.String(), output.String()))
-
 				}
 			})
 		}

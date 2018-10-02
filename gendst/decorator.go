@@ -102,11 +102,3 @@ func generateDecorator(names []string) error {
 
 	return f.Save("./decorator/decorator-generated.go")
 }
-
-func typeLiteral(path, actual string, pointer bool) *Statement {
-	return Do(func(s *Statement) {
-		if pointer {
-			s.Op("*")
-		}
-	}).Qual(path, actual)
-}

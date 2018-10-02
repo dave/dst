@@ -1147,6 +1147,11 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		// Decoration: Start
 		f.AddStart(n, n.Pos())
 
+		// Node: X
+		if n.X != nil {
+			f.ProcessNode(n.X)
+		}
+
 		// Decoration: AfterX
 		f.AddDecoration(n, "AfterX")
 

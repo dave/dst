@@ -534,14 +534,6 @@ func TestRestorer(t *testing.T) {
 			}
 
 			if string(formatted) != test.code {
-
-				/*fmt.Println("Expected:")
-				ast.Print(fset, f)
-
-				fmt.Println()
-				fmt.Println("Got:")
-				dst.Print(r.Fset, out)*/
-
 				t.Errorf("diff: %s", diff.LineDiff(test.code, string(formatted)))
 			}
 		})

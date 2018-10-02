@@ -892,6 +892,11 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 	case *ast.SliceExpr:
 		out := &dst.SliceExpr{}
 
+		// Node: X
+		if n.X != nil {
+			out.X = d.DecorateNode(n.X).(dst.Expr)
+		}
+
 		// Token: Lbrack
 
 		// Node: Low

@@ -411,6 +411,11 @@ var Info = map[string][]Part{
 		Decoration{
 			Name: "Start",
 		},
+		Node{
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Type{"Expr", false},
+		},
 		Decoration{
 			Name: "AfterX",
 		},

@@ -60,7 +60,7 @@ func (r *Restorer) Restore(fname string, dstFile *dst.File) *ast.File {
 	return astFile
 }
 
-func (f *FileRestorer) applyDecorations(decorations []dst.Decoration, position string, end bool) {
+func (f *FileRestorer) applyDecorations(decorations []dst.Decoration, position string) {
 	for _, d := range decorations {
 		if d.Position != position {
 			continue
@@ -87,80 +87,4 @@ func (f *FileRestorer) applyDecorations(decorations []dst.Decoration, position s
 			f.cursor++
 		}
 	}
-}
-
-func (r *FileRestorer) funcDeclOverride(n *dst.FuncDecl) *ast.FuncDecl {
-	r.applyDecorations(n.Decs, "", false)
-	out := &ast.FuncDecl{}
-	out.Type = &ast.FuncType{}
-	r.nodes[n.Type] = out.Type
-	{
-		r.applyDecorations(n.Decs, "Func", false)
-		prefix, length, suffix := getLength(n.Type, "Func")
-		if n.Type.Func {
-			out.Type.Func = r.cursor
-		}
-		r.cursor += token.Pos(prefix)
-		r.cursor += token.Pos(length)
-		r.cursor += token.Pos(suffix)
-		r.applyDecorations(n.Decs, "Func", true)
-	}
-	{
-		r.applyDecorations(n.Decs, "Recv", false)
-		prefix, length, suffix := getLength(n, "Recv")
-		r.cursor += token.Pos(prefix)
-		if n.Recv != nil {
-			out.Recv = r.RestoreNode(n.Recv).(*ast.FieldList)
-		}
-		r.cursor += token.Pos(length)
-		r.cursor += token.Pos(suffix)
-		r.applyDecorations(n.Decs, "Recv", true)
-	}
-	{
-		r.applyDecorations(n.Decs, "Name", false)
-		prefix, length, suffix := getLength(n, "Name")
-		r.cursor += token.Pos(prefix)
-		if n.Name != nil {
-			out.Name = r.RestoreNode(n.Name).(*ast.Ident)
-		}
-		r.cursor += token.Pos(length)
-		r.cursor += token.Pos(suffix)
-		r.applyDecorations(n.Decs, "Name", true)
-	}
-	{
-		r.applyDecorations(n.Decs, "Params", false)
-		prefix, length, suffix := getLength(n.Type, "Params")
-		r.cursor += token.Pos(prefix)
-		if n.Type.Params != nil {
-			out.Type.Params = r.RestoreNode(n.Type.Params).(*ast.FieldList)
-		}
-		r.cursor += token.Pos(length)
-		r.cursor += token.Pos(suffix)
-		r.applyDecorations(n.Decs, "Params", true)
-	}
-	{
-		r.applyDecorations(n.Decs, "Results", false)
-		prefix, length, suffix := getLength(n.Type, "Results")
-		r.cursor += token.Pos(prefix)
-		if n.Type.Results != nil {
-			out.Type.Results = r.RestoreNode(n.Type.Results).(*ast.FieldList)
-		}
-		r.cursor += token.Pos(length)
-		r.cursor += token.Pos(suffix)
-		r.applyDecorations(n.Decs, "Results", true)
-	}
-	{
-		r.applyDecorations(n.Decs, "Body", false)
-		prefix, length, suffix := getLength(n, "Body")
-		r.cursor += token.Pos(prefix)
-		if n.Body != nil {
-			out.Body = r.RestoreNode(n.Body).(*ast.BlockStmt)
-		}
-		r.cursor += token.Pos(length)
-		r.cursor += token.Pos(suffix)
-		r.applyDecorations(n.Decs, "Body", true)
-	}
-	r.applyDecorations(n.Decs, "", true)
-	r.nodes[n] = out
-	return out
 }
