@@ -9,7 +9,7 @@ func generateRestorer(names []string) error {
 
 	f := NewFile("decorator")
 	f.ImportName(DSTPATH, "dst")
-	// func (r *Restorer) RestoreNode(n dst.Node) ast.Node {
+	// func (r *restorer) restoreNode(n dst.Node) ast.Node {
 	// 	switch n := n.(type) {
 	// 	case <type>:
 	// 		...
@@ -17,7 +17,7 @@ func generateRestorer(names []string) error {
 	// 		panic(...)
 	// 	}
 	// }
-	f.Func().Params(Id("r").Op("*").Id("FileRestorer")).Id("RestoreNode").Params(Id("n").Qual(DSTPATH, "Node")).Qual("go/ast", "Node").BlockFunc(func(g *Group) {
+	f.Func().Params(Id("r").Op("*").Id("fileRestorer")).Id("restoreNode").Params(Id("n").Qual(DSTPATH, "Node")).Qual("go/ast", "Node").BlockFunc(func(g *Group) {
 		g.If(List(Id("an"), Id("ok")).Op(":=").Id("r").Dot("nodes").Index(Id("n")), Id("ok")).Block(
 			Return(Id("an")),
 		)
@@ -68,18 +68,18 @@ func generateRestorer(names []string) error {
 							g.Line().Commentf("Node: %s", frag.Name)
 							/*
 								if n.Elt != nil {
-									out.Elt = r.RestoreNode(n.Elt).(ast.Expr)
+									out.Elt = r.restoreNode(n.Elt).(ast.Expr)
 								}
 							*/
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
-								frag.Field.Get("out").Op("=").Id("r").Dot("RestoreNode").Call(frag.Field.Get("n")).Assert(frag.Type.Literal("go/ast")),
+								frag.Field.Get("out").Op("=").Id("r").Dot("restoreNode").Call(frag.Field.Get("n")).Assert(frag.Type.Literal("go/ast")),
 							)
 						case fragment.List:
 							g.Line().Commentf("List: %s", frag.Name)
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 								frag.Field.Get("out").Op("=").Append(
 									frag.Field.Get("out"),
-									Id("r").Dot("RestoreNode").Call(Id("v")).Assert(frag.Elem.Literal("go/ast")),
+									Id("r").Dot("restoreNode").Call(Id("v")).Assert(frag.Elem.Literal("go/ast")),
 								),
 							)
 						case fragment.Ignored:

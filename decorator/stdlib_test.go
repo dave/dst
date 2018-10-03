@@ -68,13 +68,12 @@ func TestStdLib(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				dstFile := New().Decorate(astFile, prog.Fset)
+				dstFile := Decorate(astFile, prog.Fset)
 
-				r := &Restorer{}
-				astFileRestored := r.Restore("main.go", dstFile)
+				restoredFile, restoredFset := Restore(dstFile)
 
 				output := &bytes.Buffer{}
-				if err := format.Node(output, r.Fset, astFileRestored); err != nil {
+				if err := format.Node(output, restoredFset, restoredFile); err != nil {
 					t.Fatal(err)
 				}
 

@@ -267,8 +267,7 @@ func TestDecorator(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			d := New()
-			file := d.Decorate(f, fset)
+			file := Decorate(f, fset)
 			var result string
 			nodeType := func(n dst.Node) string {
 				return strings.Replace(fmt.Sprintf("%T", n), "*dst.", "", -1)

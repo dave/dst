@@ -19,7 +19,7 @@ func generateDecorator(names []string) error {
 			}
 		}
 	*/
-	f.Func().Params(Id("d").Op("*").Id("Decorator")).Id("DecorateNode").Params(
+	f.Func().Params(Id("d").Op("*").Id("decorator")).Id("decorateNode").Params(
 		Id("n").Qual("go/ast", "Node"),
 	).Qual(DSTPATH, "Node").BlockFunc(func(g *Group) {
 		g.If(List(Id("dn"), Id("ok")).Op(":=").Id("d").Dot("nodes").Index(Id("n")), Id("ok")).Block(
@@ -59,7 +59,7 @@ func generateDecorator(names []string) error {
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 								frag.Field.Get("out").Op("=").Append(
 									frag.Field.Get("out"),
-									Id("d").Dot("DecorateNode").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH)),
+									Id("d").Dot("decorateNode").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH)),
 								),
 							)
 						case fragment.Node:
@@ -70,7 +70,7 @@ func generateDecorator(names []string) error {
 								}
 							*/
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
-								frag.Field.Get("out").Op("=").Id("d").Dot("DecorateNode").Call(frag.Field.Get("n")).Assert(frag.Type.Literal(DSTPATH)),
+								frag.Field.Get("out").Op("=").Id("d").Dot("decorateNode").Call(frag.Field.Get("n")).Assert(frag.Type.Literal(DSTPATH)),
 							)
 						case fragment.Ignored:
 							// TODO

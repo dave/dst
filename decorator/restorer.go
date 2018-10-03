@@ -2,29 +2,41 @@ package decorator
 
 import (
 	"go/ast"
+	"go/format"
 	"go/token"
+	"io"
+	"os"
 
 	"strings"
 
 	"github.com/dave/dst"
 )
 
+func Print(f *dst.File) error {
+	return Fprint(os.Stdout, f)
+}
+
+func Fprint(w io.Writer, f *dst.File) error {
+	af, fset := Restore(f)
+	return format.Node(w, fset, af)
+}
+
 func Restore(file *dst.File) (*ast.File, *token.FileSet) {
-	r := NewRestorer()
-	af := r.Restore("a.go", file)
-	return af, r.Fset
+	fset := token.NewFileSet()
+	return RestoreNamed("a.go", file, fset), fset
 }
 
-func NewRestorer() *Restorer {
-	return &Restorer{}
+func RestoreNamed(name string, file *dst.File, fset *token.FileSet) *ast.File {
+	r := &restorer{Fset: fset}
+	return r.restore(name, file)
 }
 
-type Restorer struct {
+type restorer struct {
 	Fset *token.FileSet
 }
 
-type FileRestorer struct {
-	*Restorer
+type fileRestorer struct {
+	*restorer
 	Lines    []int
 	Comments []*ast.CommentGroup
 	base     token.Pos
@@ -32,18 +44,18 @@ type FileRestorer struct {
 	nodes    map[dst.Node]ast.Node
 }
 
-func (r *Restorer) Restore(fname string, dstFile *dst.File) *ast.File {
+func (r *restorer) restore(fname string, dstFile *dst.File) *ast.File {
 	if r.Fset == nil {
 		r.Fset = token.NewFileSet()
 	}
-	fr := &FileRestorer{
-		Restorer: r,
+	fr := &fileRestorer{
+		restorer: r,
 		base:     token.Pos(r.Fset.Base()),
 		cursor:   token.Pos(r.Fset.Base()),
 		nodes:    map[dst.Node]ast.Node{},
 		Lines:    []int{0},
 	}
-	astFile := fr.RestoreNode(dstFile).(*ast.File)
+	astFile := fr.restoreNode(dstFile).(*ast.File)
 
 	astFileEndPos := int(fr.cursor - fr.base)
 	// Check that none of the comments or newlines extend past the file end position. If so, increment.
@@ -70,7 +82,7 @@ func (r *Restorer) Restore(fname string, dstFile *dst.File) *ast.File {
 	return astFile
 }
 
-func (f *FileRestorer) applyDecorations(decorations dst.Decorations) {
+func (f *fileRestorer) applyDecorations(decorations dst.Decorations) {
 	for _, d := range decorations {
 
 		isNewline := d == "\n"

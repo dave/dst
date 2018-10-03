@@ -5,7 +5,7 @@ import (
 	"go/ast"
 )
 
-func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
+func (d *decorator) decorateNode(n ast.Node) dst.Node {
 	if dn, ok := d.nodes[n]; ok {
 		return dn
 	}
@@ -17,14 +17,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Len
 		if n.Len != nil {
-			out.Len = d.DecorateNode(n.Len).(dst.Expr)
+			out.Len = d.decorateNode(n.Len).(dst.Expr)
 		}
 
 		// Token: Rbrack
 
 		// Node: Elt
 		if n.Elt != nil {
-			out.Elt = d.DecorateNode(n.Elt).(dst.Expr)
+			out.Elt = d.decorateNode(n.Elt).(dst.Expr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -49,7 +49,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// List: Lhs
 		for _, v := range n.Lhs {
-			out.Lhs = append(out.Lhs, d.DecorateNode(v).(dst.Expr))
+			out.Lhs = append(out.Lhs, d.decorateNode(v).(dst.Expr))
 		}
 
 		// Token: Tok
@@ -57,7 +57,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// List: Rhs
 		for _, v := range n.Rhs {
-			out.Rhs = append(out.Rhs, d.DecorateNode(v).(dst.Expr))
+			out.Rhs = append(out.Rhs, d.decorateNode(v).(dst.Expr))
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -117,7 +117,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = d.DecorateNode(n.X).(dst.Expr)
+			out.X = d.decorateNode(n.X).(dst.Expr)
 		}
 
 		// Token: Op
@@ -125,7 +125,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Y
 		if n.Y != nil {
-			out.Y = d.DecorateNode(n.Y).(dst.Expr)
+			out.Y = d.decorateNode(n.Y).(dst.Expr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -152,7 +152,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// List: List
 		for _, v := range n.List {
-			out.List = append(out.List, d.DecorateNode(v).(dst.Stmt))
+			out.List = append(out.List, d.decorateNode(v).(dst.Stmt))
 		}
 
 		// Token: Rbrace
@@ -179,7 +179,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Label
 		if n.Label != nil {
-			out.Label = d.DecorateNode(n.Label).(*dst.Ident)
+			out.Label = d.decorateNode(n.Label).(*dst.Ident)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -201,14 +201,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Fun
 		if n.Fun != nil {
-			out.Fun = d.DecorateNode(n.Fun).(dst.Expr)
+			out.Fun = d.decorateNode(n.Fun).(dst.Expr)
 		}
 
 		// Token: Lparen
 
 		// List: Args
 		for _, v := range n.Args {
-			out.Args = append(out.Args, d.DecorateNode(v).(dst.Expr))
+			out.Args = append(out.Args, d.decorateNode(v).(dst.Expr))
 		}
 
 		// Token: Ellipsis
@@ -246,14 +246,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// List: List
 		for _, v := range n.List {
-			out.List = append(out.List, d.DecorateNode(v).(dst.Expr))
+			out.List = append(out.List, d.decorateNode(v).(dst.Expr))
 		}
 
 		// Token: Colon
 
 		// List: Body
 		for _, v := range n.Body {
-			out.Body = append(out.Body, d.DecorateNode(v).(dst.Stmt))
+			out.Body = append(out.Body, d.decorateNode(v).(dst.Stmt))
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -284,7 +284,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = d.DecorateNode(n.Value).(dst.Expr)
+			out.Value = d.decorateNode(n.Value).(dst.Expr)
 		}
 
 		// Value: Dir
@@ -314,14 +314,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Comm
 		if n.Comm != nil {
-			out.Comm = d.DecorateNode(n.Comm).(dst.Stmt)
+			out.Comm = d.decorateNode(n.Comm).(dst.Stmt)
 		}
 
 		// Token: Colon
 
 		// List: Body
 		for _, v := range n.Body {
-			out.Body = append(out.Body, d.DecorateNode(v).(dst.Stmt))
+			out.Body = append(out.Body, d.decorateNode(v).(dst.Stmt))
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -346,14 +346,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = d.DecorateNode(n.Type).(dst.Expr)
+			out.Type = d.decorateNode(n.Type).(dst.Expr)
 		}
 
 		// Token: Lbrace
 
 		// List: Elts
 		for _, v := range n.Elts {
-			out.Elts = append(out.Elts, d.DecorateNode(v).(dst.Expr))
+			out.Elts = append(out.Elts, d.decorateNode(v).(dst.Expr))
 		}
 
 		// Token: Rbrace
@@ -383,7 +383,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Decl
 		if n.Decl != nil {
-			out.Decl = d.DecorateNode(n.Decl).(dst.Decl)
+			out.Decl = d.decorateNode(n.Decl).(dst.Decl)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -404,7 +404,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Call
 		if n.Call != nil {
-			out.Call = d.DecorateNode(n.Call).(*dst.CallExpr)
+			out.Call = d.decorateNode(n.Call).(*dst.CallExpr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -428,7 +428,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Elt
 		if n.Elt != nil {
-			out.Elt = d.DecorateNode(n.Elt).(dst.Expr)
+			out.Elt = d.decorateNode(n.Elt).(dst.Expr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -460,7 +460,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = d.DecorateNode(n.X).(dst.Expr)
+			out.X = d.decorateNode(n.X).(dst.Expr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -479,17 +479,17 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// List: Names
 		for _, v := range n.Names {
-			out.Names = append(out.Names, d.DecorateNode(v).(*dst.Ident))
+			out.Names = append(out.Names, d.decorateNode(v).(*dst.Ident))
 		}
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = d.DecorateNode(n.Type).(dst.Expr)
+			out.Type = d.decorateNode(n.Type).(dst.Expr)
 		}
 
 		// Node: Tag
 		if n.Tag != nil {
-			out.Tag = d.DecorateNode(n.Tag).(*dst.BasicLit)
+			out.Tag = d.decorateNode(n.Tag).(*dst.BasicLit)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -517,7 +517,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// List: List
 		for _, v := range n.List {
-			out.List = append(out.List, d.DecorateNode(v).(*dst.Field))
+			out.List = append(out.List, d.decorateNode(v).(*dst.Field))
 		}
 
 		// Token: Closing
@@ -544,12 +544,12 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = d.DecorateNode(n.Name).(*dst.Ident)
+			out.Name = d.decorateNode(n.Name).(*dst.Ident)
 		}
 
 		// List: Decls
 		for _, v := range n.Decls {
-			out.Decls = append(out.Decls, d.DecorateNode(v).(dst.Decl))
+			out.Decls = append(out.Decls, d.decorateNode(v).(dst.Decl))
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -573,26 +573,26 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = d.DecorateNode(n.Init).(dst.Stmt)
+			out.Init = d.decorateNode(n.Init).(dst.Stmt)
 		}
 
 		// Token: InitSemicolon
 
 		// Node: Cond
 		if n.Cond != nil {
-			out.Cond = d.DecorateNode(n.Cond).(dst.Expr)
+			out.Cond = d.decorateNode(n.Cond).(dst.Expr)
 		}
 
 		// Token: CondSemicolon
 
 		// Node: Post
 		if n.Post != nil {
-			out.Post = d.DecorateNode(n.Post).(dst.Stmt)
+			out.Post = d.decorateNode(n.Post).(dst.Stmt)
 		}
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
+			out.Body = d.decorateNode(n.Body).(*dst.BlockStmt)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -629,27 +629,27 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Recv
 		if n.Recv != nil {
-			out.Recv = d.DecorateNode(n.Recv).(*dst.FieldList)
+			out.Recv = d.decorateNode(n.Recv).(*dst.FieldList)
 		}
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = d.DecorateNode(n.Name).(*dst.Ident)
+			out.Name = d.decorateNode(n.Name).(*dst.Ident)
 		}
 
 		// Node: Params
 		if n.Type.Params != nil {
-			out.Type.Params = d.DecorateNode(n.Type.Params).(*dst.FieldList)
+			out.Type.Params = d.decorateNode(n.Type.Params).(*dst.FieldList)
 		}
 
 		// Node: Results
 		if n.Type.Results != nil {
-			out.Type.Results = d.DecorateNode(n.Type.Results).(*dst.FieldList)
+			out.Type.Results = d.decorateNode(n.Type.Results).(*dst.FieldList)
 		}
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
+			out.Body = d.decorateNode(n.Body).(*dst.BlockStmt)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -683,12 +683,12 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = d.DecorateNode(n.Type).(*dst.FuncType)
+			out.Type = d.decorateNode(n.Type).(*dst.FuncType)
 		}
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
+			out.Body = d.decorateNode(n.Body).(*dst.BlockStmt)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -713,12 +713,12 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Params
 		if n.Params != nil {
-			out.Params = d.DecorateNode(n.Params).(*dst.FieldList)
+			out.Params = d.decorateNode(n.Params).(*dst.FieldList)
 		}
 
 		// Node: Results
 		if n.Results != nil {
-			out.Results = d.DecorateNode(n.Results).(*dst.FieldList)
+			out.Results = d.decorateNode(n.Results).(*dst.FieldList)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -749,7 +749,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// List: Specs
 		for _, v := range n.Specs {
-			out.Specs = append(out.Specs, d.DecorateNode(v).(dst.Spec))
+			out.Specs = append(out.Specs, d.decorateNode(v).(dst.Spec))
 		}
 
 		// Token: Rparen
@@ -779,7 +779,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Call
 		if n.Call != nil {
-			out.Call = d.DecorateNode(n.Call).(*dst.CallExpr)
+			out.Call = d.decorateNode(n.Call).(*dst.CallExpr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -820,24 +820,24 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = d.DecorateNode(n.Init).(dst.Stmt)
+			out.Init = d.decorateNode(n.Init).(dst.Stmt)
 		}
 
 		// Node: Cond
 		if n.Cond != nil {
-			out.Cond = d.DecorateNode(n.Cond).(dst.Expr)
+			out.Cond = d.decorateNode(n.Cond).(dst.Expr)
 		}
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
+			out.Body = d.decorateNode(n.Body).(*dst.BlockStmt)
 		}
 
 		// Token: ElseTok
 
 		// Node: Else
 		if n.Else != nil {
-			out.Else = d.DecorateNode(n.Else).(dst.Stmt)
+			out.Else = d.decorateNode(n.Else).(dst.Stmt)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -868,12 +868,12 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = d.DecorateNode(n.Name).(*dst.Ident)
+			out.Name = d.decorateNode(n.Name).(*dst.Ident)
 		}
 
 		// Node: Path
 		if n.Path != nil {
-			out.Path = d.DecorateNode(n.Path).(*dst.BasicLit)
+			out.Path = d.decorateNode(n.Path).(*dst.BasicLit)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -895,7 +895,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = d.DecorateNode(n.X).(dst.Expr)
+			out.X = d.decorateNode(n.X).(dst.Expr)
 		}
 
 		// Token: Tok
@@ -920,14 +920,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = d.DecorateNode(n.X).(dst.Expr)
+			out.X = d.decorateNode(n.X).(dst.Expr)
 		}
 
 		// Token: Lbrack
 
 		// Node: Index
 		if n.Index != nil {
-			out.Index = d.DecorateNode(n.Index).(dst.Expr)
+			out.Index = d.decorateNode(n.Index).(dst.Expr)
 		}
 
 		// Token: Rbrack
@@ -959,7 +959,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Methods
 		if n.Methods != nil {
-			out.Methods = d.DecorateNode(n.Methods).(*dst.FieldList)
+			out.Methods = d.decorateNode(n.Methods).(*dst.FieldList)
 		}
 
 		// Value: Incomplete
@@ -984,14 +984,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Key
 		if n.Key != nil {
-			out.Key = d.DecorateNode(n.Key).(dst.Expr)
+			out.Key = d.decorateNode(n.Key).(dst.Expr)
 		}
 
 		// Token: Colon
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = d.DecorateNode(n.Value).(dst.Expr)
+			out.Value = d.decorateNode(n.Value).(dst.Expr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1016,14 +1016,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Label
 		if n.Label != nil {
-			out.Label = d.DecorateNode(n.Label).(*dst.Ident)
+			out.Label = d.decorateNode(n.Label).(*dst.Ident)
 		}
 
 		// Token: Colon
 
 		// Node: Stmt
 		if n.Stmt != nil {
-			out.Stmt = d.DecorateNode(n.Stmt).(dst.Stmt)
+			out.Stmt = d.decorateNode(n.Stmt).(dst.Stmt)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1052,14 +1052,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Key
 		if n.Key != nil {
-			out.Key = d.DecorateNode(n.Key).(dst.Expr)
+			out.Key = d.decorateNode(n.Key).(dst.Expr)
 		}
 
 		// Token: Rbrack
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = d.DecorateNode(n.Value).(dst.Expr)
+			out.Value = d.decorateNode(n.Value).(dst.Expr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1086,7 +1086,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = d.DecorateNode(n.X).(dst.Expr)
+			out.X = d.decorateNode(n.X).(dst.Expr)
 		}
 
 		// Token: Rparen
@@ -1115,14 +1115,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Key
 		if n.Key != nil {
-			out.Key = d.DecorateNode(n.Key).(dst.Expr)
+			out.Key = d.decorateNode(n.Key).(dst.Expr)
 		}
 
 		// Token: Comma
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = d.DecorateNode(n.Value).(dst.Expr)
+			out.Value = d.decorateNode(n.Value).(dst.Expr)
 		}
 
 		// Token: Tok
@@ -1132,12 +1132,12 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = d.DecorateNode(n.X).(dst.Expr)
+			out.X = d.decorateNode(n.X).(dst.Expr)
 		}
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
+			out.Body = d.decorateNode(n.Body).(*dst.BlockStmt)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1173,7 +1173,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// List: Results
 		for _, v := range n.Results {
-			out.Results = append(out.Results, d.DecorateNode(v).(dst.Expr))
+			out.Results = append(out.Results, d.decorateNode(v).(dst.Expr))
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1197,7 +1197,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
+			out.Body = d.decorateNode(n.Body).(*dst.BlockStmt)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1219,14 +1219,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = d.DecorateNode(n.X).(dst.Expr)
+			out.X = d.decorateNode(n.X).(dst.Expr)
 		}
 
 		// Token: Period
 
 		// Node: Sel
 		if n.Sel != nil {
-			out.Sel = d.DecorateNode(n.Sel).(*dst.Ident)
+			out.Sel = d.decorateNode(n.Sel).(*dst.Ident)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1248,14 +1248,14 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Chan
 		if n.Chan != nil {
-			out.Chan = d.DecorateNode(n.Chan).(dst.Expr)
+			out.Chan = d.decorateNode(n.Chan).(dst.Expr)
 		}
 
 		// Token: Arrow
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = d.DecorateNode(n.Value).(dst.Expr)
+			out.Value = d.decorateNode(n.Value).(dst.Expr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1280,28 +1280,28 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = d.DecorateNode(n.X).(dst.Expr)
+			out.X = d.decorateNode(n.X).(dst.Expr)
 		}
 
 		// Token: Lbrack
 
 		// Node: Low
 		if n.Low != nil {
-			out.Low = d.DecorateNode(n.Low).(dst.Expr)
+			out.Low = d.decorateNode(n.Low).(dst.Expr)
 		}
 
 		// Token: Colon1
 
 		// Node: High
 		if n.High != nil {
-			out.High = d.DecorateNode(n.High).(dst.Expr)
+			out.High = d.decorateNode(n.High).(dst.Expr)
 		}
 
 		// Token: Colon2
 
 		// Node: Max
 		if n.Max != nil {
-			out.Max = d.DecorateNode(n.Max).(dst.Expr)
+			out.Max = d.decorateNode(n.Max).(dst.Expr)
 		}
 
 		// Token: Rbrack
@@ -1342,7 +1342,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = d.DecorateNode(n.X).(dst.Expr)
+			out.X = d.decorateNode(n.X).(dst.Expr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1366,7 +1366,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Fields
 		if n.Fields != nil {
-			out.Fields = d.DecorateNode(n.Fields).(*dst.FieldList)
+			out.Fields = d.decorateNode(n.Fields).(*dst.FieldList)
 		}
 
 		// Value: Incomplete
@@ -1393,17 +1393,17 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = d.DecorateNode(n.Init).(dst.Stmt)
+			out.Init = d.decorateNode(n.Init).(dst.Stmt)
 		}
 
 		// Node: Tag
 		if n.Tag != nil {
-			out.Tag = d.DecorateNode(n.Tag).(dst.Expr)
+			out.Tag = d.decorateNode(n.Tag).(dst.Expr)
 		}
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
+			out.Body = d.decorateNode(n.Body).(*dst.BlockStmt)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1431,7 +1431,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = d.DecorateNode(n.X).(dst.Expr)
+			out.X = d.decorateNode(n.X).(dst.Expr)
 		}
 
 		// Token: Period
@@ -1440,7 +1440,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = d.DecorateNode(n.Type).(dst.Expr)
+			out.Type = d.decorateNode(n.Type).(dst.Expr)
 		}
 
 		// Token: TypeToken
@@ -1472,7 +1472,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = d.DecorateNode(n.Name).(*dst.Ident)
+			out.Name = d.decorateNode(n.Name).(*dst.Ident)
 		}
 
 		// Token: Assign
@@ -1480,7 +1480,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = d.DecorateNode(n.Type).(dst.Expr)
+			out.Type = d.decorateNode(n.Type).(dst.Expr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1504,17 +1504,17 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = d.DecorateNode(n.Init).(dst.Stmt)
+			out.Init = d.decorateNode(n.Init).(dst.Stmt)
 		}
 
 		// Node: Assign
 		if n.Assign != nil {
-			out.Assign = d.DecorateNode(n.Assign).(dst.Stmt)
+			out.Assign = d.decorateNode(n.Assign).(dst.Stmt)
 		}
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = d.DecorateNode(n.Body).(*dst.BlockStmt)
+			out.Body = d.decorateNode(n.Body).(*dst.BlockStmt)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1545,7 +1545,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = d.DecorateNode(n.X).(dst.Expr)
+			out.X = d.decorateNode(n.X).(dst.Expr)
 		}
 
 		if nd, ok := d.decorations[n]; ok {
@@ -1567,19 +1567,19 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 		// List: Names
 		for _, v := range n.Names {
-			out.Names = append(out.Names, d.DecorateNode(v).(*dst.Ident))
+			out.Names = append(out.Names, d.decorateNode(v).(*dst.Ident))
 		}
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = d.DecorateNode(n.Type).(dst.Expr)
+			out.Type = d.decorateNode(n.Type).(dst.Expr)
 		}
 
 		// Token: Assign
 
 		// List: Values
 		for _, v := range n.Values {
-			out.Values = append(out.Values, d.DecorateNode(v).(dst.Expr))
+			out.Values = append(out.Values, d.decorateNode(v).(dst.Expr))
 		}
 
 		if nd, ok := d.decorations[n]; ok {

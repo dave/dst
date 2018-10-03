@@ -22,8 +22,7 @@ func TestPositions(t *testing.T) {
 	}
 	astFile := prog.Package(path).Files[0]
 
-	d := New()
-	file := d.Decorate(astFile, prog.Fset)
+	file := Decorate(astFile, prog.Fset)
 
 	r1 := regexp.MustCompile(`// ([a-zA-Z]+)\(([0-9])\)`)
 	r2 := regexp.MustCompile(`// ([a-zA-Z]+)`)

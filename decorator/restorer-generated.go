@@ -7,7 +7,7 @@ import (
 	"go/token"
 )
 
-func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
+func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 	if an, ok := r.nodes[n]; ok {
 		return an
 	}
@@ -27,7 +27,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Len
 		if n.Len != nil {
-			out.Len = r.RestoreNode(n.Len).(ast.Expr)
+			out.Len = r.restoreNode(n.Len).(ast.Expr)
 		}
 
 		// Token: Rbrack
@@ -38,7 +38,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Elt
 		if n.Elt != nil {
-			out.Elt = r.RestoreNode(n.Elt).(ast.Expr)
+			out.Elt = r.restoreNode(n.Elt).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -53,7 +53,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Lhs
 		for _, v := range n.Lhs {
-			out.Lhs = append(out.Lhs, r.RestoreNode(v).(ast.Expr))
+			out.Lhs = append(out.Lhs, r.restoreNode(v).(ast.Expr))
 		}
 
 		// Decoration: AfterLhs
@@ -69,7 +69,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Rhs
 		for _, v := range n.Rhs {
-			out.Rhs = append(out.Rhs, r.RestoreNode(v).(ast.Expr))
+			out.Rhs = append(out.Rhs, r.restoreNode(v).(ast.Expr))
 		}
 
 		// Decoration: End
@@ -114,7 +114,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.RestoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X).(ast.Expr)
 		}
 
 		// Decoration: AfterX
@@ -130,7 +130,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Y
 		if n.Y != nil {
-			out.Y = r.RestoreNode(n.Y).(ast.Expr)
+			out.Y = r.restoreNode(n.Y).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -152,7 +152,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: List
 		for _, v := range n.List {
-			out.List = append(out.List, r.RestoreNode(v).(ast.Stmt))
+			out.List = append(out.List, r.restoreNode(v).(ast.Stmt))
 		}
 
 		// Token: Rbrace
@@ -179,7 +179,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Label
 		if n.Label != nil {
-			out.Label = r.RestoreNode(n.Label).(*ast.Ident)
+			out.Label = r.restoreNode(n.Label).(*ast.Ident)
 		}
 
 		// Decoration: End
@@ -194,7 +194,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Fun
 		if n.Fun != nil {
-			out.Fun = r.RestoreNode(n.Fun).(ast.Expr)
+			out.Fun = r.restoreNode(n.Fun).(ast.Expr)
 		}
 
 		// Decoration: AfterFun
@@ -209,7 +209,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Args
 		for _, v := range n.Args {
-			out.Args = append(out.Args, r.RestoreNode(v).(ast.Expr))
+			out.Args = append(out.Args, r.restoreNode(v).(ast.Expr))
 		}
 
 		// Decoration: AfterArgs
@@ -253,7 +253,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: List
 		for _, v := range n.List {
-			out.List = append(out.List, r.RestoreNode(v).(ast.Expr))
+			out.List = append(out.List, r.restoreNode(v).(ast.Expr))
 		}
 
 		// Decoration: AfterList
@@ -268,7 +268,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Body
 		for _, v := range n.Body {
-			out.Body = append(out.Body, r.RestoreNode(v).(ast.Stmt))
+			out.Body = append(out.Body, r.restoreNode(v).(ast.Stmt))
 		}
 
 		return out
@@ -307,7 +307,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = r.RestoreNode(n.Value).(ast.Expr)
+			out.Value = r.restoreNode(n.Value).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -338,7 +338,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Comm
 		if n.Comm != nil {
-			out.Comm = r.RestoreNode(n.Comm).(ast.Stmt)
+			out.Comm = r.restoreNode(n.Comm).(ast.Stmt)
 		}
 
 		// Decoration: AfterComm
@@ -353,7 +353,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Body
 		for _, v := range n.Body {
-			out.Body = append(out.Body, r.RestoreNode(v).(ast.Stmt))
+			out.Body = append(out.Body, r.restoreNode(v).(ast.Stmt))
 		}
 
 		return out
@@ -365,7 +365,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.RestoreNode(n.Type).(ast.Expr)
+			out.Type = r.restoreNode(n.Type).(ast.Expr)
 		}
 
 		// Decoration: AfterType
@@ -380,7 +380,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Elts
 		for _, v := range n.Elts {
-			out.Elts = append(out.Elts, r.RestoreNode(v).(ast.Expr))
+			out.Elts = append(out.Elts, r.restoreNode(v).(ast.Expr))
 		}
 
 		// Token: Rbrace
@@ -402,7 +402,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Decl
 		if n.Decl != nil {
-			out.Decl = r.RestoreNode(n.Decl).(ast.Decl)
+			out.Decl = r.restoreNode(n.Decl).(ast.Decl)
 		}
 
 		// Decoration: End
@@ -424,7 +424,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Call
 		if n.Call != nil {
-			out.Call = r.RestoreNode(n.Call).(*ast.CallExpr)
+			out.Call = r.restoreNode(n.Call).(*ast.CallExpr)
 		}
 
 		// Decoration: End
@@ -446,7 +446,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Elt
 		if n.Elt != nil {
-			out.Elt = r.RestoreNode(n.Elt).(ast.Expr)
+			out.Elt = r.restoreNode(n.Elt).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -474,7 +474,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.RestoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -489,7 +489,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Names
 		for _, v := range n.Names {
-			out.Names = append(out.Names, r.RestoreNode(v).(*ast.Ident))
+			out.Names = append(out.Names, r.restoreNode(v).(*ast.Ident))
 		}
 
 		// Decoration: AfterNames
@@ -497,7 +497,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.RestoreNode(n.Type).(ast.Expr)
+			out.Type = r.restoreNode(n.Type).(ast.Expr)
 		}
 
 		// Decoration: AfterType
@@ -505,7 +505,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Tag
 		if n.Tag != nil {
-			out.Tag = r.RestoreNode(n.Tag).(*ast.BasicLit)
+			out.Tag = r.restoreNode(n.Tag).(*ast.BasicLit)
 		}
 
 		// Decoration: End
@@ -529,7 +529,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: List
 		for _, v := range n.List {
-			out.List = append(out.List, r.RestoreNode(v).(*ast.Field))
+			out.List = append(out.List, r.restoreNode(v).(*ast.Field))
 		}
 
 		// Token: Closing
@@ -557,7 +557,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = r.RestoreNode(n.Name).(*ast.Ident)
+			out.Name = r.restoreNode(n.Name).(*ast.Ident)
 		}
 
 		// Decoration: AfterName
@@ -565,7 +565,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Decls
 		for _, v := range n.Decls {
-			out.Decls = append(out.Decls, r.RestoreNode(v).(ast.Decl))
+			out.Decls = append(out.Decls, r.restoreNode(v).(ast.Decl))
 		}
 
 		return out
@@ -584,7 +584,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = r.RestoreNode(n.Init).(ast.Stmt)
+			out.Init = r.restoreNode(n.Init).(ast.Stmt)
 		}
 
 		// Token: InitSemicolon
@@ -597,7 +597,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Cond
 		if n.Cond != nil {
-			out.Cond = r.RestoreNode(n.Cond).(ast.Expr)
+			out.Cond = r.restoreNode(n.Cond).(ast.Expr)
 		}
 
 		// Token: CondSemicolon
@@ -610,7 +610,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Post
 		if n.Post != nil {
-			out.Post = r.RestoreNode(n.Post).(ast.Stmt)
+			out.Post = r.restoreNode(n.Post).(ast.Stmt)
 		}
 
 		// Decoration: AfterPost
@@ -618,7 +618,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.RestoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -645,7 +645,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Recv
 		if n.Recv != nil {
-			out.Recv = r.RestoreNode(n.Recv).(*ast.FieldList)
+			out.Recv = r.restoreNode(n.Recv).(*ast.FieldList)
 		}
 
 		// Decoration: AfterRecv
@@ -653,7 +653,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = r.RestoreNode(n.Name).(*ast.Ident)
+			out.Name = r.restoreNode(n.Name).(*ast.Ident)
 		}
 
 		// Decoration: AfterName
@@ -661,7 +661,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Params
 		if n.Type.Params != nil {
-			out.Type.Params = r.RestoreNode(n.Type.Params).(*ast.FieldList)
+			out.Type.Params = r.restoreNode(n.Type.Params).(*ast.FieldList)
 		}
 
 		// Decoration: AfterParams
@@ -669,7 +669,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Results
 		if n.Type.Results != nil {
-			out.Type.Results = r.RestoreNode(n.Type.Results).(*ast.FieldList)
+			out.Type.Results = r.restoreNode(n.Type.Results).(*ast.FieldList)
 		}
 
 		// Decoration: AfterResults
@@ -677,7 +677,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.RestoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -692,7 +692,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.RestoreNode(n.Type).(*ast.FuncType)
+			out.Type = r.restoreNode(n.Type).(*ast.FuncType)
 		}
 
 		// Decoration: AfterType
@@ -700,7 +700,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.RestoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -724,7 +724,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Params
 		if n.Params != nil {
-			out.Params = r.RestoreNode(n.Params).(*ast.FieldList)
+			out.Params = r.restoreNode(n.Params).(*ast.FieldList)
 		}
 
 		// Decoration: AfterParams
@@ -732,7 +732,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Results
 		if n.Results != nil {
-			out.Results = r.RestoreNode(n.Results).(*ast.FieldList)
+			out.Results = r.restoreNode(n.Results).(*ast.FieldList)
 		}
 
 		// Decoration: End
@@ -764,7 +764,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Specs
 		for _, v := range n.Specs {
-			out.Specs = append(out.Specs, r.RestoreNode(v).(ast.Spec))
+			out.Specs = append(out.Specs, r.restoreNode(v).(ast.Spec))
 		}
 
 		// Token: Rparen
@@ -792,7 +792,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Call
 		if n.Call != nil {
-			out.Call = r.RestoreNode(n.Call).(*ast.CallExpr)
+			out.Call = r.restoreNode(n.Call).(*ast.CallExpr)
 		}
 
 		// Decoration: End
@@ -829,7 +829,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = r.RestoreNode(n.Init).(ast.Stmt)
+			out.Init = r.restoreNode(n.Init).(ast.Stmt)
 		}
 
 		// Decoration: AfterInit
@@ -837,7 +837,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Cond
 		if n.Cond != nil {
-			out.Cond = r.RestoreNode(n.Cond).(ast.Expr)
+			out.Cond = r.restoreNode(n.Cond).(ast.Expr)
 		}
 
 		// Decoration: AfterCond
@@ -845,7 +845,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.RestoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
 		}
 
 		// Token: ElseTok
@@ -858,7 +858,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Else
 		if n.Else != nil {
-			out.Else = r.RestoreNode(n.Else).(ast.Stmt)
+			out.Else = r.restoreNode(n.Else).(ast.Stmt)
 		}
 
 		// Decoration: End
@@ -873,7 +873,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = r.RestoreNode(n.Name).(*ast.Ident)
+			out.Name = r.restoreNode(n.Name).(*ast.Ident)
 		}
 
 		// Decoration: AfterName
@@ -881,7 +881,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Path
 		if n.Path != nil {
-			out.Path = r.RestoreNode(n.Path).(*ast.BasicLit)
+			out.Path = r.restoreNode(n.Path).(*ast.BasicLit)
 		}
 
 		// Decoration: End
@@ -896,7 +896,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.RestoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X).(ast.Expr)
 		}
 
 		// Decoration: AfterX
@@ -919,7 +919,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.RestoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X).(ast.Expr)
 		}
 
 		// Decoration: AfterX
@@ -934,7 +934,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Index
 		if n.Index != nil {
-			out.Index = r.RestoreNode(n.Index).(ast.Expr)
+			out.Index = r.restoreNode(n.Index).(ast.Expr)
 		}
 
 		// Decoration: AfterIndex
@@ -963,7 +963,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Methods
 		if n.Methods != nil {
-			out.Methods = r.RestoreNode(n.Methods).(*ast.FieldList)
+			out.Methods = r.restoreNode(n.Methods).(*ast.FieldList)
 		}
 
 		// Decoration: End
@@ -981,7 +981,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Key
 		if n.Key != nil {
-			out.Key = r.RestoreNode(n.Key).(ast.Expr)
+			out.Key = r.restoreNode(n.Key).(ast.Expr)
 		}
 
 		// Decoration: AfterKey
@@ -996,7 +996,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = r.RestoreNode(n.Value).(ast.Expr)
+			out.Value = r.restoreNode(n.Value).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1011,7 +1011,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Label
 		if n.Label != nil {
-			out.Label = r.RestoreNode(n.Label).(*ast.Ident)
+			out.Label = r.restoreNode(n.Label).(*ast.Ident)
 		}
 
 		// Decoration: AfterLabel
@@ -1026,7 +1026,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Stmt
 		if n.Stmt != nil {
-			out.Stmt = r.RestoreNode(n.Stmt).(ast.Stmt)
+			out.Stmt = r.restoreNode(n.Stmt).(ast.Stmt)
 		}
 
 		// Decoration: End
@@ -1051,7 +1051,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Key
 		if n.Key != nil {
-			out.Key = r.RestoreNode(n.Key).(ast.Expr)
+			out.Key = r.restoreNode(n.Key).(ast.Expr)
 		}
 
 		// Token: Rbrack
@@ -1062,7 +1062,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = r.RestoreNode(n.Value).(ast.Expr)
+			out.Value = r.restoreNode(n.Value).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1084,7 +1084,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.RestoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X).(ast.Expr)
 		}
 
 		// Decoration: AfterX
@@ -1113,7 +1113,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Key
 		if n.Key != nil {
-			out.Key = r.RestoreNode(n.Key).(ast.Expr)
+			out.Key = r.restoreNode(n.Key).(ast.Expr)
 		}
 
 		// Token: Comma
@@ -1126,7 +1126,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = r.RestoreNode(n.Value).(ast.Expr)
+			out.Value = r.restoreNode(n.Value).(ast.Expr)
 		}
 
 		// Decoration: AfterValue
@@ -1147,7 +1147,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.RestoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X).(ast.Expr)
 		}
 
 		// Decoration: AfterX
@@ -1155,7 +1155,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.RestoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -1177,7 +1177,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Results
 		for _, v := range n.Results {
-			out.Results = append(out.Results, r.RestoreNode(v).(ast.Expr))
+			out.Results = append(out.Results, r.restoreNode(v).(ast.Expr))
 		}
 
 		// Decoration: End
@@ -1199,7 +1199,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.RestoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -1214,7 +1214,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.RestoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X).(ast.Expr)
 		}
 
 		// Token: Period
@@ -1225,7 +1225,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Sel
 		if n.Sel != nil {
-			out.Sel = r.RestoreNode(n.Sel).(*ast.Ident)
+			out.Sel = r.restoreNode(n.Sel).(*ast.Ident)
 		}
 
 		// Decoration: End
@@ -1240,7 +1240,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Chan
 		if n.Chan != nil {
-			out.Chan = r.RestoreNode(n.Chan).(ast.Expr)
+			out.Chan = r.restoreNode(n.Chan).(ast.Expr)
 		}
 
 		// Decoration: AfterChan
@@ -1255,7 +1255,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = r.RestoreNode(n.Value).(ast.Expr)
+			out.Value = r.restoreNode(n.Value).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1270,7 +1270,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.RestoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X).(ast.Expr)
 		}
 
 		// Decoration: AfterX
@@ -1285,7 +1285,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Low
 		if n.Low != nil {
-			out.Low = r.RestoreNode(n.Low).(ast.Expr)
+			out.Low = r.restoreNode(n.Low).(ast.Expr)
 		}
 
 		// Token: Colon1
@@ -1296,7 +1296,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: High
 		if n.High != nil {
-			out.High = r.RestoreNode(n.High).(ast.Expr)
+			out.High = r.restoreNode(n.High).(ast.Expr)
 		}
 
 		// Token: Colon2
@@ -1309,7 +1309,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Max
 		if n.Max != nil {
-			out.Max = r.RestoreNode(n.Max).(ast.Expr)
+			out.Max = r.restoreNode(n.Max).(ast.Expr)
 		}
 
 		// Decoration: AfterMax
@@ -1341,7 +1341,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.RestoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1363,7 +1363,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Fields
 		if n.Fields != nil {
-			out.Fields = r.RestoreNode(n.Fields).(*ast.FieldList)
+			out.Fields = r.restoreNode(n.Fields).(*ast.FieldList)
 		}
 
 		// Decoration: End
@@ -1388,7 +1388,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = r.RestoreNode(n.Init).(ast.Stmt)
+			out.Init = r.restoreNode(n.Init).(ast.Stmt)
 		}
 
 		// Decoration: AfterInit
@@ -1396,7 +1396,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Tag
 		if n.Tag != nil {
-			out.Tag = r.RestoreNode(n.Tag).(ast.Expr)
+			out.Tag = r.restoreNode(n.Tag).(ast.Expr)
 		}
 
 		// Decoration: AfterTag
@@ -1404,7 +1404,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.RestoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -1419,7 +1419,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.RestoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X).(ast.Expr)
 		}
 
 		// Token: Period
@@ -1437,7 +1437,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.RestoreNode(n.Type).(ast.Expr)
+			out.Type = r.restoreNode(n.Type).(ast.Expr)
 		}
 
 		// Token: TypeToken
@@ -1464,7 +1464,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = r.RestoreNode(n.Name).(*ast.Ident)
+			out.Name = r.restoreNode(n.Name).(*ast.Ident)
 		}
 
 		// Token: Assign
@@ -1478,7 +1478,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.RestoreNode(n.Type).(ast.Expr)
+			out.Type = r.restoreNode(n.Type).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1500,7 +1500,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = r.RestoreNode(n.Init).(ast.Stmt)
+			out.Init = r.restoreNode(n.Init).(ast.Stmt)
 		}
 
 		// Decoration: AfterInit
@@ -1508,7 +1508,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Assign
 		if n.Assign != nil {
-			out.Assign = r.RestoreNode(n.Assign).(ast.Stmt)
+			out.Assign = r.restoreNode(n.Assign).(ast.Stmt)
 		}
 
 		// Decoration: AfterAssign
@@ -1516,7 +1516,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.RestoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -1539,7 +1539,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.RestoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1554,7 +1554,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Names
 		for _, v := range n.Names {
-			out.Names = append(out.Names, r.RestoreNode(v).(*ast.Ident))
+			out.Names = append(out.Names, r.restoreNode(v).(*ast.Ident))
 		}
 
 		// Decoration: AfterNames
@@ -1562,7 +1562,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.RestoreNode(n.Type).(ast.Expr)
+			out.Type = r.restoreNode(n.Type).(ast.Expr)
 		}
 
 		// Token: Assign
@@ -1575,7 +1575,7 @@ func (r *FileRestorer) RestoreNode(n dst.Node) ast.Node {
 
 		// List: Values
 		for _, v := range n.Values {
-			out.Values = append(out.Values, r.RestoreNode(v).(ast.Expr))
+			out.Values = append(out.Values, r.restoreNode(v).(ast.Expr))
 		}
 
 		// Decoration: End

@@ -1,6 +1,7 @@
 package dst_test
 
 import (
+	"go/ast"
 	"go/parser"
 	"go/token"
 
@@ -10,9 +11,10 @@ import (
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/dave/dst/dstutil"
+	"golang.org/x/tools/go/ast/astutil"
 )
 
-func Example_Decorations() {
+func ExampleDecorations() {
 	code := `package main
 
 	func main() {
@@ -20,13 +22,11 @@ func Example_Decorations() {
 		a++
 		print(a)
 	}`
-	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "a.go", code, parser.ParseComments)
+	f, err := decorator.Parse(code)
 	if err != nil {
 		panic(err)
 	}
-	df := decorator.Decorate(f, fset)
-	df = dstutil.Apply(df, func(c *dstutil.Cursor) bool {
+	apply := func(c *dstutil.Cursor) bool {
 		switch n := c.Node().(type) {
 		case *dst.DeclStmt:
 			n.Decs.End.Replace("// foo")
@@ -37,9 +37,11 @@ func Example_Decorations() {
 			n.Decs.AfterArgs.Add("\n")
 		}
 		return true
-	}, nil).(*dst.File)
-	f, fset = decorator.Restore(df)
-	format.Node(os.Stdout, fset, f)
+	}
+	f = dstutil.Apply(f, apply, nil).(*dst.File)
+	if err := decorator.Print(f); err != nil {
+		panic(err)
+	}
 
 	//Output:
 	//package main
@@ -51,4 +53,66 @@ func Example_Decorations() {
 	//		a,
 	//	)
 	//}
+}
+
+func ExampleAstBroken() {
+	code := `package a
+
+	var a int    // foo
+	var b string // bar
+	`
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, "a.go", code, parser.ParseComments)
+	if err != nil {
+		panic(err)
+	}
+	apply := func(c *astutil.Cursor) bool {
+		switch n := c.Node().(type) {
+		case *ast.File:
+			n.Decls = []ast.Decl{n.Decls[1], n.Decls[0]}
+		}
+		return true
+	}
+	f = astutil.Apply(f, apply, nil).(*ast.File)
+	if err := format.Node(os.Stdout, fset, f); err != nil {
+		panic(err)
+	}
+
+	//Output:
+	//package a
+	//
+	//// foo
+	//var b string
+	//var a int
+	//
+	//// bar
+}
+
+func ExampleDstFixed() {
+	code := `package a
+
+	var a int    // foo
+	var b string // bar
+	`
+	f, err := decorator.Parse(code)
+	if err != nil {
+		panic(err)
+	}
+	apply := func(c *dstutil.Cursor) bool {
+		switch n := c.Node().(type) {
+		case *dst.File:
+			n.Decls = []dst.Decl{n.Decls[1], n.Decls[0]}
+		}
+		return true
+	}
+	f = dstutil.Apply(f, apply, nil).(*dst.File)
+	if err := decorator.Print(f); err != nil {
+		panic(err)
+	}
+
+	//Output:
+	//package a
+	//
+	//var b string // bar
+	//var a int    // foo
 }

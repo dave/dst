@@ -529,14 +529,12 @@ func TestRestorer(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			d := New()
-			file := d.Decorate(f, fset)
+			file := Decorate(f, fset)
 
-			r := &Restorer{}
-			out := r.Restore("main.go", file)
+			restoredFile, restoredFset := Restore(file)
 
 			buf := &bytes.Buffer{}
-			if err := format.Node(buf, r.Fset, out); err != nil {
+			if err := format.Node(buf, restoredFset, restoredFile); err != nil {
 				t.Fatal(err)
 			}
 

@@ -1,0 +1,35 @@
+# dst
+
+### Decorated Syntax Tree
+
+The `dst` package enables manipulation of a Go syntax tree in high fidelity. Decorations (e.g. 
+comments and newlines) remain attached to the correct nodes as the tree is modified.
+
+See: [golang issue](https://github.com/golang/go/issues/20744).
+
+### How is `go/ast` broken?
+
+Consider this example where we want to reverse the order of the two declarations. As you can see the 
+comments don't remain attached to the correct nodes:
+
+{{ "ExampleAstBroken" | example }}
+
+Here's the same example using `dst`:
+
+{{ "ExampleDstFixed" | example }}
+
+### Example:
+
+This would be very difficult using the `go/ast` package:
+
+{{ "ExampleDecorations" | example }}
+
+### Status
+
+This is an experimental package under development, so the API and behaviour is expected to change 
+frequently. However I'm now inviting people to use it and give feedback. 
+
+### Chat?
+
+Feel free to create an [issue](https://github.com/dave/dst/issues) or chat in the 
+[#dst](https://gophers.slack.com/messages/CCVL24MTQ) Gophers Slack channel.
