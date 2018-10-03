@@ -1,13 +1,11 @@
-# dst
+# Decorated Syntax Tree
 
-### Decorated Syntax Tree
-
-The `dst` package enables manipulation of a Go syntax tree in high fidelity. Decorations (e.g. 
+The `dst` package enables manipulation of a Go syntax tree with high fidelity. Decorations (e.g. 
 comments and newlines) remain attached to the correct nodes as the tree is modified.
 
-See: [golang issue](https://github.com/golang/go/issues/20744).
+### Where does `go/ast` break?
 
-### How is `go/ast` broken?
+See [this golang issue](https://github.com/golang/go/issues/20744) for more information.
 
 Consider this example where we want to reverse the order of the two declarations. As you can see the 
 comments don't remain attached to the correct nodes:
@@ -18,16 +16,16 @@ Here's the same example using `dst`:
 
 {{ "ExampleDstFixed" | example }}
 
-### Example:
+### Example
 
-This would be very difficult using the `go/ast` package:
+This would be prohibitively difficult using `go/ast`:
 
 {{ "ExampleDecorations" | example }}
 
 ### Status
 
 This is an experimental package under development, so the API and behaviour is expected to change 
-frequently. However I'm now inviting people to use it and give feedback. 
+frequently. However I'm now inviting people to try it out and give feedback. 
 
 ### Chat?
 

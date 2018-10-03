@@ -11,7 +11,6 @@ import (
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/dave/dst/dstutil"
-	"golang.org/x/tools/go/ast/astutil"
 )
 
 func ExampleDecorations() {
@@ -66,14 +65,7 @@ func ExampleAstBroken() {
 	if err != nil {
 		panic(err)
 	}
-	apply := func(c *astutil.Cursor) bool {
-		switch n := c.Node().(type) {
-		case *ast.File:
-			n.Decls = []ast.Decl{n.Decls[1], n.Decls[0]}
-		}
-		return true
-	}
-	f = astutil.Apply(f, apply, nil).(*ast.File)
+	f.Decls = []ast.Decl{f.Decls[1], f.Decls[0]}
 	if err := format.Node(os.Stdout, fset, f); err != nil {
 		panic(err)
 	}
@@ -98,14 +90,7 @@ func ExampleDstFixed() {
 	if err != nil {
 		panic(err)
 	}
-	apply := func(c *dstutil.Cursor) bool {
-		switch n := c.Node().(type) {
-		case *dst.File:
-			n.Decls = []dst.Decl{n.Decls[1], n.Decls[0]}
-		}
-		return true
-	}
-	f = dstutil.Apply(f, apply, nil).(*dst.File)
+	f.Decls = []dst.Decl{f.Decls[1], f.Decls[0]}
 	if err := decorator.Print(f); err != nil {
 		panic(err)
 	}
