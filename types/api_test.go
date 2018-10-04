@@ -10,7 +10,6 @@ import (
 	"go/importer"
 	"go/parser"
 	"go/token"
-	"internal/testenv"
 	"reflect"
 	"regexp"
 	"strings"
@@ -18,6 +17,7 @@ import (
 
 	"github.com/dave/dst"
 	. "github.com/dave/dst/types"
+	"github.com/dave/dst/types/internal/testenv"
 )
 
 func pkgFor(path, source string, info *Info) (*Package, error) {

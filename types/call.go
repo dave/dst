@@ -276,7 +276,7 @@ func (check *Checker) argument(fun dst.Expr, sig *Signature, i int, x *operand, 
 		typ = sig.params.vars[n-1].typ
 		if debug {
 			if _, ok := typ.(*Slice); !ok {
-				check.dump("%v: expected unnamed slice type, got %s", sig.params.vars[n-1].Pos(), typ)
+				check.dump("expected unnamed slice type, got %s", typ)
 			}
 		}
 	default:

@@ -5,38 +5,20 @@
 package types
 
 import (
-	"go/token"
-
 	"github.com/dave/dst"
 )
 
 // labels checks correct label use in body.
 func (check *Checker) labels(body *dst.BlockStmt) {
 	// set of all labels in this body
-	all := NewScope(nil, body.Pos(), body.End(), "label")
+	all := NewScope(nil, "label")
 
-	fwdJumps := check.blockBranches(all, nil, nil, body.List)
-
-	// If there are any forward jumps left, no label was found for
-	// the corresponding goto statements. Either those labels were
-	// never defined, or they are inside blocks and not reachable
-	// for the respective gotos.
-	for _, jmp := range fwdJumps {
-		var msg string
-		name := jmp.Label.Name
-		if alt := all.Lookup(name); alt != nil {
-			msg = "goto %s jumps into block"
-			alt.(*Label).used = true // avoid another error
-		} else {
-			msg = "label %s not declared"
-		}
-		check.errorf(jmp.Label.Pos(), msg, name)
-	}
+	// TODO: deleted code to detect forward jumps (this needs position information)
 
 	// spec: "It is illegal to define a label that is never used."
 	for _, obj := range all.elems {
 		if lbl := obj.(*Label); !lbl.used {
-			check.softErrorf(lbl.pos, "label %s declared but not used", lbl.name)
+			check.softErrorf("label %s declared but not used", lbl.name)
 		}
 	}
 }
@@ -83,187 +65,4 @@ func (b *block) enclosingTarget(name string) *dst.LabeledStmt {
 		}
 	}
 	return nil
-}
-
-// blockBranches processes a block's statement list and returns the set of outgoing forward jumps.
-// all is the scope of all declared labels, parent the set of labels declared in the immediately
-// enclosing block, and lstmt is the labeled statement this block is associated with (or nil).
-func (check *Checker) blockBranches(all *Scope, parent *block, lstmt *dst.LabeledStmt, list []dst.Stmt) []*dst.BranchStmt {
-	b := &block{parent: parent, lstmt: lstmt}
-
-	var (
-		varDeclPos         token.Pos
-		fwdJumps, badJumps []*dst.BranchStmt
-	)
-
-	// All forward jumps jumping over a variable declaration are possibly
-	// invalid (they may still jump out of the block and be ok).
-	// recordVarDecl records them for the given position.
-	recordVarDecl := func(pos token.Pos) {
-		varDeclPos = pos
-		badJumps = append(badJumps[:0], fwdJumps...) // copy fwdJumps to badJumps
-	}
-
-	jumpsOverVarDecl := func(jmp *dst.BranchStmt) bool {
-		if varDeclPos.IsValid() {
-			for _, bad := range badJumps {
-				if jmp == bad {
-					return true
-				}
-			}
-		}
-		return false
-	}
-
-	blockBranches := func(lstmt *dst.LabeledStmt, list []dst.Stmt) {
-		// Unresolved forward jumps inside the nested block
-		// become forward jumps in the current block.
-		fwdJumps = append(fwdJumps, check.blockBranches(all, b, lstmt, list)...)
-	}
-
-	var stmtBranches func(dst.Stmt)
-	stmtBranches = func(s dst.Stmt) {
-		switch s := s.(type) {
-		case *dst.DeclStmt:
-			if d, _ := s.Decl.(*dst.GenDecl); d != nil && d.Tok == token.VAR {
-				recordVarDecl(d.Pos())
-			}
-
-		case *dst.LabeledStmt:
-			// declare non-blank label
-			if name := s.Label.Name; name != "_" {
-				lbl := NewLabel(s.Label.Pos(), check.pkg, name)
-				if alt := all.Insert(lbl); alt != nil {
-					check.softErrorf(lbl.pos, "label %s already declared", name)
-					check.reportAltDecl(alt)
-					// ok to continue
-				} else {
-					b.insert(s)
-					check.recordDef(s.Label, lbl)
-				}
-				// resolve matching forward jumps and remove them from fwdJumps
-				i := 0
-				for _, jmp := range fwdJumps {
-					if jmp.Label.Name == name {
-						// match
-						lbl.used = true
-						check.recordUse(jmp.Label, lbl)
-						if jumpsOverVarDecl(jmp) {
-							check.softErrorf(
-								jmp.Label.Pos(),
-								"goto %s jumps over variable declaration at line %d",
-								name,
-								check.fset.Position(varDeclPos).Line,
-							)
-							// ok to continue
-						}
-					} else {
-						// no match - record new forward jump
-						fwdJumps[i] = jmp
-						i++
-					}
-				}
-				fwdJumps = fwdJumps[:i]
-				lstmt = s
-			}
-			stmtBranches(s.Stmt)
-
-		case *dst.BranchStmt:
-			if s.Label == nil {
-				return // checked in 1st pass (check.stmt)
-			}
-
-			// determine and validate target
-			name := s.Label.Name
-			switch s.Tok {
-			case token.BREAK:
-				// spec: "If there is a label, it must be that of an enclosing
-				// "for", "switch", or "select" statement, and that is the one
-				// whose execution terminates."
-				valid := false
-				if t := b.enclosingTarget(name); t != nil {
-					switch t.Stmt.(type) {
-					case *dst.SwitchStmt, *dst.TypeSwitchStmt, *dst.SelectStmt, *dst.ForStmt, *dst.RangeStmt:
-						valid = true
-					}
-				}
-				if !valid {
-					check.errorf(s.Label.Pos(), "invalid break label %s", name)
-					return
-				}
-
-			case token.CONTINUE:
-				// spec: "If there is a label, it must be that of an enclosing
-				// "for" statement, and that is the one whose execution advances."
-				valid := false
-				if t := b.enclosingTarget(name); t != nil {
-					switch t.Stmt.(type) {
-					case *dst.ForStmt, *dst.RangeStmt:
-						valid = true
-					}
-				}
-				if !valid {
-					check.errorf(s.Label.Pos(), "invalid continue label %s", name)
-					return
-				}
-
-			case token.GOTO:
-				if b.gotoTarget(name) == nil {
-					// label may be declared later - add branch to forward jumps
-					fwdJumps = append(fwdJumps, s)
-					return
-				}
-
-			default:
-				check.invalidAST(s.Pos(), "branch statement: %s %s", s.Tok, name)
-				return
-			}
-
-			// record label use
-			obj := all.Lookup(name)
-			obj.(*Label).used = true
-			check.recordUse(s.Label, obj)
-
-		case *dst.AssignStmt:
-			if s.Tok == token.DEFINE {
-				recordVarDecl(s.Pos())
-			}
-
-		case *dst.BlockStmt:
-			blockBranches(lstmt, s.List)
-
-		case *dst.IfStmt:
-			stmtBranches(s.Body)
-			if s.Else != nil {
-				stmtBranches(s.Else)
-			}
-
-		case *dst.CaseClause:
-			blockBranches(nil, s.Body)
-
-		case *dst.SwitchStmt:
-			stmtBranches(s.Body)
-
-		case *dst.TypeSwitchStmt:
-			stmtBranches(s.Body)
-
-		case *dst.CommClause:
-			blockBranches(nil, s.Body)
-
-		case *dst.SelectStmt:
-			stmtBranches(s.Body)
-
-		case *dst.ForStmt:
-			stmtBranches(s.Body)
-
-		case *dst.RangeStmt:
-			stmtBranches(s.Body)
-		}
-	}
-
-	for _, s := range list {
-		stmtBranches(s)
-	}
-
-	return fwdJumps
 }

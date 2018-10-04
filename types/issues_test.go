@@ -10,14 +10,13 @@ import (
 	"fmt"
 	"go/importer"
 	"go/parser"
-	"internal/testenv"
 	"sort"
 	"strings"
 	"testing"
 
-	. "github.com/dave/dst/types"
-
 	"github.com/dave/dst"
+	. "github.com/dave/dst/types"
+	"github.com/dave/dst/types/internal/testenv"
 )
 
 func TestIssue5770(t *testing.T) {

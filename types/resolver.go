@@ -63,22 +63,22 @@ func (check *Checker) arityMatch(s, init *dst.ValueSpec) {
 	case init == nil && r == 0:
 		// var decl w/o init expr
 		if s.Type == nil {
-			check.errorf(s.Pos(), "missing type or init expr")
+			check.errorf("missing type or init expr")
 		}
 	case l < r:
 		if l < len(s.Values) {
 			// init exprs from s
 			n := s.Values[l]
-			check.errorf(n.Pos(), "extra init expr %s", n)
+			check.errorf("extra init expr %s", n)
 			// TODO(gri) avoid declared but not used error here
 		} else {
 			// init exprs "inherited"
-			check.errorf(s.Pos(), "extra init expr at %s", check.fset.Position(init.Pos()))
+			check.errorf("extra init expr")
 			// TODO(gri) avoid declared but not used error here
 		}
 	case l > r && (init != nil || r != 1):
 		n := s.Names[r]
-		check.errorf(n.Pos(), "missing init expr for %s", n)
+		check.errorf("missing init expr for %s", n)
 	}
 }
 
@@ -107,28 +107,24 @@ func (check *Checker) declarePkgObj(ident *dst.Ident, obj Object, d *declInfo) {
 	// spec: "A package-scope or file-scope identifier with name init
 	// may only be declared to be a function with this (func()) signature."
 	if ident.Name == "init" {
-		check.errorf(ident.Pos(), "cannot declare init - must be func")
+		check.errorf("cannot declare init - must be func")
 		return
 	}
 
 	// spec: "The main package must have package name main and declare
 	// a function main that takes no arguments and returns no value."
 	if ident.Name == "main" && check.pkg.name == "main" {
-		check.errorf(ident.Pos(), "cannot declare main - must be func")
+		check.errorf("cannot declare main - must be func")
 		return
 	}
 
-	check.declare(check.pkg.scope, ident, obj, token.NoPos)
+	check.declare(check.pkg.scope, ident, obj)
 	check.objMap[obj] = d
 	obj.setOrder(uint32(len(check.objMap)))
 }
 
 // filename returns a filename suitable for debugging output.
 func (check *Checker) filename(fileNo int) string {
-	file := check.files[fileNo]
-	if pos := file.Pos(); pos.IsValid() {
-		return check.fset.File(pos).Name()
-	}
 	return fmt.Sprintf("file[%d]", fileNo)
 }
 
@@ -171,7 +167,7 @@ func (check *Checker) importPackage(pos token.Pos, path, dir string) *Package {
 			imp = nil // create fake package below
 		}
 		if err != nil {
-			check.errorf(pos, "could not import %s (%s)", path, err)
+			check.errorf("could not import %s (%s)", path, err)
 			if imp == nil {
 				// create a new fake package
 				// come up with a sensible package name (heuristic)
@@ -225,11 +221,7 @@ func (check *Checker) collectObjects() {
 		// Use the actual source file extent rather than *dst.File extent since the
 		// latter doesn't include comments which appear at the start or end of the file.
 		// Be conservative and use the *dst.File extent if we don't have a *token.File.
-		pos, end := file.Pos(), file.End()
-		if f := check.fset.File(file.Pos()); f != nil {
-			pos, end = token.Pos(f.Base()), token.Pos(f.Base()+f.Size())
-		}
-		fileScope := NewScope(check.pkg.scope, pos, end, check.filename(fileNo))
+		fileScope := NewScope(check.pkg.scope, check.filename(fileNo))
 		check.recordScope(file, fileScope)
 
 		// determine file directory, necessary to resolve imports

@@ -55,17 +55,6 @@ type operand struct {
 	id   builtinId
 }
 
-// pos returns the position of the expression corresponding to x.
-// If x is invalid the position is token.NoPos.
-//
-func (x *operand) pos() token.Pos {
-	// x.expr may not be set if x is invalid
-	if x.expr == nil {
-		return token.NoPos
-	}
-	return x.expr.Pos()
-}
-
 // Operand string formats
 // (not all "untyped" cases can appear due to the type system,
 // but they fall out naturally here)

@@ -115,9 +115,6 @@ func colorFor(t Type) color {
 // The result is nil for methods and struct fields.
 func (obj *object) Parent() *Scope { return obj.parent }
 
-// Pos returns the declaration position of the object's identifier.
-func (obj *object) Pos() token.Pos { return obj.pos }
-
 // Pkg returns the package to which the object belongs.
 // The result is nil for labels and objects in the Universe scope.
 func (obj *object) Pkg() *Package { return obj.pkg }
@@ -136,15 +133,13 @@ func (obj *object) Exported() bool { return dst.IsExported(obj.name) }
 // Id is a wrapper for Id(obj.Pkg(), obj.Name()).
 func (obj *object) Id() string { return Id(obj.pkg, obj.name) }
 
-func (obj *object) String() string      { panic("abstract") }
-func (obj *object) order() uint32       { return obj.order_ }
-func (obj *object) color() color        { return obj.color_ }
-func (obj *object) scopePos() token.Pos { return obj.scopePos_ }
+func (obj *object) String() string { panic("abstract") }
+func (obj *object) order() uint32  { return obj.order_ }
+func (obj *object) color() color   { return obj.color_ }
 
-func (obj *object) setParent(parent *Scope)   { obj.parent = parent }
-func (obj *object) setOrder(order uint32)     { assert(order > 0); obj.order_ = order }
-func (obj *object) setColor(color color)      { assert(color != white); obj.color_ = color }
-func (obj *object) setScopePos(pos token.Pos) { obj.scopePos_ = pos }
+func (obj *object) setParent(parent *Scope) { obj.parent = parent }
+func (obj *object) setOrder(order uint32)   { assert(order > 0); obj.order_ = order }
+func (obj *object) setColor(color color)    { assert(color != white); obj.color_ = color }
 
 func (obj *object) sameId(pkg *Package, name string) bool {
 	// spec:
@@ -178,8 +173,8 @@ type PkgName struct {
 
 // NewPkgName returns a new PkgName object representing an imported package.
 // The remaining arguments set the attributes found with all Objects.
-func NewPkgName(pos token.Pos, pkg *Package, name string, imported *Package) *PkgName {
-	return &PkgName{object{nil, pos, pkg, name, Typ[Invalid], 0, black, token.NoPos}, imported, false}
+func NewPkgName(pkg *Package, name string, imported *Package) *PkgName {
+	return &PkgName{object{nil, pkg, name, Typ[Invalid], 0, black}, imported, false}
 }
 
 // Imported returns the package that was imported.
@@ -296,7 +291,7 @@ func NewFunc(pos token.Pos, pkg *Package, name string, sig *Signature) *Func {
 	if sig != nil {
 		typ = sig
 	}
-	return &Func{object{nil, pos, pkg, name, typ, 0, colorFor(typ), token.NoPos}}
+	return &Func{object{nil, pkg, name, typ, 0, colorFor(typ)}}
 }
 
 // FullName returns the package- or receiver-type-qualified name of
@@ -321,7 +316,7 @@ type Label struct {
 
 // NewLabel returns a new label.
 func NewLabel(pos token.Pos, pkg *Package, name string) *Label {
-	return &Label{object{pos: pos, pkg: pkg, name: name, typ: Typ[Invalid], color_: black}, false}
+	return &Label{object{pkg: pkg, name: name, typ: Typ[Invalid], color_: black}, false}
 }
 
 // A Builtin represents a built-in function.

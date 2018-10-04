@@ -105,7 +105,7 @@ func WriteExpr(buf *bytes.Buffer, x dst.Expr) {
 			}
 			WriteExpr(buf, arg)
 		}
-		if x.Ellipsis.IsValid() {
+		if x.Ellipsis {
 			buf.WriteString("...")
 		}
 		buf.WriteByte(')')

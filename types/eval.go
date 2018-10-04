@@ -6,8 +6,9 @@ package types
 
 import (
 	"fmt"
-	"go/parser"
 	"go/token"
+
+	"github.com/dave/dst/decorator"
 )
 
 // Eval returns the type and, if constant, the value for the
@@ -62,7 +63,7 @@ func Eval(fset *token.FileSet, pkg *Package, pos token.Pos, expr string) (_ Type
 	}
 
 	// parse expressions
-	node, err := parser.ParseExprFrom(fset, "eval", expr, 0)
+	node, err := decorator.ParseExprFrom(fset, "eval", expr, 0)
 	if err != nil {
 		return TypeAndValue{}, err
 	}

@@ -9,13 +9,12 @@ import (
 	"go/importer"
 	"go/parser"
 	"go/token"
-	"internal/testenv"
 	"sort"
 	"testing"
 
-	. "github.com/dave/dst/types"
-
 	"github.com/dave/dst"
+	. "github.com/dave/dst/types"
+	"github.com/dave/dst/types/internal/testenv"
 )
 
 type resolveTestImporter struct {

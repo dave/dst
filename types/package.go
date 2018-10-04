@@ -6,7 +6,6 @@ package types
 
 import (
 	"fmt"
-	"go/token"
 )
 
 // A Package describes a Go package.
@@ -22,7 +21,7 @@ type Package struct {
 // NewPackage returns a new Package for the given package path and name.
 // The package is not complete and contains no explicit imports.
 func NewPackage(path, name string) *Package {
-	scope := NewScope(Universe, token.NoPos, token.NoPos, fmt.Sprintf("package %q", path))
+	scope := NewScope(Universe, fmt.Sprintf("package %q", path))
 	return &Package{path: path, name: name, scope: scope}
 }
 

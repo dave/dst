@@ -7,7 +7,6 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"go/token"
 
 	"github.com/dave/dst"
 )
@@ -71,13 +70,6 @@ func (info *methodInfo) String() string {
 	return info.src.Names[0].Name
 }
 
-func (info *methodInfo) Pos() token.Pos {
-	if info.fun != nil {
-		return info.fun.Pos()
-	}
-	return info.src.Pos()
-}
-
 func (info *methodInfo) id(pkg *Package) string {
 	if info.fun != nil {
 		return info.fun.Id()
@@ -108,9 +100,9 @@ func (s *methodInfoSet) insert(pkg *Package, m *methodInfo) *methodInfo {
 }
 
 // like Checker.declareInSet but for method infos.
-func (check *Checker) declareInMethodSet(mset *methodInfoSet, pos token.Pos, m *methodInfo) bool {
+func (check *Checker) declareInMethodSet(mset *methodInfoSet, m *methodInfo) bool {
 	if alt := mset.insert(check.pkg, m); alt != nil {
-		check.errorf(pos, "%s redeclared", m)
+		check.errorf("%s redeclared", m)
 		check.reportAltMethod(alt)
 		return false
 	}
@@ -119,12 +111,10 @@ func (check *Checker) declareInMethodSet(mset *methodInfoSet, pos token.Pos, m *
 
 // like Checker.reportAltDecl but for method infos.
 func (check *Checker) reportAltMethod(m *methodInfo) {
-	if pos := m.Pos(); pos.IsValid() {
-		// We use "other" rather than "previous" here because
-		// the first declaration seen may not be textually
-		// earlier in the source.
-		check.errorf(pos, "\tother declaration of %s", m) // secondary error, \t indented
-	}
+	// We use "other" rather than "previous" here because
+	// the first declaration seen may not be textually
+	// earlier in the source.
+	check.errorf("\tother declaration of %s", m) // secondary error, \t indented
 }
 
 // infoFromTypeLit computes the method set for the given interface iface
@@ -145,11 +135,11 @@ func (check *Checker) infoFromTypeLit(scope *Scope, iface *dst.InterfaceType, tn
 	}
 
 	if trace {
-		check.trace(iface.Pos(), "-- collect methods for %v (path = %s, objPath = %s)", iface, pathString(path), check.pathString())
+		check.trace("-- collect methods for %v (path = %s, objPath = %s)", iface, pathString(path), check.pathString())
 		check.indent++
 		defer func() {
 			check.indent--
-			check.trace(iface.Pos(), "=> %s", info)
+			check.trace("=> %s", info)
 		}()
 	}
 
@@ -197,7 +187,6 @@ func (check *Checker) infoFromTypeLit(scope *Scope, iface *dst.InterfaceType, tn
 		// collect explicitly declared methods and embedded interfaces
 		var mset methodInfoSet
 		var embeddeds []*ifaceInfo
-		var positions []token.Pos // entries correspond to positions of embeddeds; used for error reporting
 		for _, f := range iface.Methods.List {
 			if len(f.Names) > 0 {
 				// We have a method with name f.Names[0].
@@ -207,12 +196,12 @@ func (check *Checker) infoFromTypeLit(scope *Scope, iface *dst.InterfaceType, tn
 				// spec: "As with all method sets, in an interface type,
 				// each method must have a unique non-blank name."
 				if name := f.Names[0]; name.Name == "_" {
-					check.errorf(name.Pos(), "invalid method name _")
+					check.errorf("invalid method name _")
 					continue // ignore
 				}
 
 				m := &methodInfo{scope: scope, src: f}
-				if check.declareInMethodSet(&mset, f.Pos(), m) {
+				if check.declareInMethodSet(&mset, m) {
 					info.methods = append(info.methods, m)
 				}
 			} else {
@@ -233,7 +222,6 @@ func (check *Checker) infoFromTypeLit(scope *Scope, iface *dst.InterfaceType, tn
 				}
 				if e != nil {
 					embeddeds = append(embeddeds, e)
-					positions = append(positions, f.Type.Pos())
 				}
 			}
 		}
@@ -241,9 +229,8 @@ func (check *Checker) infoFromTypeLit(scope *Scope, iface *dst.InterfaceType, tn
 
 		// collect methods of embedded interfaces
 		for i, e := range embeddeds {
-			pos := positions[i] // position of type name of embedded interface
 			for _, m := range e.methods {
-				if check.declareInMethodSet(&mset, pos, m) {
+				if check.declareInMethodSet(&mset, m) {
 					info.methods = append(info.methods, m)
 				}
 			}

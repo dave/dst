@@ -14,7 +14,6 @@ import (
 	"go/parser"
 	"go/scanner"
 	"go/token"
-	"internal/testenv"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -23,9 +22,9 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/dave/dst/types"
-
 	"github.com/dave/dst"
+	. "github.com/dave/dst/types"
+	"github.com/dave/dst/types/internal/testenv"
 )
 
 var (

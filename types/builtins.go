@@ -632,7 +632,7 @@ func (check *Checker) builtin(x *operand, call *dst.CallExpr, id builtinId) (_ b
 		x1 := x
 		for _, arg := range call.Args {
 			check.rawExpr(x1, arg, nil) // permit trace for types, e.g.: new(trace(T))
-			check.dump("%v: %s", x1.pos(), x1)
+			check.dump("%s", x1)
 			x1 = &t // use incoming x only for first argument
 		}
 		// trace is only available in test mode - no need to record signature

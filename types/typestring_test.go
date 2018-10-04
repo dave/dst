@@ -8,12 +8,11 @@ import (
 	"go/importer"
 	"go/parser"
 	"go/token"
-	"internal/testenv"
 	"testing"
 
-	. "github.com/dave/dst/types"
-
 	"github.com/dave/dst"
+	. "github.com/dave/dst/types"
+	"github.com/dave/dst/types/internal/testenv"
 )
 
 const filename = "<src>"
