@@ -28,7 +28,7 @@ func (check *Checker) call(x *operand, e *dst.CallExpr) exprKind {
 		x.mode = invalid
 		switch n := len(e.Args); n {
 		case 0:
-			check.errorf(e.Rparen, "missing argument in conversion to %s", T)
+			check.errorf("missing argument in conversion to %s", T)
 		case 1:
 			check.expr(x, e.Args[0])
 			if x.mode != invalid {
@@ -36,7 +36,7 @@ func (check *Checker) call(x *operand, e *dst.CallExpr) exprKind {
 			}
 		default:
 			check.use(e.Args...)
-			check.errorf(e.Args[n-1].Pos(), "too many arguments in conversion to %s", T)
+			check.errorf("too many arguments in conversion to %s", T)
 		}
 		x.expr = e
 		return conversion
@@ -57,7 +57,7 @@ func (check *Checker) call(x *operand, e *dst.CallExpr) exprKind {
 		// function/method call
 		sig, _ := x.typ.Underlying().(*Signature)
 		if sig == nil {
-			check.invalidOp(x.pos(), "cannot call non-function %s", x)
+			check.invalidOp("cannot call non-function %s", x)
 			x.mode = invalid
 			x.expr = e
 			return statement
@@ -218,16 +218,16 @@ func unpack(get getter, n int, allowCommaOk bool) (getter, int, bool) {
 // arguments checks argument passing for the call with the given signature.
 // The arg function provides the operand for the i'th argument.
 func (check *Checker) arguments(x *operand, call *dst.CallExpr, sig *Signature, arg getter, n int) {
-	if call.Ellipsis.IsValid() {
+	if call.Ellipsis {
 		// last argument is of the form x...
 		if !sig.variadic {
-			check.errorf(call.Ellipsis, "cannot use ... in call to non-variadic %s", call.Fun)
+			check.errorf("cannot use ... in call to non-variadic %s", call.Fun)
 			check.useGetter(arg, n)
 			return
 		}
 		if len(call.Args) == 1 && n > 1 {
 			// f()... is not permitted if f() is multi-valued
-			check.errorf(call.Ellipsis, "cannot use ... with %d-valued %s", n, call.Args[0])
+			check.errorf("cannot use ... with %d-valued %s", n, call.Args[0])
 			check.useGetter(arg, n)
 			return
 		}
@@ -237,8 +237,8 @@ func (check *Checker) arguments(x *operand, call *dst.CallExpr, sig *Signature, 
 	for i := 0; i < n; i++ {
 		arg(x, i)
 		if x.mode != invalid {
-			var ellipsis token.Pos
-			if i == n-1 && call.Ellipsis.IsValid() {
+			var ellipsis bool
+			if i == n-1 && call.Ellipsis {
 				ellipsis = call.Ellipsis
 			}
 			check.argument(call.Fun, sig, i, x, ellipsis)
@@ -252,14 +252,14 @@ func (check *Checker) arguments(x *operand, call *dst.CallExpr, sig *Signature, 
 		n++
 	}
 	if n < sig.params.Len() {
-		check.errorf(call.Rparen, "too few arguments in call to %s", call.Fun)
+		check.errorf("too few arguments in call to %s", call.Fun)
 		// ok to continue
 	}
 }
 
 // argument checks passing of argument x to the i'th parameter of the given signature.
 // If ellipsis is valid, the argument is followed by ... at that position in the call.
-func (check *Checker) argument(fun dst.Expr, sig *Signature, i int, x *operand, ellipsis token.Pos) {
+func (check *Checker) argument(fun dst.Expr, sig *Signature, i int, x *operand, ellipsis bool) {
 	check.singleValue(x)
 	if x.mode == invalid {
 		return
@@ -280,18 +280,18 @@ func (check *Checker) argument(fun dst.Expr, sig *Signature, i int, x *operand, 
 			}
 		}
 	default:
-		check.errorf(x.pos(), "too many arguments")
+		check.errorf("too many arguments")
 		return
 	}
 
-	if ellipsis.IsValid() {
+	if ellipsis {
 		// argument is of the form x... and x is single-valued
 		if i != n-1 {
-			check.errorf(ellipsis, "can only use ... with matching parameter")
+			check.errorf("can only use ... with matching parameter")
 			return
 		}
 		if _, ok := x.typ.Underlying().(*Slice); !ok && x.typ != Typ[UntypedNil] { // see issue #18268
-			check.errorf(x.pos(), "cannot use %s as parameter of type %s", x, typ)
+			check.errorf("cannot use %s as parameter of type %s", x, typ)
 			return
 		}
 	} else if sig.variadic && i >= n-1 {
@@ -325,12 +325,12 @@ func (check *Checker) selector(x *operand, e *dst.SelectorExpr) {
 			exp := pkg.scope.Lookup(sel)
 			if exp == nil {
 				if !pkg.fake {
-					check.errorf(e.Sel.Pos(), "%s not declared by package %s", sel, pkg.name)
+					check.errorf("%s not declared by package %s", sel, pkg.name)
 				}
 				goto Error
 			}
 			if !exp.Exported() {
-				check.errorf(e.Sel.Pos(), "%s not exported by package %s", sel, pkg.name)
+				check.errorf("%s not exported by package %s", sel, pkg.name)
 				// ok to continue
 			}
 			check.recordUse(e.Sel, exp)
@@ -375,11 +375,11 @@ func (check *Checker) selector(x *operand, e *dst.SelectorExpr) {
 		switch {
 		case index != nil:
 			// TODO(gri) should provide actual type where the conflict happens
-			check.invalidOp(e.Sel.Pos(), "ambiguous selector %s", sel)
+			check.invalidOp("ambiguous selector %s", sel)
 		case indirect:
-			check.invalidOp(e.Sel.Pos(), "%s is not in method set of %s", sel, x.typ)
+			check.invalidOp("%s is not in method set of %s", sel, x.typ)
 		default:
-			check.invalidOp(e.Sel.Pos(), "%s has no field or method %s", x, sel)
+			check.invalidOp("%s has no field or method %s", x, sel)
 		}
 		goto Error
 	}
@@ -388,7 +388,7 @@ func (check *Checker) selector(x *operand, e *dst.SelectorExpr) {
 		// method expression
 		m, _ := obj.(*Func)
 		if m == nil {
-			check.invalidOp(e.Sel.Pos(), "%s has no method %s", x, sel)
+			check.invalidOp("%s has no method %s", x, sel)
 			goto Error
 		}
 
@@ -403,7 +403,7 @@ func (check *Checker) selector(x *operand, e *dst.SelectorExpr) {
 		}
 		x.mode = value
 		x.typ = &Signature{
-			params:   NewTuple(append([]*Var{NewVar(token.NoPos, check.pkg, "", x.typ)}, params...)...),
+			params:   NewTuple(append([]*Var{NewVar(check.pkg, "", x.typ)}, params...)...),
 			results:  sig.results,
 			variadic: sig.variadic,
 		}
@@ -450,7 +450,7 @@ func (check *Checker) selector(x *operand, e *dst.SelectorExpr) {
 				// lookup.
 				mset := NewMethodSet(typ)
 				if m := mset.Lookup(check.pkg, sel); m == nil || m.obj != obj {
-					check.dump("%v: (%s).%v -> %s", e.Pos(), typ, obj.name, m)
+					check.dump("(%s).%v -> %s", typ, obj.name, m)
 					check.dump("%s\n", mset)
 					panic("method sets and lookup don't agree")
 				}

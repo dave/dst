@@ -54,9 +54,8 @@ func (check *Checker) sprintf(format string, args ...interface{}) string {
 	return fmt.Sprintf(format, args...)
 }
 
-func (check *Checker) trace(pos token.Pos, format string, args ...interface{}) {
-	fmt.Printf("%s:\t%s%s\n",
-		check.fset.Position(pos),
+func (check *Checker) trace(format string, args ...interface{}) {
+	fmt.Printf("%s%s\n",
 		strings.Repeat(".  ", check.indent),
 		check.sprintf(format, args...),
 	)
@@ -67,7 +66,7 @@ func (check *Checker) dump(format string, args ...interface{}) {
 	fmt.Println(check.sprintf(format, args...))
 }
 
-func (check *Checker) err(pos token.Pos, msg string, soft bool) {
+func (check *Checker) err(msg string, soft bool) {
 	// Cheap trick: Don't report errors with messages containing
 	// "invalid operand" or "invalid type" as those tend to be
 	// follow-on errors which don't add useful information. Only
@@ -77,7 +76,7 @@ func (check *Checker) err(pos token.Pos, msg string, soft bool) {
 		return
 	}
 
-	err := Error{check.fset, pos, msg, soft}
+	err := Error{msg, soft}
 	if check.firstErr == nil {
 		check.firstErr = err
 	}
@@ -89,26 +88,26 @@ func (check *Checker) err(pos token.Pos, msg string, soft bool) {
 	f(err)
 }
 
-func (check *Checker) error(pos token.Pos, msg string) {
-	check.err(pos, msg, false)
+func (check *Checker) error(msg string) {
+	check.err(msg, false)
 }
 
-func (check *Checker) errorf(pos token.Pos, format string, args ...interface{}) {
-	check.err(pos, check.sprintf(format, args...), false)
+func (check *Checker) errorf(format string, args ...interface{}) {
+	check.err(check.sprintf(format, args...), false)
 }
 
-func (check *Checker) softErrorf(pos token.Pos, format string, args ...interface{}) {
-	check.err(pos, check.sprintf(format, args...), true)
+func (check *Checker) softErrorf(format string, args ...interface{}) {
+	check.err(check.sprintf(format, args...), true)
 }
 
-func (check *Checker) invalidAST(pos token.Pos, format string, args ...interface{}) {
-	check.errorf(pos, "invalid AST: "+format, args...)
+func (check *Checker) invalidAST(format string, args ...interface{}) {
+	check.errorf("invalid AST: "+format, args...)
 }
 
-func (check *Checker) invalidArg(pos token.Pos, format string, args ...interface{}) {
-	check.errorf(pos, "invalid argument: "+format, args...)
+func (check *Checker) invalidArg(format string, args ...interface{}) {
+	check.errorf("invalid argument: "+format, args...)
 }
 
-func (check *Checker) invalidOp(pos token.Pos, format string, args ...interface{}) {
-	check.errorf(pos, "invalid operation: "+format, args...)
+func (check *Checker) invalidOp(format string, args ...interface{}) {
+	check.errorf("invalid operation: "+format, args...)
 }

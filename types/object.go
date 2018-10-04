@@ -19,7 +19,6 @@ import (
 //
 type Object interface {
 	Parent() *Scope // scope in which this object is declared; nil for methods and struct fields
-	Pos() token.Pos // position of object identifier in declaration
 	Pkg() *Package  // package to which this object belongs; nil for labels and objects in the Universe scope
 	Name() string   // package local object name
 	Type() Type     // object type
@@ -49,12 +48,6 @@ type Object interface {
 
 	// sameId reports whether obj.Id() and Id(pkg, name) are the same.
 	sameId(pkg *Package, name string) bool
-
-	// scopePos returns the start position of the scope of this Object
-	scopePos() token.Pos
-
-	// setScopePos sets the start position of the scope for this Object.
-	setScopePos(pos token.Pos)
 }
 
 // Id returns name if it is exported, otherwise it
@@ -79,14 +72,12 @@ func Id(pkg *Package, name string) string {
 
 // An object implements the common parts of an Object.
 type object struct {
-	parent    *Scope
-	pos       token.Pos
-	pkg       *Package
-	name      string
-	typ       Type
-	order_    uint32
-	color_    color
-	scopePos_ token.Pos
+	parent *Scope
+	pkg    *Package
+	name   string
+	typ    Type
+	order_ uint32
+	color_ color
 }
 
 // color encodes the color of an object (see Checker.objDecl for details).
@@ -203,8 +194,8 @@ type Const struct {
 
 // NewConst returns a new constant with value val.
 // The remaining arguments set the attributes found with all Objects.
-func NewConst(pos token.Pos, pkg *Package, name string, typ Type, val constant.Value) *Const {
-	return &Const{object{nil, pos, pkg, name, typ, 0, colorFor(typ), token.NoPos}, val}
+func NewConst(pkg *Package, name string, typ Type, val constant.Value) *Const {
+	return &Const{object{nil, pkg, name, typ, 0, colorFor(typ)}, val}
 }
 
 // Val returns the constant's value.
@@ -224,8 +215,8 @@ type TypeName struct {
 // It may also be nil such that the returned TypeName can be used as
 // argument for NewNamed, which will set the TypeName's type as a side-
 // effect.
-func NewTypeName(pos token.Pos, pkg *Package, name string, typ Type) *TypeName {
-	return &TypeName{object{nil, pos, pkg, name, typ, 0, colorFor(typ), token.NoPos}}
+func NewTypeName(pkg *Package, name string, typ Type) *TypeName {
+	return &TypeName{object{nil, pkg, name, typ, 0, colorFor(typ)}}
 }
 
 // IsAlias reports whether obj is an alias name for a type.
@@ -262,20 +253,20 @@ type Var struct {
 
 // NewVar returns a new variable.
 // The arguments set the attributes found with all Objects.
-func NewVar(pos token.Pos, pkg *Package, name string, typ Type) *Var {
-	return &Var{object: object{nil, pos, pkg, name, typ, 0, colorFor(typ), token.NoPos}}
+func NewVar(pkg *Package, name string, typ Type) *Var {
+	return &Var{object: object{nil, pkg, name, typ, 0, colorFor(typ)}}
 }
 
 // NewParam returns a new variable representing a function parameter.
-func NewParam(pos token.Pos, pkg *Package, name string, typ Type) *Var {
-	return &Var{object: object{nil, pos, pkg, name, typ, 0, colorFor(typ), token.NoPos}, used: true} // parameters are always 'used'
+func NewParam(pkg *Package, name string, typ Type) *Var {
+	return &Var{object: object{nil, pkg, name, typ, 0, colorFor(typ)}, used: true} // parameters are always 'used'
 }
 
 // NewField returns a new variable representing a struct field.
 // For embedded fields, the name is the unqualified type name
 /// under which the field is accessible.
-func NewField(pos token.Pos, pkg *Package, name string, typ Type, embedded bool) *Var {
-	return &Var{object: object{nil, pos, pkg, name, typ, 0, colorFor(typ), token.NoPos}, embedded: embedded, isField: true}
+func NewField(pkg *Package, name string, typ Type, embedded bool) *Var {
+	return &Var{object: object{nil, pkg, name, typ, 0, colorFor(typ)}, embedded: embedded, isField: true}
 }
 
 // Anonymous reports whether the variable is an embedded field.

@@ -210,7 +210,7 @@ func (check *Checker) initFiles(files []*dst.File) {
 			if name != "_" {
 				pkg.name = name
 			} else {
-				check.errorf(file.Name.Pos(), "invalid package name _")
+				check.errorf("invalid package name _")
 			}
 			fallthrough
 
@@ -218,7 +218,7 @@ func (check *Checker) initFiles(files []*dst.File) {
 			check.files = append(check.files, file)
 
 		default:
-			check.errorf(file.Package, "package %s; expected %s", name, pkg.name)
+			check.errorf("package %s; expected %s", name, pkg.name)
 			// ignore this file
 		}
 	}
@@ -271,7 +271,7 @@ func (check *Checker) recordUntyped() {
 
 	for x, info := range check.untyped {
 		if debug && isTyped(info.typ) {
-			check.dump("%v: %s (type %s) is typed", x.Pos(), x, info.typ)
+			check.dump("%s (type %s) is typed", x, info.typ)
 			unreachable()
 		}
 		check.recordTypeAndValue(x, info.mode, info.typ, info.val)
@@ -322,10 +322,9 @@ func (check *Checker) recordCommaOkTypes(x dst.Expr, a [2]Type) {
 		for {
 			tv := m[x]
 			assert(tv.Type != nil) // should have been recorded already
-			pos := x.Pos()
 			tv.Type = NewTuple(
-				NewVar(pos, check.pkg, "", a[0]),
-				NewVar(pos, check.pkg, "", a[1]),
+				NewVar(check.pkg, "", a[0]),
+				NewVar(check.pkg, "", a[1]),
 			)
 			m[x] = tv
 			// if x is a parenthesized expression (p.X), update p.X

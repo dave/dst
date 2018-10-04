@@ -12,26 +12,23 @@ import (
 )
 
 func (check *Checker) reportAltDecl(obj Object) {
-	if pos := obj.Pos(); pos.IsValid() {
-		// We use "other" rather than "previous" here because
-		// the first declaration seen may not be textually
-		// earlier in the source.
-		check.errorf(pos, "\tother declaration of %s", obj.Name()) // secondary error, \t indented
-	}
+	// We use "other" rather than "previous" here because
+	// the first declaration seen may not be textually
+	// earlier in the source.
+	check.errorf("\tother declaration of %s", obj.Name()) // secondary error, \t indented
 }
 
-func (check *Checker) declare(scope *Scope, id *dst.Ident, obj Object, pos token.Pos) {
+func (check *Checker) declare(scope *Scope, id *dst.Ident, obj Object) {
 	// spec: "The blank identifier, represented by the underscore
 	// character _, may be used in a declaration like any other
 	// identifier but the declaration does not introduce a new
 	// binding."
 	if obj.Name() != "_" {
 		if alt := scope.Insert(obj); alt != nil {
-			check.errorf(obj.Pos(), "%s redeclared in this block", obj.Name())
+			check.errorf("%s redeclared in this block", obj.Name())
 			check.reportAltDecl(alt)
 			return
 		}
-		obj.setScopePos(pos)
 	}
 	if id != nil {
 		check.recordDef(id, obj)
@@ -76,11 +73,11 @@ const useCycleMarking = true
 // See check.typ for the details on def and path.
 func (check *Checker) objDecl(obj Object, def *Named, path []*TypeName) {
 	if trace {
-		check.trace(obj.Pos(), "-- checking %s %s (path = %s, objPath = %s)", obj.color(), obj, pathString(path), check.pathString())
+		check.trace("-- checking %s %s (path = %s, objPath = %s)", obj.color(), obj, pathString(path), check.pathString())
 		check.indent++
 		defer func() {
 			check.indent--
-			check.trace(obj.Pos(), "=> %s", obj)
+			check.trace("=> %s", obj)
 		}()
 	}
 
@@ -219,7 +216,7 @@ func (check *Checker) objDecl(obj Object, def *Named, path []*TypeName) {
 
 	d := check.objMap[obj]
 	if d == nil {
-		check.dump("%v: %s should have been declared", obj.Pos(), obj)
+		check.dump("%s should have been declared", obj)
 		unreachable()
 	}
 
@@ -259,7 +256,7 @@ func (check *Checker) objDecl(obj Object, def *Named, path []*TypeName) {
 // to the next. For instance, for "type p *p" the object path contains
 // p followed by indir, indicating that there's an indirection *p.
 // Indirections are used to break type cycles.
-var indir = NewTypeName(token.NoPos, nil, "*", nil)
+var indir = NewTypeName(nil, "*", nil)
 
 // cutCycle is a sentinel type name that is pushed onto the object path
 // to indicate that a cycle doesn't actually exist. This is currently
@@ -267,7 +264,7 @@ var indir = NewTypeName(token.NoPos, nil, "*", nil)
 // are type-checked together with their receiver base types. Once methods
 // are type-checked separately (see also TODO in Checker.typeDecl), we
 // can get rid of this.
-var cutCycle = NewTypeName(token.NoPos, nil, "!", nil)
+var cutCycle = NewTypeName(nil, "!", nil)
 
 // typeCycle checks if the cycle starting with obj is valid and
 // reports an error if it is not.
@@ -276,7 +273,7 @@ var cutCycle = NewTypeName(token.NoPos, nil, "!", nil)
 func (check *Checker) typeCycle(obj Object) (isCycle bool) {
 	d := check.objMap[obj]
 	if d == nil {
-		check.dump("%v: %s should have been declared", obj.Pos(), obj)
+		check.dump("%s should have been declared", obj)
 		unreachable()
 	}
 
@@ -324,11 +321,11 @@ func (check *Checker) typeCycle(obj Object) (isCycle bool) {
 	}
 
 	if trace {
-		check.trace(obj.Pos(), "## cycle detected: objPath = %s->%s (len = %d)", objPathString(cycle), obj.Name(), ncycle)
-		check.trace(obj.Pos(), "## cycle contains: %d values, has indirection = %v, has type definition = %v", nval, hasIndir, hasTDef)
+		check.trace("## cycle detected: objPath = %s->%s (len = %d)", objPathString(cycle), obj.Name(), ncycle)
+		check.trace("## cycle contains: %d values, has indirection = %v, has type definition = %v", nval, hasIndir, hasTDef)
 		defer func() {
 			if isCycle {
-				check.trace(obj.Pos(), "=> error: cycle is invalid")
+				check.trace("=> error: cycle is invalid")
 			}
 		}()
 	}
@@ -350,14 +347,14 @@ func (check *Checker) typeCycle(obj Object) (isCycle bool) {
 	}
 
 	// report cycle
-	check.errorf(obj.Pos(), "illegal cycle in declaration of %s", obj.Name())
+	check.errorf("illegal cycle in declaration of %s", obj.Name())
 	for _, obj := range cycle {
 		if obj == indir {
 			continue // don't print indir sentinels
 		}
-		check.errorf(obj.Pos(), "\t%s refers to", obj.Name()) // secondary error, \t indented
+		check.errorf("\t%s refers to", obj.Name()) // secondary error, \t indented
 	}
-	check.errorf(obj.Pos(), "\t%s", obj.Name())
+	check.errorf("\t%s", obj.Name())
 
 	return true
 }
@@ -379,7 +376,7 @@ func (check *Checker) constDecl(obj *Const, typ, init dst.Expr) {
 			// don't report an error if the type is an invalid C (defined) type
 			// (issue #22090)
 			if t.Underlying() != Typ[Invalid] {
-				check.errorf(typ.Pos(), "invalid constant type %s", t)
+				check.errorf("invalid constant type %s", t)
 			}
 			obj.typ = Typ[Invalid]
 			return
@@ -452,7 +449,7 @@ func (check *Checker) varDecl(obj *Var, lhs []*Var, typ, init dst.Expr) {
 		}
 	}
 
-	check.initVars(lhs, []dst.Expr{init}, token.NoPos)
+	check.initVars(lhs, []dst.Expr{init}, false)
 }
 
 // underlying returns the underlying type of typ; possibly by following
@@ -571,9 +568,9 @@ func (check *Checker) addMethodDecls(obj *TypeName) {
 		if alt := mset.insert(m); alt != nil {
 			switch alt.(type) {
 			case *Var:
-				check.errorf(m.pos, "field and method with the same name %s", m.name)
+				check.errorf("field and method with the same name %s", m.name)
 			case *Func:
-				check.errorf(m.pos, "method %s already declared for %s", m.name, obj)
+				check.errorf("method %s already declared for %s", m.name, obj)
 			default:
 				unreachable()
 			}
@@ -601,7 +598,7 @@ func (check *Checker) funcDecl(obj *Func, decl *declInfo) {
 	fdecl := decl.fdecl
 	check.funcType(sig, fdecl.Recv, fdecl.Type)
 	if sig.recv == nil && obj.name == "init" && (sig.params.Len() > 0 || sig.results.Len() > 0) {
-		check.errorf(fdecl.Pos(), "func init must have no arguments and no return values")
+		check.errorf("func init must have no arguments and no return values")
 		// ok to continue
 	}
 
@@ -641,7 +638,7 @@ func (check *Checker) declStmt(decl dst.Decl) {
 					// declare all constants
 					lhs := make([]*Const, len(s.Names))
 					for i, name := range s.Names {
-						obj := NewConst(name.Pos(), pkg, name.Name, nil, constant.MakeInt64(int64(iota)))
+						obj := NewConst(pkg, name.Name, nil, constant.MakeInt64(int64(iota)))
 						lhs[i] = obj
 
 						var init dst.Expr
@@ -661,9 +658,8 @@ func (check *Checker) declStmt(decl dst.Decl) {
 					// inside a function begins at the end of the ConstSpec or VarSpec
 					// (ShortVarDecl for short variable declarations) and ends at the
 					// end of the innermost containing block."
-					scopePos := s.End()
 					for i, name := range s.Names {
-						check.declare(check.scope, name, lhs[i], scopePos)
+						check.declare(check.scope, name, lhs[i])
 					}
 
 				case token.VAR:
@@ -671,7 +667,7 @@ func (check *Checker) declStmt(decl dst.Decl) {
 
 					lhs0 := make([]*Var, len(s.Names))
 					for i, name := range s.Names {
-						lhs0[i] = NewVar(name.Pos(), pkg, name.Name, nil)
+						lhs0[i] = NewVar(pkg, name.Name, nil)
 					}
 
 					// initialize all variables
@@ -714,31 +710,29 @@ func (check *Checker) declStmt(decl dst.Decl) {
 
 					// declare all variables
 					// (only at this point are the variable scopes (parents) set)
-					scopePos := s.End() // see constant declarations
 					for i, name := range s.Names {
 						// see constant declarations
-						check.declare(check.scope, name, lhs0[i], scopePos)
+						check.declare(check.scope, name, lhs0[i])
 					}
 
 				default:
-					check.invalidAST(s.Pos(), "invalid token %s", d.Tok)
+					check.invalidAST("invalid token %s", d.Tok)
 				}
 
 			case *dst.TypeSpec:
-				obj := NewTypeName(s.Name.Pos(), pkg, s.Name.Name, nil)
+				obj := NewTypeName(pkg, s.Name.Name, nil)
 				// spec: "The scope of a type identifier declared inside a function
 				// begins at the identifier in the TypeSpec and ends at the end of
 				// the innermost containing block."
-				scopePos := s.Name.Pos()
-				check.declare(check.scope, s.Name, obj, scopePos)
-				check.typeDecl(obj, s.Type, nil, nil, s.Assign.IsValid())
+				check.declare(check.scope, s.Name, obj)
+				check.typeDecl(obj, s.Type, nil, nil, s.Assign)
 
 			default:
-				check.invalidAST(s.Pos(), "const, type, or var declaration expected")
+				check.invalidAST("const, type, or var declaration expected")
 			}
 		}
 
 	default:
-		check.invalidAST(d.Pos(), "unknown dst.Decl node %T", d)
+		check.invalidAST("unknown dst.Decl node %T", d)
 	}
 }
