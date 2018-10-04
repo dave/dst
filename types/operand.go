@@ -8,9 +8,10 @@ package types
 
 import (
 	"bytes"
-	"go/ast"
 	"go/constant"
 	"go/token"
+
+	"github.com/dave/dst"
 )
 
 // An operandMode specifies the (addressing) mode of an operand.
@@ -48,7 +49,7 @@ var operandModeString = [...]string{
 //
 type operand struct {
 	mode operandMode
-	expr ast.Expr
+	expr dst.Expr
 	typ  Type
 	val  constant.Value
 	id   builtinId

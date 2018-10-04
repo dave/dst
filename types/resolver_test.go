@@ -6,7 +6,6 @@ package types_test
 
 import (
 	"fmt"
-	"go/ast"
 	"go/importer"
 	"go/parser"
 	"go/token"
@@ -14,7 +13,9 @@ import (
 	"sort"
 	"testing"
 
-	. "go/types"
+	. "github.com/dave/dst/types"
+
+	"github.com/dave/dst"
 )
 
 type resolveTestImporter struct {
@@ -119,7 +120,7 @@ func TestResolveIdents(t *testing.T) {
 
 	// parse package files
 	fset := token.NewFileSet()
-	var files []*ast.File
+	var files []*dst.File
 	for i, src := range sources {
 		f, err := parser.ParseFile(fset, fmt.Sprintf("sources[%d]", i), src, parser.DeclarationErrors)
 		if err != nil {
@@ -131,8 +132,8 @@ func TestResolveIdents(t *testing.T) {
 	// resolve and type-check package AST
 	importer := new(resolveTestImporter)
 	conf := Config{Importer: importer}
-	uses := make(map[*ast.Ident]Object)
-	defs := make(map[*ast.Ident]Object)
+	uses := make(map[*dst.Ident]Object)
+	defs := make(map[*dst.Ident]Object)
 	_, err := conf.Check("testResolveIdents", fset, files, &Info{Defs: defs, Uses: uses})
 	if err != nil {
 		t.Fatal(err)
@@ -147,9 +148,9 @@ func TestResolveIdents(t *testing.T) {
 
 	// check that qualified identifiers are resolved
 	for _, f := range files {
-		ast.Inspect(f, func(n ast.Node) bool {
-			if s, ok := n.(*ast.SelectorExpr); ok {
-				if x, ok := s.X.(*ast.Ident); ok {
+		dst.Inspect(f, func(n dst.Node) bool {
+			if s, ok := n.(*dst.SelectorExpr); ok {
+				if x, ok := s.X.(*dst.Ident); ok {
 					obj := uses[x]
 					if obj == nil {
 						t.Errorf("%s: unresolved qualified identifier %s", fset.Position(x.Pos()), x.Name)
@@ -176,8 +177,8 @@ func TestResolveIdents(t *testing.T) {
 	// check that each identifier in the source is found in uses or defs or both
 	var both []string
 	for _, f := range files {
-		ast.Inspect(f, func(n ast.Node) bool {
-			if x, ok := n.(*ast.Ident); ok {
+		dst.Inspect(f, func(n dst.Node) bool {
+			if x, ok := n.(*dst.Ident); ok {
 				var objects int
 				if _, found := uses[x]; found {
 					objects |= 1

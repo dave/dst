@@ -27,7 +27,6 @@ package types_test
 
 import (
 	"flag"
-	"go/ast"
 	"go/importer"
 	"go/parser"
 	"go/scanner"
@@ -38,7 +37,9 @@ import (
 	"strings"
 	"testing"
 
-	. "go/types"
+	. "github.com/dave/dst/types"
+
+	"github.com/dave/dst"
 )
 
 var (
@@ -112,8 +113,8 @@ func splitError(err error) (pos, msg string) {
 	return
 }
 
-func parseFiles(t *testing.T, filenames []string) ([]*ast.File, []error) {
-	var files []*ast.File
+func parseFiles(t *testing.T, filenames []string) ([]*dst.File, []error) {
+	var files []*dst.File
 	var errlist []error
 	for _, filename := range filenames {
 		file, err := parser.ParseFile(fset, filename, nil, parser.AllErrors)
@@ -145,7 +146,7 @@ var errRx = regexp.MustCompile(`^ *ERROR *(HERE)? *"?([^"]*)"?`)
 // errMap collects the regular expressions of ERROR comments found
 // in files and returns them as a map of error positions to error messages.
 //
-func errMap(t *testing.T, testname string, files []*ast.File) map[string][]string {
+func errMap(t *testing.T, testname string, files []*dst.File) map[string][]string {
 	// map of position strings to lists of error message patterns
 	errmap := make(map[string][]string)
 

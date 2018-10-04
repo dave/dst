@@ -7,11 +7,12 @@
 package types
 
 import (
-	"go/ast"
 	"go/token"
+
+	"github.com/dave/dst"
 )
 
-func (check *Checker) call(x *operand, e *ast.CallExpr) exprKind {
+func (check *Checker) call(x *operand, e *dst.CallExpr) exprKind {
 	check.exprOrType(x, e.Fun)
 
 	switch x.mode {
@@ -92,11 +93,11 @@ func (check *Checker) call(x *operand, e *ast.CallExpr) exprKind {
 // Useful to make sure expressions are evaluated
 // (and variables are "used") in the presence of other errors.
 // The arguments may be nil.
-func (check *Checker) use(arg ...ast.Expr) {
+func (check *Checker) use(arg ...dst.Expr) {
 	var x operand
 	for _, e := range arg {
 		// The nil check below is necessary since certain AST fields
-		// may legally be nil (e.g., the ast.SliceExpr.High field).
+		// may legally be nil (e.g., the dst.SliceExpr.High field).
 		if e != nil {
 			check.rawExpr(&x, e, nil)
 		}
@@ -107,7 +108,7 @@ func (check *Checker) use(arg ...ast.Expr) {
 // It should be called instead of use if the arguments are
 // expressions on the lhs of an assignment.
 // The arguments must not be nil.
-func (check *Checker) useLHS(arg ...ast.Expr) {
+func (check *Checker) useLHS(arg ...dst.Expr) {
 	var x operand
 	for _, e := range arg {
 		// If the lhs is an identifier denoting a variable v, this assignment
@@ -115,7 +116,7 @@ func (check *Checker) useLHS(arg ...ast.Expr) {
 		// after evaluating the lhs via check.rawExpr.
 		var v *Var
 		var v_used bool
-		if ident, _ := unparen(e).(*ast.Ident); ident != nil {
+		if ident, _ := unparen(e).(*dst.Ident); ident != nil {
 			// never type-check the blank name on the lhs
 			if ident.Name == "_" {
 				continue
@@ -216,7 +217,7 @@ func unpack(get getter, n int, allowCommaOk bool) (getter, int, bool) {
 
 // arguments checks argument passing for the call with the given signature.
 // The arg function provides the operand for the i'th argument.
-func (check *Checker) arguments(x *operand, call *ast.CallExpr, sig *Signature, arg getter, n int) {
+func (check *Checker) arguments(x *operand, call *dst.CallExpr, sig *Signature, arg getter, n int) {
 	if call.Ellipsis.IsValid() {
 		// last argument is of the form x...
 		if !sig.variadic {
@@ -258,7 +259,7 @@ func (check *Checker) arguments(x *operand, call *ast.CallExpr, sig *Signature, 
 
 // argument checks passing of argument x to the i'th parameter of the given signature.
 // If ellipsis is valid, the argument is followed by ... at that position in the call.
-func (check *Checker) argument(fun ast.Expr, sig *Signature, i int, x *operand, ellipsis token.Pos) {
+func (check *Checker) argument(fun dst.Expr, sig *Signature, i int, x *operand, ellipsis token.Pos) {
 	check.singleValue(x)
 	if x.mode == invalid {
 		return
@@ -301,7 +302,7 @@ func (check *Checker) argument(fun ast.Expr, sig *Signature, i int, x *operand, 
 	check.assignment(x, typ, check.sprintf("argument to %s", fun))
 }
 
-func (check *Checker) selector(x *operand, e *ast.SelectorExpr) {
+func (check *Checker) selector(x *operand, e *dst.SelectorExpr) {
 	// these must be declared before the "goto Error" statements
 	var (
 		obj      Object
@@ -314,7 +315,7 @@ func (check *Checker) selector(x *operand, e *ast.SelectorExpr) {
 	// so we don't need a "package" mode for operands: package names
 	// can only appear in qualified identifiers which are mapped to
 	// selector expressions.
-	if ident, ok := e.X.(*ast.Ident); ok {
+	if ident, ok := e.X.(*dst.Ident); ok {
 		obj := check.lookup(ident.Name)
 		if pname, _ := obj.(*PkgName); pname != nil {
 			assert(pname.pkg == check.pkg)
@@ -334,7 +335,7 @@ func (check *Checker) selector(x *operand, e *ast.SelectorExpr) {
 			}
 			check.recordUse(e.Sel, exp)
 
-			// Simplified version of the code for *ast.Idents:
+			// Simplified version of the code for *dst.Idents:
 			// - imported objects are always fully initialized
 			switch exp := exp.(type) {
 			case *Const:

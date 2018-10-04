@@ -7,18 +7,19 @@
 package types
 
 import (
-	"go/ast"
 	"go/constant"
 	"go/token"
 	"sort"
 	"strconv"
+
+	"github.com/dave/dst"
 )
 
 // ident type-checks identifier e and initializes x with the value or type of e.
 // If an error occurred, x.mode is set to invalid.
 // For the meaning of def and path, see check.typ, below.
 //
-func (check *Checker) ident(x *operand, e *ast.Ident, def *Named, path []*TypeName) {
+func (check *Checker) ident(x *operand, e *dst.Ident, def *Named, path []*TypeName) {
 	x.mode = invalid
 	x.expr = e
 
@@ -144,7 +145,7 @@ func (check *Checker) cycle(obj *TypeName, path []*TypeName, report bool) bool {
 // path, and usually via calling Checker.typ below) and those types are not found
 // in the path.
 //
-func (check *Checker) typExpr(e ast.Expr, def *Named, path []*TypeName) (T Type) {
+func (check *Checker) typExpr(e dst.Expr, def *Named, path []*TypeName) (T Type) {
 	if trace {
 		check.trace(e.Pos(), "%s", e)
 		check.indent++
@@ -166,7 +167,7 @@ func (check *Checker) typExpr(e ast.Expr, def *Named, path []*TypeName) (T Type)
 // types that break cycles, such as pointer base types, slice or map
 // element types, etc. See the comment in typExpr for details.
 //
-func (check *Checker) typ(e ast.Expr) Type {
+func (check *Checker) typ(e dst.Expr) Type {
 	// typExpr is called with a nil path indicating an indirection:
 	// push indir sentinel on object path
 	if useCycleMarking {
@@ -177,7 +178,7 @@ func (check *Checker) typ(e ast.Expr) Type {
 }
 
 // funcType type-checks a function or method type.
-func (check *Checker) funcType(sig *Signature, recvPar *ast.FieldList, ftyp *ast.FuncType) {
+func (check *Checker) funcType(sig *Signature, recvPar *dst.FieldList, ftyp *dst.FuncType) {
 	scope := NewScope(check.scope, token.NoPos, token.NoPos, "function")
 	scope.isFunc = true
 	check.recordScope(ftyp, scope)
@@ -244,12 +245,12 @@ func (check *Checker) funcType(sig *Signature, recvPar *ast.FieldList, ftyp *ast
 // typExprInternal drives type checking of types.
 // Must only be called by typExpr.
 //
-func (check *Checker) typExprInternal(e ast.Expr, def *Named, path []*TypeName) Type {
+func (check *Checker) typExprInternal(e dst.Expr, def *Named, path []*TypeName) Type {
 	switch e := e.(type) {
-	case *ast.BadExpr:
+	case *dst.BadExpr:
 		// ignore - error reported before
 
-	case *ast.Ident:
+	case *dst.Ident:
 		var x operand
 		check.ident(&x, e, def, path)
 
@@ -266,7 +267,7 @@ func (check *Checker) typExprInternal(e ast.Expr, def *Named, path []*TypeName) 
 			check.errorf(x.pos(), "%s is not a type", &x)
 		}
 
-	case *ast.SelectorExpr:
+	case *dst.SelectorExpr:
 		var x operand
 		check.selector(&x, e)
 
@@ -283,10 +284,10 @@ func (check *Checker) typExprInternal(e ast.Expr, def *Named, path []*TypeName) 
 			check.errorf(x.pos(), "%s is not a type", &x)
 		}
 
-	case *ast.ParenExpr:
+	case *dst.ParenExpr:
 		return check.typExpr(e.X, def, path)
 
-	case *ast.ArrayType:
+	case *dst.ArrayType:
 		if e.Len != nil {
 			typ := new(Array)
 			def.setUnderlying(typ)
@@ -301,31 +302,31 @@ func (check *Checker) typExprInternal(e ast.Expr, def *Named, path []*TypeName) 
 			return typ
 		}
 
-	case *ast.StructType:
+	case *dst.StructType:
 		typ := new(Struct)
 		def.setUnderlying(typ)
 		check.structType(typ, e, path)
 		return typ
 
-	case *ast.StarExpr:
+	case *dst.StarExpr:
 		typ := new(Pointer)
 		def.setUnderlying(typ)
 		typ.base = check.typ(e.X)
 		return typ
 
-	case *ast.FuncType:
+	case *dst.FuncType:
 		typ := new(Signature)
 		def.setUnderlying(typ)
 		check.funcType(typ, nil, e)
 		return typ
 
-	case *ast.InterfaceType:
+	case *dst.InterfaceType:
 		typ := new(Interface)
 		def.setUnderlying(typ)
 		check.interfaceType(typ, e, def, path)
 		return typ
 
-	case *ast.MapType:
+	case *dst.MapType:
 		typ := new(Map)
 		def.setUnderlying(typ)
 
@@ -346,17 +347,17 @@ func (check *Checker) typExprInternal(e ast.Expr, def *Named, path []*TypeName) 
 
 		return typ
 
-	case *ast.ChanType:
+	case *dst.ChanType:
 		typ := new(Chan)
 		def.setUnderlying(typ)
 
 		dir := SendRecv
 		switch e.Dir {
-		case ast.SEND | ast.RECV:
+		case dst.SEND | dst.RECV:
 			// nothing to do
-		case ast.SEND:
+		case dst.SEND:
 			dir = SendOnly
-		case ast.RECV:
+		case dst.RECV:
 			dir = RecvOnly
 		default:
 			check.invalidAST(e.Pos(), "unknown channel direction %d", e.Dir)
@@ -380,7 +381,7 @@ func (check *Checker) typExprInternal(e ast.Expr, def *Named, path []*TypeName) 
 // and returns the typ of e, or nil.
 // If e is neither a type nor nil, typOrNil returns Typ[Invalid].
 //
-func (check *Checker) typOrNil(e ast.Expr) Type {
+func (check *Checker) typOrNil(e dst.Expr) Type {
 	var x operand
 	check.rawExpr(&x, e, nil)
 	switch x.mode {
@@ -404,7 +405,7 @@ func (check *Checker) typOrNil(e ast.Expr) Type {
 // arrayLength type-checks the array length expression e
 // and returns the constant length >= 0, or a value < 0
 // to indicate an error (and thus an unknown length).
-func (check *Checker) arrayLength(e ast.Expr) int64 {
+func (check *Checker) arrayLength(e dst.Expr) int64 {
 	var x operand
 	check.expr(&x, e)
 	if x.mode != constant_ {
@@ -428,7 +429,7 @@ func (check *Checker) arrayLength(e ast.Expr) int64 {
 	return -1
 }
 
-func (check *Checker) collectParams(scope *Scope, list *ast.FieldList, variadicOk bool) (params []*Var, variadic bool) {
+func (check *Checker) collectParams(scope *Scope, list *dst.FieldList, variadicOk bool) (params []*Var, variadic bool) {
 	if list == nil {
 		return
 	}
@@ -436,7 +437,7 @@ func (check *Checker) collectParams(scope *Scope, list *ast.FieldList, variadicO
 	var named, anonymous bool
 	for i, field := range list.List {
 		ftype := field.Type
-		if t, _ := ftype.(*ast.Ellipsis); t != nil {
+		if t, _ := ftype.(*dst.Ellipsis); t != nil {
 			ftype = t.Elt
 			if variadicOk && i == len(list.List)-1 {
 				variadic = true
@@ -492,7 +493,7 @@ func (check *Checker) declareInSet(oset *objset, pos token.Pos, obj Object) bool
 	return true
 }
 
-func (check *Checker) interfaceType(ityp *Interface, iface *ast.InterfaceType, def *Named, path []*TypeName) {
+func (check *Checker) interfaceType(ityp *Interface, iface *dst.InterfaceType, def *Named, path []*TypeName) {
 	// fast-track empty interface
 	if iface.Methods.List == nil {
 		ityp.allMethods = markComplete
@@ -653,7 +654,7 @@ func (a byUniqueMethodName) Len() int           { return len(a) }
 func (a byUniqueMethodName) Less(i, j int) bool { return a[i].Id() < a[j].Id() }
 func (a byUniqueMethodName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
-func (check *Checker) tag(t *ast.BasicLit) string {
+func (check *Checker) tag(t *dst.BasicLit) string {
 	if t != nil {
 		if t.Kind == token.STRING {
 			if val, err := strconv.Unquote(t.Value); err == nil {
@@ -665,7 +666,7 @@ func (check *Checker) tag(t *ast.BasicLit) string {
 	return ""
 }
 
-func (check *Checker) structType(styp *Struct, e *ast.StructType, path []*TypeName) {
+func (check *Checker) structType(styp *Struct, e *dst.StructType, path []*TypeName) {
 	list := e.Fields
 	if list == nil {
 		return
@@ -681,7 +682,7 @@ func (check *Checker) structType(styp *Struct, e *ast.StructType, path []*TypeNa
 	// current field typ and tag
 	var typ Type
 	var tag string
-	add := func(ident *ast.Ident, embedded bool, pos token.Pos) {
+	add := func(ident *dst.Ident, embedded bool, pos token.Pos) {
 		if tag != "" && tags == nil {
 			tags = make([]string, len(fields))
 		}
@@ -702,7 +703,7 @@ func (check *Checker) structType(styp *Struct, e *ast.StructType, path []*TypeNa
 	// fields with errors; this keeps the number of struct fields in sync
 	// with the source as long as the fields are _ or have different names
 	// (issue #25627).
-	addInvalid := func(ident *ast.Ident, pos token.Pos) {
+	addInvalid := func(ident *dst.Ident, pos token.Pos) {
 		typ = Typ[Invalid]
 		tag = ""
 		add(ident, true, pos)
@@ -724,7 +725,7 @@ func (check *Checker) structType(styp *Struct, e *ast.StructType, path []*TypeNa
 			name := embeddedFieldIdent(f.Type)
 			if name == nil {
 				check.invalidAST(pos, "embedded field type %s has no name", f.Type)
-				name = ast.NewIdent("_")
+				name = dst.NewIdent("_")
 				name.NamePos = pos
 				addInvalid(name, pos)
 				continue
@@ -767,16 +768,16 @@ func (check *Checker) structType(styp *Struct, e *ast.StructType, path []*TypeNa
 	styp.tags = tags
 }
 
-func embeddedFieldIdent(e ast.Expr) *ast.Ident {
+func embeddedFieldIdent(e dst.Expr) *dst.Ident {
 	switch e := e.(type) {
-	case *ast.Ident:
+	case *dst.Ident:
 		return e
-	case *ast.StarExpr:
+	case *dst.StarExpr:
 		// *T is valid, but **T is not
-		if _, ok := e.X.(*ast.StarExpr); !ok {
+		if _, ok := e.X.(*dst.StarExpr); !ok {
 			return embeddedFieldIdent(e.X)
 		}
-	case *ast.SelectorExpr:
+	case *dst.SelectorExpr:
 		return e.Sel
 	}
 	return nil // invalid embedded field

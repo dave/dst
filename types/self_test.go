@@ -7,7 +7,6 @@ package types_test
 import (
 	"flag"
 	"fmt"
-	"go/ast"
 	"go/importer"
 	"go/parser"
 	"go/token"
@@ -15,7 +14,9 @@ import (
 	"testing"
 	"time"
 
-	. "go/types"
+	. "github.com/dave/dst/types"
+
+	"github.com/dave/dst"
 )
 
 var benchmark = flag.Bool("b", false, "run benchmarks")
@@ -28,7 +29,7 @@ func TestSelf(t *testing.T) {
 	}
 
 	conf := Config{Importer: importer.Default()}
-	_, err = conf.Check("go/types", fset, files, nil)
+	_, err = conf.Check("github.com/dave/dst/types", fset, files, nil)
 	if err != nil {
 		// Importing go/constant doesn't work in the
 		// build dashboard environment. Don't report an error
@@ -83,13 +84,13 @@ func runbench(t *testing.T, path string, ignoreFuncBodies bool) {
 	)
 }
 
-func pkgFiles(fset *token.FileSet, path string) ([]*ast.File, error) {
+func pkgFiles(fset *token.FileSet, path string) ([]*dst.File, error) {
 	filenames, err := pkgFilenames(path) // from stdlib_test.go
 	if err != nil {
 		return nil, err
 	}
 
-	var files []*ast.File
+	var files []*dst.File
 	for _, filename := range filenames {
 		file, err := parser.ParseFile(fset, filename, nil, 0)
 		if err != nil {

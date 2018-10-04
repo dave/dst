@@ -7,7 +7,6 @@
 package types_test
 
 import (
-	"go/ast"
 	"go/importer"
 	"go/parser"
 	"go/token"
@@ -15,7 +14,9 @@ import (
 	"strings"
 	"testing"
 
-	. "go/types"
+	. "github.com/dave/dst/types"
+
+	"github.com/dave/dst"
 )
 
 func testEval(t *testing.T, fset *token.FileSet, pkg *Package, pos token.Pos, expr string, typ Type, typStr, valStr string) {
@@ -165,7 +166,7 @@ func TestEvalPos(t *testing.T) {
 	}
 
 	fset := token.NewFileSet()
-	var files []*ast.File
+	var files []*dst.File
 	for i, src := range sources {
 		file, err := parser.ParseFile(fset, "p", src, parser.ParseComments)
 		if err != nil {

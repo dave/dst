@@ -5,9 +5,10 @@
 package types
 
 import (
-	"go/ast"
 	"go/constant"
 	"go/token"
+
+	"github.com/dave/dst"
 )
 
 func (check *Checker) reportAltDecl(obj Object) {
@@ -19,7 +20,7 @@ func (check *Checker) reportAltDecl(obj Object) {
 	}
 }
 
-func (check *Checker) declare(scope *Scope, id *ast.Ident, obj Object, pos token.Pos) {
+func (check *Checker) declare(scope *Scope, id *dst.Ident, obj Object, pos token.Pos) {
 	// spec: "The blank identifier, represented by the underscore
 	// character _, may be used in a declaration like any other
 	// identifier but the declaration does not introduce a new
@@ -183,7 +184,7 @@ func (check *Checker) objDecl(obj Object, def *Named, path []*TypeName) {
 				if d := check.objMap[obj]; d != nil && d.alias && obj.typ == Typ[Invalid] {
 					// If we can find the underlying type name syntactically
 					// and it has a type, use that type.
-					if tname := check.resolveBaseTypeName(ast.NewIdent(obj.name)); tname != nil && tname.typ != nil {
+					if tname := check.resolveBaseTypeName(dst.NewIdent(obj.name)); tname != nil && tname.typ != nil {
 						obj.typ = tname.typ
 						break
 					}
@@ -361,7 +362,7 @@ func (check *Checker) typeCycle(obj Object) (isCycle bool) {
 	return true
 }
 
-func (check *Checker) constDecl(obj *Const, typ, init ast.Expr) {
+func (check *Checker) constDecl(obj *Const, typ, init dst.Expr) {
 	assert(obj.typ == nil)
 
 	// use the correct value of iota
@@ -394,7 +395,7 @@ func (check *Checker) constDecl(obj *Const, typ, init ast.Expr) {
 	check.initConst(obj, &x)
 }
 
-func (check *Checker) varDecl(obj *Var, lhs []*Var, typ, init ast.Expr) {
+func (check *Checker) varDecl(obj *Var, lhs []*Var, typ, init dst.Expr) {
 	assert(obj.typ == nil)
 
 	// determine type, if any
@@ -451,7 +452,7 @@ func (check *Checker) varDecl(obj *Var, lhs []*Var, typ, init ast.Expr) {
 		}
 	}
 
-	check.initVars(lhs, []ast.Expr{init}, token.NoPos)
+	check.initVars(lhs, []dst.Expr{init}, token.NoPos)
 }
 
 // underlying returns the underlying type of typ; possibly by following
@@ -474,7 +475,7 @@ func (n *Named) setUnderlying(typ Type) {
 	}
 }
 
-func (check *Checker) typeDecl(obj *TypeName, typ ast.Expr, def *Named, path []*TypeName, alias bool) {
+func (check *Checker) typeDecl(obj *TypeName, typ dst.Expr, def *Named, path []*TypeName, alias bool) {
 	assert(obj.typ == nil)
 
 	if alias {
@@ -613,18 +614,18 @@ func (check *Checker) funcDecl(obj *Func, decl *declInfo) {
 	}
 }
 
-func (check *Checker) declStmt(decl ast.Decl) {
+func (check *Checker) declStmt(decl dst.Decl) {
 	pkg := check.pkg
 
 	switch d := decl.(type) {
-	case *ast.BadDecl:
+	case *dst.BadDecl:
 		// ignore
 
-	case *ast.GenDecl:
-		var last *ast.ValueSpec // last ValueSpec with type or init exprs seen
+	case *dst.GenDecl:
+		var last *dst.ValueSpec // last ValueSpec with type or init exprs seen
 		for iota, spec := range d.Specs {
 			switch s := spec.(type) {
-			case *ast.ValueSpec:
+			case *dst.ValueSpec:
 				switch d.Tok {
 				case token.CONST:
 					top := len(check.delayed)
@@ -634,7 +635,7 @@ func (check *Checker) declStmt(decl ast.Decl) {
 					case s.Type != nil || len(s.Values) > 0:
 						last = s
 					case last == nil:
-						last = new(ast.ValueSpec) // make sure last exists
+						last = new(dst.ValueSpec) // make sure last exists
 					}
 
 					// declare all constants
@@ -643,7 +644,7 @@ func (check *Checker) declStmt(decl ast.Decl) {
 						obj := NewConst(name.Pos(), pkg, name.Name, nil, constant.MakeInt64(int64(iota)))
 						lhs[i] = obj
 
-						var init ast.Expr
+						var init dst.Expr
 						if i < len(last.Values) {
 							init = last.Values[i]
 						}
@@ -676,7 +677,7 @@ func (check *Checker) declStmt(decl ast.Decl) {
 					// initialize all variables
 					for i, obj := range lhs0 {
 						var lhs []*Var
-						var init ast.Expr
+						var init dst.Expr
 						switch len(s.Values) {
 						case len(s.Names):
 							// lhs and rhs match
@@ -723,7 +724,7 @@ func (check *Checker) declStmt(decl ast.Decl) {
 					check.invalidAST(s.Pos(), "invalid token %s", d.Tok)
 				}
 
-			case *ast.TypeSpec:
+			case *dst.TypeSpec:
 				obj := NewTypeName(s.Name.Pos(), pkg, s.Name.Name, nil)
 				// spec: "The scope of a type identifier declared inside a function
 				// begins at the identifier in the TypeSpec and ends at the end of
@@ -738,6 +739,6 @@ func (check *Checker) declStmt(decl ast.Decl) {
 		}
 
 	default:
-		check.invalidAST(d.Pos(), "unknown ast.Decl node %T", d)
+		check.invalidAST(d.Pos(), "unknown dst.Decl node %T", d)
 	}
 }

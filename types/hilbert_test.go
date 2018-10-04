@@ -8,14 +8,15 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"go/ast"
 	"go/importer"
 	"go/parser"
 	"go/token"
 	"io/ioutil"
 	"testing"
 
-	. "go/types"
+	. "github.com/dave/dst/types"
+
+	"github.com/dave/dst"
 )
 
 var (
@@ -41,7 +42,7 @@ func TestHilbert(t *testing.T) {
 	// type-check file
 	DefPredeclaredTestFuncs() // define assert built-in
 	conf := Config{Importer: importer.Default()}
-	_, err = conf.Check(f.Name.Name, fset, []*ast.File{f}, nil)
+	_, err = conf.Check(f.Name.Name, fset, []*dst.File{f}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

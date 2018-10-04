@@ -7,8 +7,9 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"go/ast"
 	"go/token"
+
+	"github.com/dave/dst"
 )
 
 // This file implements the collection of an interface's methods
@@ -59,7 +60,7 @@ func (info *ifaceInfo) String() string {
 // fun field.)
 type methodInfo struct {
 	scope *Scope     // scope of interface method; or nil
-	src   *ast.Field // syntax tree representation of interface method; or nil
+	src   *dst.Field // syntax tree representation of interface method; or nil
 	fun   *Func      // corresponding fully type-checked method type; or nil
 }
 
@@ -135,7 +136,7 @@ func (check *Checker) reportAltMethod(m *methodInfo) {
 // but they were either reported (e.g., blank methods), or will be found
 // (again) when computing the interface's type.
 // If tname is not nil it must be the last element in path.
-func (check *Checker) infoFromTypeLit(scope *Scope, iface *ast.InterfaceType, tname *TypeName, path []*TypeName) (info *ifaceInfo) {
+func (check *Checker) infoFromTypeLit(scope *Scope, iface *dst.InterfaceType, tname *TypeName, path []*TypeName) (info *ifaceInfo) {
 	assert(iface != nil)
 
 	// lazy-allocate interfaces map
@@ -220,9 +221,9 @@ func (check *Checker) infoFromTypeLit(scope *Scope, iface *ast.InterfaceType, tn
 				// it if it's a valid interface.
 				var e *ifaceInfo
 				switch ename := f.Type.(type) {
-				case *ast.Ident:
+				case *dst.Ident:
 					e = check.infoFromTypeName(scope, ename, path)
-				case *ast.SelectorExpr:
+				case *dst.SelectorExpr:
 					e = check.infoFromQualifiedTypeName(scope, ename)
 				default:
 					// The parser makes sure we only see one of the above.
@@ -262,7 +263,7 @@ func (check *Checker) infoFromTypeLit(scope *Scope, iface *ast.InterfaceType, tn
 // which must denote a type whose underlying type is an interface.
 // The same result qualifications apply as for infoFromTypeLit.
 // infoFromTypeName should only be called from infoFromTypeLit.
-func (check *Checker) infoFromTypeName(scope *Scope, name *ast.Ident, path []*TypeName) *ifaceInfo {
+func (check *Checker) infoFromTypeName(scope *Scope, name *dst.Ident, path []*TypeName) *ifaceInfo {
 	// A single call of infoFromTypeName handles a sequence of (possibly
 	// recursive) type declarations connected via unqualified type names.
 	// Each type declaration leading to another typename causes a "tail call"
@@ -327,14 +328,14 @@ typenameLoop:
 	// lying interface.)
 	if decl := check.objMap[tname]; decl != nil {
 		switch typ := unparen(decl.typ).(type) {
-		case *ast.Ident:
+		case *dst.Ident:
 			// type tname T
 			name = typ
 			goto typenameLoop
-		case *ast.SelectorExpr:
+		case *dst.SelectorExpr:
 			// type tname p.T
 			return check.infoFromQualifiedTypeName(decl.file, typ)
-		case *ast.InterfaceType:
+		case *dst.InterfaceType:
 			// type tname interface{...}
 			return check.infoFromTypeLit(decl.file, typ, tname, path)
 		}
@@ -360,9 +361,9 @@ typenameLoop:
 }
 
 // infoFromQualifiedTypeName computes the method set for the given qualified type name, or nil.
-func (check *Checker) infoFromQualifiedTypeName(scope *Scope, qname *ast.SelectorExpr) *ifaceInfo {
+func (check *Checker) infoFromQualifiedTypeName(scope *Scope, qname *dst.SelectorExpr) *ifaceInfo {
 	// see also Checker.selector
-	name, _ := qname.X.(*ast.Ident)
+	name, _ := qname.X.(*dst.Ident)
 	if name == nil {
 		return nil
 	}

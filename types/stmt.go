@@ -7,13 +7,14 @@
 package types
 
 import (
-	"go/ast"
 	"go/constant"
 	"go/token"
 	"sort"
+
+	"github.com/dave/dst"
 )
 
-func (check *Checker) funcBody(decl *declInfo, name string, sig *Signature, body *ast.BlockStmt, iota constant.Value) {
+func (check *Checker) funcBody(decl *declInfo, name string, sig *Signature, body *dst.BlockStmt, iota constant.Value) {
 	if trace {
 		check.trace(body.Pos(), "--- %s: %s", name, sig)
 		defer func() {
@@ -93,22 +94,22 @@ const (
 	finalSwitchCase
 )
 
-func (check *Checker) simpleStmt(s ast.Stmt) {
+func (check *Checker) simpleStmt(s dst.Stmt) {
 	if s != nil {
 		check.stmt(0, s)
 	}
 }
 
-func trimTrailingEmptyStmts(list []ast.Stmt) []ast.Stmt {
+func trimTrailingEmptyStmts(list []dst.Stmt) []dst.Stmt {
 	for i := len(list); i > 0; i-- {
-		if _, ok := list[i-1].(*ast.EmptyStmt); !ok {
+		if _, ok := list[i-1].(*dst.EmptyStmt); !ok {
 			return list[:i]
 		}
 	}
 	return nil
 }
 
-func (check *Checker) stmtList(ctxt stmtContext, list []ast.Stmt) {
+func (check *Checker) stmtList(ctxt stmtContext, list []dst.Stmt) {
 	ok := ctxt&fallthroughOk != 0
 	inner := ctxt &^ fallthroughOk
 	list = trimTrailingEmptyStmts(list) // trailing empty statements are "invisible" to fallthrough analysis
@@ -121,16 +122,16 @@ func (check *Checker) stmtList(ctxt stmtContext, list []ast.Stmt) {
 	}
 }
 
-func (check *Checker) multipleDefaults(list []ast.Stmt) {
-	var first ast.Stmt
+func (check *Checker) multipleDefaults(list []dst.Stmt) {
+	var first dst.Stmt
 	for _, s := range list {
-		var d ast.Stmt
+		var d dst.Stmt
 		switch c := s.(type) {
-		case *ast.CaseClause:
+		case *dst.CaseClause:
 			if len(c.List) == 0 {
 				d = s
 			}
-		case *ast.CommClause:
+		case *dst.CommClause:
 			if c.Comm == nil {
 				d = s
 			}
@@ -147,7 +148,7 @@ func (check *Checker) multipleDefaults(list []ast.Stmt) {
 	}
 }
 
-func (check *Checker) openScope(s ast.Stmt, comment string) {
+func (check *Checker) openScope(s dst.Stmt, comment string) {
 	scope := NewScope(check.scope, s.Pos(), s.End(), comment)
 	check.recordScope(s, scope)
 	check.scope = scope
@@ -165,7 +166,7 @@ func assignOp(op token.Token) token.Token {
 	return token.ILLEGAL
 }
 
-func (check *Checker) suspendedCall(keyword string, call *ast.CallExpr) {
+func (check *Checker) suspendedCall(keyword string, call *dst.CallExpr) {
 	var x operand
 	var msg string
 	switch check.rawExpr(&x, call, nil) {
@@ -223,7 +224,7 @@ type (
 	}
 )
 
-func (check *Checker) caseValues(x *operand, values []ast.Expr, seen valueMap) {
+func (check *Checker) caseValues(x *operand, values []dst.Expr, seen valueMap) {
 L:
 	for _, e := range values {
 		var v operand
@@ -260,7 +261,7 @@ L:
 	}
 }
 
-func (check *Checker) caseTypes(x *operand, xtyp *Interface, types []ast.Expr, seen map[Type]token.Pos) (T Type) {
+func (check *Checker) caseTypes(x *operand, xtyp *Interface, types []dst.Expr, seen map[Type]token.Pos) (T Type) {
 L:
 	for _, e := range types {
 		T = check.typOrNil(e)
@@ -290,7 +291,7 @@ L:
 }
 
 // stmt typechecks statement s.
-func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
+func (check *Checker) stmt(ctxt stmtContext, s dst.Stmt) {
 	// statements must end with the same top scope as they started with
 	if debug {
 		defer func(scope *Scope) {
@@ -307,17 +308,17 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 
 	inner := ctxt &^ (fallthroughOk | finalSwitchCase)
 	switch s := s.(type) {
-	case *ast.BadStmt, *ast.EmptyStmt:
+	case *dst.BadStmt, *dst.EmptyStmt:
 		// ignore
 
-	case *ast.DeclStmt:
+	case *dst.DeclStmt:
 		check.declStmt(s.Decl)
 
-	case *ast.LabeledStmt:
+	case *dst.LabeledStmt:
 		check.hasLabel = true
 		check.stmt(ctxt, s.Stmt)
 
-	case *ast.ExprStmt:
+	case *dst.ExprStmt:
 		// spec: "With the exception of specific built-in functions,
 		// function and method calls and receive operations can appear
 		// in statement context. Such statements may be parenthesized."
@@ -337,7 +338,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 		}
 		check.errorf(x.pos(), "%s %s", &x, msg)
 
-	case *ast.SendStmt:
+	case *dst.SendStmt:
 		var ch, x operand
 		check.expr(&ch, s.Chan)
 		check.expr(&x, s.Value)
@@ -358,7 +359,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 
 		check.assignment(&x, tch.elem, "send")
 
-	case *ast.IncDecStmt:
+	case *dst.IncDecStmt:
 		var op token.Token
 		switch s.Tok {
 		case token.INC:
@@ -380,14 +381,14 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			return
 		}
 
-		Y := &ast.BasicLit{ValuePos: s.X.Pos(), Kind: token.INT, Value: "1"} // use x's position
+		Y := &dst.BasicLit{ValuePos: s.X.Pos(), Kind: token.INT, Value: "1"} // use x's position
 		check.binary(&x, nil, s.X, Y, op)
 		if x.mode == invalid {
 			return
 		}
 		check.assignVar(s.X, &x)
 
-	case *ast.AssignStmt:
+	case *dst.AssignStmt:
 		switch s.Tok {
 		case token.ASSIGN, token.DEFINE:
 			if len(s.Lhs) == 0 {
@@ -420,13 +421,13 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			check.assignVar(s.Lhs[0], &x)
 		}
 
-	case *ast.GoStmt:
+	case *dst.GoStmt:
 		check.suspendedCall("go", s.Call)
 
-	case *ast.DeferStmt:
+	case *dst.DeferStmt:
 		check.suspendedCall("defer", s.Call)
 
-	case *ast.ReturnStmt:
+	case *dst.ReturnStmt:
 		res := check.sig.results
 		if res.Len() > 0 {
 			// function returns results
@@ -451,7 +452,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			check.use(s.Results...)
 		}
 
-	case *ast.BranchStmt:
+	case *dst.BranchStmt:
 		if s.Label != nil {
 			check.hasLabel = true
 			return // checked in 2nd pass (check.labels)
@@ -477,13 +478,13 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			check.invalidAST(s.Pos(), "branch statement: %s", s.Tok)
 		}
 
-	case *ast.BlockStmt:
+	case *dst.BlockStmt:
 		check.openScope(s, "block")
 		defer check.closeScope()
 
 		check.stmtList(inner, s.List)
 
-	case *ast.IfStmt:
+	case *dst.IfStmt:
 		check.openScope(s, "if")
 		defer check.closeScope()
 
@@ -497,15 +498,15 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 		// The parser produces a correct AST but if it was modified
 		// elsewhere the else branch may be invalid. Check again.
 		switch s.Else.(type) {
-		case nil, *ast.BadStmt:
+		case nil, *dst.BadStmt:
 			// valid or error already reported
-		case *ast.IfStmt, *ast.BlockStmt:
+		case *dst.IfStmt, *dst.BlockStmt:
 			check.stmt(inner, s.Else)
 		default:
 			check.error(s.Else.Pos(), "invalid else branch in if statement")
 		}
 
-	case *ast.SwitchStmt:
+	case *dst.SwitchStmt:
 		inner |= breakOk
 		check.openScope(s, "switch")
 		defer check.closeScope()
@@ -523,14 +524,14 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			x.mode = constant_
 			x.typ = Typ[Bool]
 			x.val = constant.MakeBool(true)
-			x.expr = &ast.Ident{NamePos: s.Body.Lbrace, Name: "true"}
+			x.expr = &dst.Ident{NamePos: s.Body.Lbrace, Name: "true"}
 		}
 
 		check.multipleDefaults(s.Body.List)
 
 		seen := make(valueMap) // map of seen case values to positions and types
 		for i, c := range s.Body.List {
-			clause, _ := c.(*ast.CaseClause)
+			clause, _ := c.(*dst.CaseClause)
 			if clause == nil {
 				check.invalidAST(c.Pos(), "incorrect expression switch case")
 				continue
@@ -547,7 +548,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			check.closeScope()
 		}
 
-	case *ast.TypeSwitchStmt:
+	case *dst.TypeSwitchStmt:
 		inner |= breakOk
 		check.openScope(s, "type switch")
 		defer check.closeScope()
@@ -562,18 +563,18 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 		// remaining syntactic errors are considered AST errors here.
 		// TODO(gri) better factoring of error handling (invalid ASTs)
 		//
-		var lhs *ast.Ident // lhs identifier or nil
-		var rhs ast.Expr
+		var lhs *dst.Ident // lhs identifier or nil
+		var rhs dst.Expr
 		switch guard := s.Assign.(type) {
-		case *ast.ExprStmt:
+		case *dst.ExprStmt:
 			rhs = guard.X
-		case *ast.AssignStmt:
+		case *dst.AssignStmt:
 			if len(guard.Lhs) != 1 || guard.Tok != token.DEFINE || len(guard.Rhs) != 1 {
 				check.invalidAST(s.Pos(), "incorrect form of type switch guard")
 				return
 			}
 
-			lhs, _ = guard.Lhs[0].(*ast.Ident)
+			lhs, _ = guard.Lhs[0].(*dst.Ident)
 			if lhs == nil {
 				check.invalidAST(s.Pos(), "incorrect form of type switch guard")
 				return
@@ -595,7 +596,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 		}
 
 		// rhs must be of the form: expr.(type) and expr must be an interface
-		expr, _ := rhs.(*ast.TypeAssertExpr)
+		expr, _ := rhs.(*dst.TypeAssertExpr)
 		if expr == nil || expr.Type != nil {
 			check.invalidAST(s.Pos(), "incorrect form of type switch guard")
 			return
@@ -616,7 +617,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 		var lhsVars []*Var               // list of implicitly declared lhs variables
 		seen := make(map[Type]token.Pos) // map of seen types to positions
 		for _, s := range s.Body.List {
-			clause, _ := s.(*ast.CaseClause)
+			clause, _ := s.(*dst.CaseClause)
 			if clause == nil {
 				check.invalidAST(s.Pos(), "incorrect type switch case")
 				continue
@@ -664,34 +665,34 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			}
 		}
 
-	case *ast.SelectStmt:
+	case *dst.SelectStmt:
 		inner |= breakOk
 
 		check.multipleDefaults(s.Body.List)
 
 		for _, s := range s.Body.List {
-			clause, _ := s.(*ast.CommClause)
+			clause, _ := s.(*dst.CommClause)
 			if clause == nil {
 				continue // error reported before
 			}
 
 			// clause.Comm must be a SendStmt, RecvStmt, or default case
 			valid := false
-			var rhs ast.Expr // rhs of RecvStmt, or nil
+			var rhs dst.Expr // rhs of RecvStmt, or nil
 			switch s := clause.Comm.(type) {
-			case nil, *ast.SendStmt:
+			case nil, *dst.SendStmt:
 				valid = true
-			case *ast.AssignStmt:
+			case *dst.AssignStmt:
 				if len(s.Rhs) == 1 {
 					rhs = s.Rhs[0]
 				}
-			case *ast.ExprStmt:
+			case *dst.ExprStmt:
 				rhs = s.X
 			}
 
 			// if present, rhs must be a receive operation
 			if rhs != nil {
-				if x, _ := unparen(rhs).(*ast.UnaryExpr); x != nil && x.Op == token.ARROW {
+				if x, _ := unparen(rhs).(*dst.UnaryExpr); x != nil && x.Op == token.ARROW {
 					valid = true
 				}
 			}
@@ -709,7 +710,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			check.closeScope()
 		}
 
-	case *ast.ForStmt:
+	case *dst.ForStmt:
 		inner |= breakOk | continueOk
 		check.openScope(s, "for")
 		defer check.closeScope()
@@ -725,7 +726,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 		check.simpleStmt(s.Post)
 		// spec: "The init statement may be a short variable
 		// declaration, but the post statement must not."
-		if s, _ := s.Post.(*ast.AssignStmt); s != nil && s.Tok == token.DEFINE {
+		if s, _ := s.Post.(*dst.AssignStmt); s != nil && s.Tok == token.DEFINE {
 			check.softErrorf(s.Pos(), "cannot declare in post statement")
 			// Don't call useLHS here because we want to use the lhs in
 			// this erroneous statement so that we don't get errors about
@@ -734,7 +735,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 		}
 		check.stmt(inner, s.Body)
 
-	case *ast.RangeStmt:
+	case *dst.RangeStmt:
 		inner |= breakOk | continueOk
 		check.openScope(s, "for")
 		defer check.closeScope()
@@ -789,7 +790,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 		// (irregular assignment, cannot easily map to existing assignment checks)
 
 		// lhs expressions and initialization value (rhs) types
-		lhs := [2]ast.Expr{s.Key, s.Value}
+		lhs := [2]dst.Expr{s.Key, s.Value}
 		rhs := [2]Type{key, val} // key, val may be nil
 
 		if s.Tok == token.DEFINE {
@@ -804,7 +805,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 
 				// determine lhs variable
 				var obj *Var
-				if ident, _ := lhs.(*ast.Ident); ident != nil {
+				if ident, _ := lhs.(*dst.Ident); ident != nil {
 					// declare new variable
 					name := ident.Name
 					obj = NewVar(ident.Pos(), check.pkg, name, nil)

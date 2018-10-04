@@ -6,12 +6,13 @@ package types_test
 
 import (
 	"fmt"
-	"go/ast"
 	"go/importer"
 	"go/parser"
 	"testing"
 
-	. "go/types"
+	. "github.com/dave/dst/types"
+
+	"github.com/dave/dst"
 )
 
 var builtinCalls = []struct {
@@ -134,9 +135,9 @@ func testBuiltinSignature(t *testing.T, name, src0, want string) {
 	}
 
 	conf := Config{Importer: importer.Default()}
-	uses := make(map[*ast.Ident]Object)
-	types := make(map[ast.Expr]TypeAndValue)
-	_, err = conf.Check(f.Name.Name, fset, []*ast.File{f}, &Info{Uses: uses, Types: types})
+	uses := make(map[*dst.Ident]Object)
+	types := make(map[dst.Expr]TypeAndValue)
+	_, err = conf.Check(f.Name.Name, fset, []*dst.File{f}, &Info{Uses: uses, Types: types})
 	if err != nil {
 		t.Errorf("%s: %s", src0, err)
 		return
@@ -144,9 +145,9 @@ func testBuiltinSignature(t *testing.T, name, src0, want string) {
 
 	// find called function
 	n := 0
-	var fun ast.Expr
+	var fun dst.Expr
 	for x := range types {
-		if call, _ := x.(*ast.CallExpr); call != nil {
+		if call, _ := x.(*dst.CallExpr); call != nil {
 			fun = call.Fun
 			n++
 		}
@@ -172,7 +173,7 @@ func testBuiltinSignature(t *testing.T, name, src0, want string) {
 		// called function must be a (possibly parenthesized, qualified)
 		// identifier denoting the expected built-in
 		switch p := fun.(type) {
-		case *ast.Ident:
+		case *dst.Ident:
 			obj := uses[p]
 			if obj == nil {
 				t.Errorf("%s: no object found for %s", src0, p)
@@ -189,10 +190,10 @@ func testBuiltinSignature(t *testing.T, name, src0, want string) {
 			}
 			return // we're done
 
-		case *ast.ParenExpr:
+		case *dst.ParenExpr:
 			fun = p.X // unpack
 
-		case *ast.SelectorExpr:
+		case *dst.SelectorExpr:
 			// built-in from package unsafe - ignore details
 			return // we're done
 

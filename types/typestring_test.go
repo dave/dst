@@ -5,14 +5,15 @@
 package types_test
 
 import (
-	"go/ast"
 	"go/importer"
 	"go/parser"
 	"go/token"
 	"internal/testenv"
 	"testing"
 
-	. "go/types"
+	. "github.com/dave/dst/types"
+
+	"github.com/dave/dst"
 )
 
 const filename = "<src>"
@@ -25,7 +26,7 @@ func makePkg(src string) (*Package, error) {
 	}
 	// use the package name as package path
 	conf := Config{Importer: importer.Default()}
-	return conf.Check(file.Name.Name, fset, []*ast.File{file}, nil)
+	return conf.Check(file.Name.Name, fset, []*dst.File{file}, nil)
 }
 
 type testEntry struct {

@@ -7,12 +7,14 @@
 package types_test
 
 import (
-	"go/ast"
 	"go/importer"
 	"go/parser"
 	"go/token"
-	"go/types"
 	"testing"
+
+	"github.com/dave/dst/types"
+
+	"github.com/dave/dst"
 )
 
 // findStructType typechecks src and returns the first struct type encountered.
@@ -22,9 +24,9 @@ func findStructType(t *testing.T, src string) *types.Struct {
 	if err != nil {
 		t.Fatal(err)
 	}
-	info := types.Info{Types: make(map[ast.Expr]types.TypeAndValue)}
+	info := types.Info{Types: make(map[dst.Expr]types.TypeAndValue)}
 	var conf types.Config
-	_, err = conf.Check("x", fset, []*ast.File{f}, &info)
+	_, err = conf.Check("x", fset, []*dst.File{f}, &info)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,12 +98,12 @@ const _ = unsafe.Offsetof(struct{ x int64 }{}.x)
 	if err != nil {
 		t.Fatal(err)
 	}
-	info := types.Info{Types: make(map[ast.Expr]types.TypeAndValue)}
+	info := types.Info{Types: make(map[dst.Expr]types.TypeAndValue)}
 	conf := types.Config{
 		Importer: importer.Default(),
 		Sizes:    &types.StdSizes{WordSize: 8, MaxAlign: 8},
 	}
-	_, err = conf.Check("x", fset, []*ast.File{f}, &info)
+	_, err = conf.Check("x", fset, []*dst.File{f}, &info)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -8,7 +8,6 @@ package types_test
 
 import (
 	"fmt"
-	"go/ast"
 	"go/importer"
 	"go/parser"
 	"internal/testenv"
@@ -16,7 +15,9 @@ import (
 	"strings"
 	"testing"
 
-	. "go/types"
+	. "github.com/dave/dst/types"
+
+	"github.com/dave/dst"
 )
 
 func TestIssue5770(t *testing.T) {
@@ -27,7 +28,7 @@ func TestIssue5770(t *testing.T) {
 	}
 
 	conf := Config{Importer: importer.Default()}
-	_, err = conf.Check(f.Name.Name, fset, []*ast.File{f}, nil) // do not crash
+	_, err = conf.Check(f.Name.Name, fset, []*dst.File{f}, nil) // do not crash
 	want := "undeclared name: T"
 	if err == nil || !strings.Contains(err.Error(), want) {
 		t.Errorf("got: %v; want: %s", err, want)
@@ -52,8 +53,8 @@ var (
 	}
 
 	var conf Config
-	types := make(map[ast.Expr]TypeAndValue)
-	_, err = conf.Check(f.Name.Name, fset, []*ast.File{f}, &Info{Types: types})
+	types := make(map[dst.Expr]TypeAndValue)
+	_, err = conf.Check(f.Name.Name, fset, []*dst.File{f}, &Info{Types: types})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +62,7 @@ var (
 	for x, tv := range types {
 		var want Type
 		switch x := x.(type) {
-		case *ast.BasicLit:
+		case *dst.BasicLit:
 			switch x.Value {
 			case `8`:
 				want = Typ[Uint8]
@@ -74,7 +75,7 @@ var (
 			case `"foo"`:
 				want = Typ[String]
 			}
-		case *ast.Ident:
+		case *dst.Ident:
 			if x.Name == "nil" {
 				want = Typ[UntypedNil]
 			}
@@ -100,8 +101,8 @@ func f() int {
 	}
 
 	var conf Config
-	types := make(map[ast.Expr]TypeAndValue)
-	_, err = conf.Check(f.Name.Name, fset, []*ast.File{f}, &Info{Types: types})
+	types := make(map[dst.Expr]TypeAndValue)
+	_, err = conf.Check(f.Name.Name, fset, []*dst.File{f}, &Info{Types: types})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +110,7 @@ func f() int {
 	want := Typ[Int]
 	n := 0
 	for x, tv := range types {
-		if _, ok := x.(*ast.CallExpr); ok {
+		if _, ok := x.(*dst.CallExpr); ok {
 			if tv.Type != want {
 				t.Errorf("%s: got %s; want %s", fset.Position(x.Pos()), tv.Type, want)
 			}
@@ -134,13 +135,13 @@ type T struct{} // receiver type after method declaration
 	}
 
 	var conf Config
-	defs := make(map[*ast.Ident]Object)
-	_, err = conf.Check(f.Name.Name, fset, []*ast.File{f}, &Info{Defs: defs})
+	defs := make(map[*dst.Ident]Object)
+	_, err = conf.Check(f.Name.Name, fset, []*dst.File{f}, &Info{Defs: defs})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	m := f.Decls[0].(*ast.FuncDecl)
+	m := f.Decls[0].(*dst.FuncDecl)
 	res1 := defs[m.Name].(*Func).Type().(*Signature).Results().At(0)
 	res2 := defs[m.Type.Results.List[0].Names[0]].(*Var)
 
@@ -180,9 +181,9 @@ L7 uses var z int`
 
 	// don't abort at the first error
 	conf := Config{Error: func(err error) { t.Log(err) }}
-	defs := make(map[*ast.Ident]Object)
-	uses := make(map[*ast.Ident]Object)
-	_, err = conf.Check(f.Name.Name, fset, []*ast.File{f}, &Info{Defs: defs, Uses: uses})
+	defs := make(map[*dst.Ident]Object)
+	uses := make(map[*dst.Ident]Object)
+	_, err = conf.Check(f.Name.Name, fset, []*dst.File{f}, &Info{Defs: defs, Uses: uses})
 	if s := fmt.Sprint(err); !strings.HasSuffix(s, "cannot assign to w") {
 		t.Errorf("Check: unexpected error: %s", s)
 	}
@@ -218,7 +219,7 @@ func TestIssue13898(t *testing.T) {
 	const src0 = `
 package main
 
-import "go/types"
+import "github.com/dave/dst/types"
 
 func main() {
 	var info types.Info
@@ -232,7 +233,7 @@ func main() {
 package main
 
 import (
-	"go/types"
+	"github.com/dave/dst/types"
 	_ "go/importer"
 )
 
@@ -250,7 +251,7 @@ package main
 
 import (
 	_ "go/importer"
-	"go/types"
+	"github.com/dave/dst/types"
 )
 
 func main() {
@@ -266,8 +267,8 @@ func main() {
 			t.Fatal(err)
 		}
 		cfg := Config{Importer: importer.Default()}
-		info := Info{Uses: make(map[*ast.Ident]Object)}
-		_, err = cfg.Check("main", fset, []*ast.File{f}, &info)
+		info := Info{Uses: make(map[*dst.Ident]Object)}
+		_, err = cfg.Check("main", fset, []*dst.File{f}, &info)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -302,7 +303,7 @@ func TestIssue22525(t *testing.T) {
 
 	got := "\n"
 	conf := Config{Error: func(err error) { got += err.Error() + "\n" }}
-	conf.Check(f.Name.Name, fset, []*ast.File{f}, nil) // do not crash
+	conf.Check(f.Name.Name, fset, []*dst.File{f}, nil) // do not crash
 	want := `
 1:27: a declared but not used
 1:30: b declared but not used
@@ -334,16 +335,16 @@ func TestIssue25627(t *testing.T) {
 		}
 
 		cfg := Config{Importer: importer.Default(), Error: func(err error) {}}
-		info := &Info{Types: make(map[ast.Expr]TypeAndValue)}
-		_, err = cfg.Check(f.Name.Name, fset, []*ast.File{f}, info)
+		info := &Info{Types: make(map[dst.Expr]TypeAndValue)}
+		_, err = cfg.Check(f.Name.Name, fset, []*dst.File{f}, info)
 		if err != nil {
 			if _, ok := err.(Error); !ok {
 				t.Fatal(err)
 			}
 		}
 
-		ast.Inspect(f, func(n ast.Node) bool {
-			if spec, _ := n.(*ast.TypeSpec); spec != nil {
+		dst.Inspect(f, func(n dst.Node) bool {
+			if spec, _ := n.(*dst.TypeSpec); spec != nil {
 				if tv, ok := info.Types[spec.Type]; ok && spec.Name.Name == "T" {
 					want := strings.Count(src, ";") + 1
 					if got := tv.Type.(*Struct).NumFields(); got != want {

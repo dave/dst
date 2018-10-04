@@ -7,8 +7,9 @@
 package types
 
 import (
-	"go/ast"
 	"go/token"
+
+	"github.com/dave/dst"
 )
 
 // assignment reports whether x can be assigned to a variable of type T,
@@ -129,13 +130,13 @@ func (check *Checker) initVar(lhs *Var, x *operand, context string) Type {
 	return x.typ
 }
 
-func (check *Checker) assignVar(lhs ast.Expr, x *operand) Type {
+func (check *Checker) assignVar(lhs dst.Expr, x *operand) Type {
 	if x.mode == invalid || x.typ == Typ[Invalid] {
 		return nil
 	}
 
 	// Determine if the lhs is a (possibly parenthesized) identifier.
-	ident, _ := unparen(lhs).(*ast.Ident)
+	ident, _ := unparen(lhs).(*dst.Ident)
 
 	// Don't evaluate lhs if it is the blank identifier.
 	if ident != nil && ident.Name == "_" {
@@ -182,7 +183,7 @@ func (check *Checker) assignVar(lhs ast.Expr, x *operand) Type {
 	case variable, mapindex:
 		// ok
 	default:
-		if sel, ok := z.expr.(*ast.SelectorExpr); ok {
+		if sel, ok := z.expr.(*dst.SelectorExpr); ok {
 			var op operand
 			check.expr(&op, sel.X)
 			if op.mode == mapindex {
@@ -204,7 +205,7 @@ func (check *Checker) assignVar(lhs ast.Expr, x *operand) Type {
 
 // If returnPos is valid, initVars is called to type-check the assignment of
 // return expressions, and returnPos is the position of the return statement.
-func (check *Checker) initVars(lhs []*Var, rhs []ast.Expr, returnPos token.Pos) {
+func (check *Checker) initVars(lhs []*Var, rhs []dst.Expr, returnPos token.Pos) {
 	l := len(lhs)
 	get, r, commaOk := unpack(func(x *operand, i int) { check.multiExpr(x, rhs[i]) }, len(rhs), l == 2 && !returnPos.IsValid())
 	if get == nil || l != r {
@@ -248,7 +249,7 @@ func (check *Checker) initVars(lhs []*Var, rhs []ast.Expr, returnPos token.Pos) 
 	}
 }
 
-func (check *Checker) assignVars(lhs, rhs []ast.Expr) {
+func (check *Checker) assignVars(lhs, rhs []dst.Expr) {
 	l := len(lhs)
 	get, r, commaOk := unpack(func(x *operand, i int) { check.multiExpr(x, rhs[i]) }, len(rhs), l == 2)
 	if get == nil {
@@ -278,7 +279,7 @@ func (check *Checker) assignVars(lhs, rhs []ast.Expr) {
 	}
 }
 
-func (check *Checker) shortVarDecl(pos token.Pos, lhs, rhs []ast.Expr) {
+func (check *Checker) shortVarDecl(pos token.Pos, lhs, rhs []dst.Expr) {
 	top := len(check.delayed)
 	scope := check.scope
 
@@ -287,7 +288,7 @@ func (check *Checker) shortVarDecl(pos token.Pos, lhs, rhs []ast.Expr) {
 	var lhsVars = make([]*Var, len(lhs))
 	for i, lhs := range lhs {
 		var obj *Var
-		if ident, _ := lhs.(*ast.Ident); ident != nil {
+		if ident, _ := lhs.(*dst.Ident); ident != nil {
 			// Use the correct obj if the ident is redeclared. The
 			// variable's scope starts after the declaration; so we
 			// must use Scope.Lookup here and call Scope.Insert

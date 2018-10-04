@@ -18,16 +18,18 @@ package types_test
 import (
 	"bytes"
 	"fmt"
-	"go/ast"
 	"go/format"
 	"go/importer"
 	"go/parser"
 	"go/token"
-	"go/types"
 	"log"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/dave/dst/types"
+
+	"github.com/dave/dst"
 )
 
 // ExampleScope prints the tree of Scopes of a package created from a
@@ -35,7 +37,7 @@ import (
 func ExampleScope() {
 	// Parse the source files for a package.
 	fset := token.NewFileSet()
-	var files []*ast.File
+	var files []*dst.File
 	for _, file := range []struct{ name, input string }{
 		{"main.go", `
 package main
@@ -120,7 +122,7 @@ func (c *Celsius) SetF(f float64) { *c = Celsius(f - 32 / 9 * 5) }
 	// Type information for the imported packages
 	// comes from $GOROOT/pkg/$GOOS_$GOOARCH/fmt.a.
 	conf := types.Config{Importer: importer.Default()}
-	pkg, err := conf.Check("temperature", fset, []*ast.File{f}, nil)
+	pkg, err := conf.Check("temperature", fset, []*dst.File{f}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -173,12 +175,12 @@ func fib(x int) int {
 	// We create an empty map for each kind of input
 	// we're interested in, and Check populates them.
 	info := types.Info{
-		Types: make(map[ast.Expr]types.TypeAndValue),
-		Defs:  make(map[*ast.Ident]types.Object),
-		Uses:  make(map[*ast.Ident]types.Object),
+		Types: make(map[dst.Expr]types.TypeAndValue),
+		Defs:  make(map[*dst.Ident]types.Object),
+		Uses:  make(map[*dst.Ident]types.Object),
 	}
 	var conf types.Config
-	pkg, err := conf.Check("fib", fset, []*ast.File{f}, &info)
+	pkg, err := conf.Check("fib", fset, []*dst.File{f}, &info)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -305,7 +307,7 @@ func mode(tv types.TypeAndValue) string {
 	}
 }
 
-func exprString(fset *token.FileSet, expr ast.Expr) string {
+func exprString(fset *token.FileSet, expr dst.Expr) string {
 	var buf bytes.Buffer
 	format.Node(&buf, fset, expr)
 	return buf.String()

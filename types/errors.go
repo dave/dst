@@ -8,9 +8,10 @@ package types
 
 import (
 	"fmt"
-	"go/ast"
 	"go/token"
 	"strings"
+
+	"github.com/dave/dst"
 )
 
 func assert(p bool) {
@@ -41,7 +42,7 @@ func (check *Checker) sprintf(format string, args ...interface{}) string {
 			arg = operandString(a, check.qualifier)
 		case token.Pos:
 			arg = check.fset.Position(a).String()
-		case ast.Expr:
+		case dst.Expr:
 			arg = ExprString(a)
 		case Object:
 			arg = ObjectString(a, check.qualifier)

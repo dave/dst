@@ -7,9 +7,10 @@
 package types
 
 import (
-	"go/ast"
 	"go/constant"
 	"go/token"
+
+	"github.com/dave/dst"
 )
 
 // debugging/development support
@@ -46,7 +47,7 @@ type context struct {
 	pos           token.Pos              // if valid, identifiers are looked up as if at position pos (used by Eval)
 	iota          constant.Value         // value of iota in a constant declaration; nil otherwise
 	sig           *Signature             // function signature if inside a function; nil otherwise
-	isPanic       map[*ast.CallExpr]bool // set of panic call expressions (used for termination check)
+	isPanic       map[*dst.CallExpr]bool // set of panic call expressions (used for termination check)
 	hasLabel      bool                   // set if a function makes use of labels (only ~1% of functions); unused outside functions
 	hasCallOrRecv bool                   // set if an expression contains a function call or channel receive operation
 }
@@ -82,13 +83,13 @@ type Checker struct {
 	// information collected during type-checking of a set of package files
 	// (initialized by Files, valid only for the duration of check.Files;
 	// maps and lists are allocated on demand)
-	files            []*ast.File                       // package files
+	files            []*dst.File                       // package files
 	unusedDotImports map[*Scope]map[*Package]token.Pos // positions of unused dot-imported packages for each file scope
 
 	firstErr   error                    // first error encountered
 	methods    map[*TypeName][]*Func    // maps package scope type names to associated non-blank, non-interface methods
 	interfaces map[*TypeName]*ifaceInfo // maps interface type names to corresponding interface infos
-	untyped    map[ast.Expr]exprInfo    // map of expressions without final type
+	untyped    map[dst.Expr]exprInfo    // map of expressions without final type
 	delayed    []func()                 // stack of delayed actions
 	objPath    []Object                 // path of object dependencies during type inference (for cycle reporting)
 
@@ -128,10 +129,10 @@ func (check *Checker) addDeclDep(to Object) {
 	from.addDep(to)
 }
 
-func (check *Checker) rememberUntyped(e ast.Expr, lhs bool, mode operandMode, typ *Basic, val constant.Value) {
+func (check *Checker) rememberUntyped(e dst.Expr, lhs bool, mode operandMode, typ *Basic, val constant.Value) {
 	m := check.untyped
 	if m == nil {
-		m = make(map[ast.Expr]exprInfo)
+		m = make(map[dst.Expr]exprInfo)
 		check.untyped = m
 	}
 	m[e] = exprInfo{lhs, mode, typ, val}
@@ -190,7 +191,7 @@ func NewChecker(conf *Config, fset *token.FileSet, pkg *Package, info *Info) *Ch
 
 // initFiles initializes the files-specific portion of checker.
 // The provided files must all belong to the same package.
-func (check *Checker) initFiles(files []*ast.File) {
+func (check *Checker) initFiles(files []*dst.File) {
 	// start with a clean slate (check.Files may be called multiple times)
 	check.files = nil
 	check.unusedDotImports = nil
@@ -238,9 +239,9 @@ func (check *Checker) handleBailout(err *error) {
 }
 
 // Files checks the provided files as part of the checker's package.
-func (check *Checker) Files(files []*ast.File) error { return check.checkFiles(files) }
+func (check *Checker) Files(files []*dst.File) error { return check.checkFiles(files) }
 
-func (check *Checker) checkFiles(files []*ast.File) (err error) {
+func (check *Checker) checkFiles(files []*dst.File) (err error) {
 	defer check.handleBailout(&err)
 
 	check.initFiles(files)
@@ -277,7 +278,7 @@ func (check *Checker) recordUntyped() {
 	}
 }
 
-func (check *Checker) recordTypeAndValue(x ast.Expr, mode operandMode, typ Type, val constant.Value) {
+func (check *Checker) recordTypeAndValue(x dst.Expr, mode operandMode, typ Type, val constant.Value) {
 	assert(x != nil)
 	assert(typ != nil)
 	if mode == invalid {
@@ -293,7 +294,7 @@ func (check *Checker) recordTypeAndValue(x ast.Expr, mode operandMode, typ Type,
 	}
 }
 
-func (check *Checker) recordBuiltinType(f ast.Expr, sig *Signature) {
+func (check *Checker) recordBuiltinType(f dst.Expr, sig *Signature) {
 	// f must be a (possibly parenthesized) identifier denoting a built-in
 	// (built-ins in package unsafe always produce a constant result and
 	// we don't record their signatures, so we don't see qualified idents
@@ -301,9 +302,9 @@ func (check *Checker) recordBuiltinType(f ast.Expr, sig *Signature) {
 	for {
 		check.recordTypeAndValue(f, builtin, sig, nil)
 		switch p := f.(type) {
-		case *ast.Ident:
+		case *dst.Ident:
 			return // we're done
-		case *ast.ParenExpr:
+		case *dst.ParenExpr:
 			f = p.X
 		default:
 			unreachable()
@@ -311,7 +312,7 @@ func (check *Checker) recordBuiltinType(f ast.Expr, sig *Signature) {
 	}
 }
 
-func (check *Checker) recordCommaOkTypes(x ast.Expr, a [2]Type) {
+func (check *Checker) recordCommaOkTypes(x dst.Expr, a [2]Type) {
 	assert(x != nil)
 	if a[0] == nil || a[1] == nil {
 		return
@@ -328,7 +329,7 @@ func (check *Checker) recordCommaOkTypes(x ast.Expr, a [2]Type) {
 			)
 			m[x] = tv
 			// if x is a parenthesized expression (p.X), update p.X
-			p, _ := x.(*ast.ParenExpr)
+			p, _ := x.(*dst.ParenExpr)
 			if p == nil {
 				break
 			}
@@ -337,14 +338,14 @@ func (check *Checker) recordCommaOkTypes(x ast.Expr, a [2]Type) {
 	}
 }
 
-func (check *Checker) recordDef(id *ast.Ident, obj Object) {
+func (check *Checker) recordDef(id *dst.Ident, obj Object) {
 	assert(id != nil)
 	if m := check.Defs; m != nil {
 		m[id] = obj
 	}
 }
 
-func (check *Checker) recordUse(id *ast.Ident, obj Object) {
+func (check *Checker) recordUse(id *dst.Ident, obj Object) {
 	assert(id != nil)
 	assert(obj != nil)
 	if m := check.Uses; m != nil {
@@ -352,7 +353,7 @@ func (check *Checker) recordUse(id *ast.Ident, obj Object) {
 	}
 }
 
-func (check *Checker) recordImplicit(node ast.Node, obj Object) {
+func (check *Checker) recordImplicit(node dst.Node, obj Object) {
 	assert(node != nil)
 	assert(obj != nil)
 	if m := check.Implicits; m != nil {
@@ -360,7 +361,7 @@ func (check *Checker) recordImplicit(node ast.Node, obj Object) {
 	}
 }
 
-func (check *Checker) recordSelection(x *ast.SelectorExpr, kind SelectionKind, recv Type, obj Object, index []int, indirect bool) {
+func (check *Checker) recordSelection(x *dst.SelectorExpr, kind SelectionKind, recv Type, obj Object, index []int, indirect bool) {
 	assert(obj != nil && (recv == nil || len(index) > 0))
 	check.recordUse(x.Sel, obj)
 	if m := check.Selections; m != nil {
@@ -368,7 +369,7 @@ func (check *Checker) recordSelection(x *ast.SelectorExpr, kind SelectionKind, r
 	}
 }
 
-func (check *Checker) recordScope(node ast.Node, scope *Scope) {
+func (check *Checker) recordScope(node dst.Node, scope *Scope) {
 	assert(node != nil)
 	assert(scope != nil)
 	if m := check.Scopes; m != nil {

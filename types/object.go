@@ -7,9 +7,10 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"go/ast"
 	"go/constant"
 	"go/token"
+
+	"github.com/dave/dst"
 )
 
 // An Object describes a named language entity such as a package,
@@ -59,7 +60,7 @@ type Object interface {
 // Id returns name if it is exported, otherwise it
 // returns the name qualified with the package path.
 func Id(pkg *Package, name string) string {
-	if ast.IsExported(name) {
+	if dst.IsExported(name) {
 		return name
 	}
 	// unexported names need the package path for differentiation
@@ -139,7 +140,7 @@ func (obj *object) Type() Type { return obj.typ }
 // Exported reports whether the object is exported (starts with a capital letter).
 // It doesn't take into account whether the object is in a local (function) scope
 // or not.
-func (obj *object) Exported() bool { return ast.IsExported(obj.name) }
+func (obj *object) Exported() bool { return dst.IsExported(obj.name) }
 
 // Id is a wrapper for Id(obj.Pkg(), obj.Name()).
 func (obj *object) Id() string { return Id(obj.pkg, obj.name) }
