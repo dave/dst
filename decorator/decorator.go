@@ -25,6 +25,14 @@ func Decorate(f *ast.File, fset *token.FileSet) *dst.File {
 	return d.decorateFile(f, fset)
 }
 
+func DecorateWithNodes(f *ast.File, fset *token.FileSet, nodes map[ast.Node]dst.Node) *dst.File {
+	d := &decorator{
+		nodes:       nodes,
+		decorations: map[ast.Node]map[string][]string{},
+	}
+	return d.decorateFile(f, fset)
+}
+
 type decorator struct {
 	nodes       map[ast.Node]dst.Node
 	decorations map[ast.Node]map[string][]string
