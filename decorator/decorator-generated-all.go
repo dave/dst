@@ -165,6 +165,7 @@ func getDecorationInfo(n dst.Node) []decorationInfo {
 		out = append(out, decorationInfo{"AfterMap", n.Decs.AfterMap})
 		out = append(out, decorationInfo{"AfterKey", n.Decs.AfterKey})
 		out = append(out, decorationInfo{"End", n.Decs.End})
+	case *dst.Package:
 	case *dst.ParenExpr:
 		out = append(out, decorationInfo{"Start", n.Decs.Start})
 		out = append(out, decorationInfo{"AfterLparen", n.Decs.AfterLparen})

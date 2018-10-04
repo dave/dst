@@ -37,6 +37,7 @@ func (v *InterfaceType) isNode()  {}
 func (v *KeyValueExpr) isNode()   {}
 func (v *LabeledStmt) isNode()    {}
 func (v *MapType) isNode()        {}
+func (v *Package) isNode()        {}
 func (v *ParenExpr) isNode()      {}
 func (v *RangeStmt) isNode()      {}
 func (v *ReturnStmt) isNode()     {}
@@ -52,6 +53,5 @@ func (v *TypeSpec) isNode()       {}
 func (v *TypeSwitchStmt) isNode() {}
 func (v *UnaryExpr) isNode()      {}
 func (v *ValueSpec) isNode()      {}
-func (v *Package) isNode()        {}
 func (v *DecorationStmt) isNode() {}
 func (v *DecorationDecl) isNode() {}

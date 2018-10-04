@@ -17,69 +17,84 @@ func Print(f *dst.File) error {
 }
 
 func Fprint(w io.Writer, f *dst.File) error {
-	af, fset := Restore(f)
+	fset, af := Restore(f)
 	return format.Node(w, fset, af)
 }
 
-func Restore(file *dst.File) (*ast.File, *token.FileSet) {
-	fset := token.NewFileSet()
-	return RestoreNamed("a.go", file, fset), fset
+func Restore(file *dst.File) (*token.FileSet, *ast.File) {
+	r := NewRestorer()
+	return r.Fset, r.RestoreFile("", file)
 }
 
-func RestoreNamed(name string, file *dst.File, fset *token.FileSet) *ast.File {
-	r := &restorer{Fset: fset}
-	return r.restore(name, file)
+func NewRestorer() *Restorer {
+	return &Restorer{
+		Fset:  token.NewFileSet(),
+		Nodes: map[dst.Node]ast.Node{},
+	}
 }
 
-type restorer struct {
-	Fset *token.FileSet
+type Restorer struct {
+	Fset  *token.FileSet
+	Nodes map[dst.Node]ast.Node
 }
 
 type fileRestorer struct {
-	*restorer
-	Lines    []int
-	Comments []*ast.CommentGroup
-	base     token.Pos
+	*Restorer
+	lines    []int
+	comments []*ast.CommentGroup
+	base     int
 	cursor   token.Pos
-	nodes    map[dst.Node]ast.Node
 }
 
-func (r *restorer) restore(fname string, dstFile *dst.File) *ast.File {
-	if r.Fset == nil {
-		r.Fset = token.NewFileSet()
-	}
+func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
+
+	// Base is the pos that the file will start at in the fset
+	base := r.Fset.Base()
+
 	fr := &fileRestorer{
-		restorer: r,
-		base:     token.Pos(r.Fset.Base()),
-		cursor:   token.Pos(r.Fset.Base()),
-		nodes:    map[dst.Node]ast.Node{},
-		Lines:    []int{0},
-	}
-	astFile := fr.restoreNode(dstFile).(*ast.File)
-
-	astFileEndPos := int(fr.cursor - fr.base)
-	// Check that none of the comments or newlines extend past the file end position. If so, increment.
-	for _, cg := range fr.Comments {
-		if int(cg.End()) >= astFileEndPos {
-			astFileEndPos = int(cg.End()) + 1
-		}
-	}
-	for _, l := range fr.Lines {
-		if l >= astFileEndPos {
-			astFileEndPos = l + 1
-		}
+		Restorer: r,
+		lines:    []int{0}, // initialise with the first line at Pos 0
+		base:     base,
+		cursor:   token.Pos(base),
 	}
 
-	fsetFile := r.Fset.AddFile(fname, r.Fset.Base(), astFileEndPos)
-	for _, cg := range fr.Comments {
-		astFile.Comments = append(astFile.Comments, cg)
+	// restore the file, populate comments and lines
+	f := fr.restoreNode(file).(*ast.File)
+
+	for _, cg := range fr.comments {
+		f.Comments = append(f.Comments, cg)
 	}
-	success := fsetFile.SetLines(fr.Lines)
-	if !success {
+
+	size := fr.fileSize()
+
+	ff := r.Fset.AddFile(name, base, size)
+	if !ff.SetLines(fr.lines) {
 		panic("SetLines failed")
 	}
 
-	return astFile
+	return f
+}
+
+func (f *fileRestorer) fileSize() int {
+
+	// If a comment is at the end of a file, it will extend past the current cursor position...
+
+	end := int(f.cursor) // end pos of file
+
+	// check that none of the comments or newlines extend past the file end position. If so, increment.
+	for _, cg := range f.comments {
+		if int(cg.End()) >= end {
+			end = int(cg.End()) + 1
+		}
+	}
+	for _, lineOffset := range f.lines {
+		pos := lineOffset + f.base // remember lines are relative to the file base
+		if pos >= end {
+			end = pos + 1
+		}
+	}
+
+	return end - f.base
 }
 
 func (f *fileRestorer) applyDecorations(decorations dst.Decorations) {
@@ -93,22 +108,24 @@ func (f *fileRestorer) applyDecorations(decorations dst.Decorations) {
 
 		// for multi-line comments, add a newline for each \n
 		if isMultiLineComment {
-			for i, c := range d {
-				if c == '\n' {
-					f.Lines = append(f.Lines, int(f.cursor)+i)
+			for i, char := range d {
+				if char == '\n' {
+					lineOffset := int(f.cursor) - f.base + i // remember lines are relative to the file base
+					f.lines = append(f.lines, lineOffset)
 				}
 			}
 		}
 
 		// if the decoration is a comment, add it and advance the cursor
 		if isComment {
-			f.Comments = append(f.Comments, &ast.CommentGroup{List: []*ast.Comment{{Slash: f.cursor, Text: d}}})
+			f.comments = append(f.comments, &ast.CommentGroup{List: []*ast.Comment{{Slash: f.cursor, Text: d}}})
 			f.cursor += token.Pos(len(d))
 		}
 
 		// for newline decorations and also line-comments, add a newline
 		if isLineComment || isNewline {
-			f.Lines = append(f.Lines, int(f.cursor))
+			lineOffset := int(f.cursor) - f.base // remember lines are relative to the file base
+			f.lines = append(f.lines, lineOffset)
 			f.cursor++
 		}
 	}

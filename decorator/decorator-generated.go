@@ -5,8 +5,8 @@ import (
 	"go/ast"
 )
 
-func (d *decorator) decorateNode(n ast.Node) dst.Node {
-	if dn, ok := d.nodes[n]; ok {
+func (d *Decorator) decorateNode(n ast.Node) dst.Node {
+	if dn, ok := d.Nodes[n]; ok {
 		return dn
 	}
 	switch n := n.(type) {
@@ -42,7 +42,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.AssignStmt:
 		out := &dst.AssignStmt{}
@@ -75,22 +75,22 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.BadDecl:
 		out := &dst.BadDecl{}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.BadExpr:
 		out := &dst.BadExpr{}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.BadStmt:
 		out := &dst.BadStmt{}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.BasicLit:
 		out := &dst.BasicLit{}
@@ -110,7 +110,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.BinaryExpr:
 		out := &dst.BinaryExpr{}
@@ -143,7 +143,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.BlockStmt:
 		out := &dst.BlockStmt{}
@@ -169,7 +169,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.BranchStmt:
 		out := &dst.BranchStmt{}
@@ -194,7 +194,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.CallExpr:
 		out := &dst.CallExpr{}
@@ -237,7 +237,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.CaseClause:
 		out := &dst.CaseClause{}
@@ -271,7 +271,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.ChanType:
 		out := &dst.ChanType{}
@@ -305,7 +305,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.CommClause:
 		out := &dst.CommClause{}
@@ -339,7 +339,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.CompositeLit:
 		out := &dst.CompositeLit{}
@@ -376,7 +376,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.DeclStmt:
 		out := &dst.DeclStmt{}
@@ -395,7 +395,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.DeferStmt:
 		out := &dst.DeferStmt{}
@@ -419,7 +419,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.Ellipsis:
 		out := &dst.Ellipsis{}
@@ -443,7 +443,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.EmptyStmt:
 		out := &dst.EmptyStmt{}
@@ -453,7 +453,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 		// Value: Implicit
 		out.Implicit = n.Implicit
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.ExprStmt:
 		out := &dst.ExprStmt{}
@@ -472,7 +472,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.Field:
 		out := &dst.Field{}
@@ -507,7 +507,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.FieldList:
 		out := &dst.FieldList{}
@@ -535,7 +535,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.File:
 		out := &dst.File{}
@@ -564,7 +564,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.ForStmt:
 		out := &dst.ForStmt{}
@@ -616,7 +616,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.FuncDecl:
 		out := &dst.FuncDecl{}
@@ -676,7 +676,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.FuncLit:
 		out := &dst.FuncLit{}
@@ -703,7 +703,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.FuncType:
 		out := &dst.FuncType{}
@@ -736,7 +736,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.GenDecl:
 		out := &dst.GenDecl{}
@@ -770,7 +770,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.GoStmt:
 		out := &dst.GoStmt{}
@@ -794,7 +794,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.Ident:
 		out := &dst.Ident{}
@@ -811,7 +811,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.IfStmt:
 		out := &dst.IfStmt{}
@@ -861,7 +861,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.ImportSpec:
 		out := &dst.ImportSpec{}
@@ -888,7 +888,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.IncDecStmt:
 		out := &dst.IncDecStmt{}
@@ -913,7 +913,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.IndexExpr:
 		out := &dst.IndexExpr{}
@@ -950,7 +950,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.InterfaceType:
 		out := &dst.InterfaceType{}
@@ -977,7 +977,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.KeyValueExpr:
 		out := &dst.KeyValueExpr{}
@@ -1009,7 +1009,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.LabeledStmt:
 		out := &dst.LabeledStmt{}
@@ -1041,7 +1041,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.MapType:
 		out := &dst.MapType{}
@@ -1077,7 +1077,20 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
+		return out
+	case *ast.Package:
+		out := &dst.Package{}
+
+		// Value: Name
+		out.Name = n.Name
+
+		// Map: Files
+		for k, v := range n.Files {
+			out.Files[k] = d.decorateNode(v).(*dst.File)
+		}
+
+		d.Nodes[n] = out
 		return out
 	case *ast.ParenExpr:
 		out := &dst.ParenExpr{}
@@ -1106,7 +1119,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.RangeStmt:
 		out := &dst.RangeStmt{}
@@ -1164,7 +1177,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.ReturnStmt:
 		out := &dst.ReturnStmt{}
@@ -1188,7 +1201,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.SelectStmt:
 		out := &dst.SelectStmt{}
@@ -1212,7 +1225,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.SelectorExpr:
 		out := &dst.SelectorExpr{}
@@ -1241,7 +1254,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.SendStmt:
 		out := &dst.SendStmt{}
@@ -1273,7 +1286,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.SliceExpr:
 		out := &dst.SliceExpr{}
@@ -1333,7 +1346,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.StarExpr:
 		out := &dst.StarExpr{}
@@ -1357,7 +1370,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.StructType:
 		out := &dst.StructType{}
@@ -1384,7 +1397,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.SwitchStmt:
 		out := &dst.SwitchStmt{}
@@ -1424,7 +1437,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.TypeAssertExpr:
 		out := &dst.TypeAssertExpr{}
@@ -1465,7 +1478,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.TypeSpec:
 		out := &dst.TypeSpec{}
@@ -1495,7 +1508,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.TypeSwitchStmt:
 		out := &dst.TypeSwitchStmt{}
@@ -1535,7 +1548,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.UnaryExpr:
 		out := &dst.UnaryExpr{}
@@ -1560,7 +1573,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	case *ast.ValueSpec:
 		out := &dst.ValueSpec{}
@@ -1597,7 +1610,7 @@ func (d *decorator) decorateNode(n ast.Node) dst.Node {
 			}
 		}
 
-		d.nodes[n] = out
+		d.Nodes[n] = out
 		return out
 	}
 	return nil

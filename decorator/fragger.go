@@ -53,41 +53,53 @@ func (f *Fragger) AddNewline(pos token.Pos) {
 	f.Fragments = append(f.Fragments, NewlineFragment{Pos: pos})
 }
 
-func (f *Fragger) Fragment(file *ast.File, fset *token.FileSet) {
+func (f *Fragger) Fragment(fset *token.FileSet, node ast.Node) {
 
-	f.cursor = fset.File(file.Pos()).Base()
+	f.ProcessNode(node)
 
-	f.ProcessNode(file)
+	if fset != nil {
+		processFile := func(astf *ast.File) {
+			// we will avoid adding a newline decoration that is inside a comment
+			avoid := map[int]bool{}
+			for _, cg := range astf.Comments {
+				for _, c := range cg.List {
 
-	newlinesInsideComments := map[int]bool{}
-	for _, cg := range file.Comments {
-		for _, c := range cg.List {
+					// Add the comment to the fragment list.
+					f.AddComment(c.Text, c.Slash)
 
-			// Add the comment to the fragment list.
-			f.AddComment(c.Text, c.Slash)
-
-			// Add any newlines.
-			if strings.HasPrefix(c.Text, "//") {
-				newlinesInsideComments[fset.Position(c.Pos()).Line] = true
-			} else if strings.HasPrefix(c.Text, "/*") && fset.Position(c.End()).Line > fset.Position(c.Pos()).Line {
-				// multi line comment
-				for i := fset.Position(c.Pos()).Line; i < fset.Position(c.End()).Line; i++ {
-					newlinesInsideComments[i] = true
+					// Add any newlines.
+					if strings.HasPrefix(c.Text, "//") {
+						avoid[fset.Position(c.Pos()).Line] = true
+					} else if strings.HasPrefix(c.Text, "/*") && fset.Position(c.End()).Line > fset.Position(c.Pos()).Line {
+						// multi line comment
+						for i := fset.Position(c.Pos()).Line; i < fset.Position(c.End()).Line; i++ {
+							avoid[i] = true
+						}
+					}
+				}
+			}
+			line := 1
+			tokenf := fset.File(astf.Pos())
+			for i := tokenf.Base(); i < tokenf.Base()+tokenf.Size(); i++ {
+				pos := fset.Position(token.Pos(i))
+				if pos.Line != line {
+					if !avoid[line] {
+						f.AddNewline(token.Pos(i - 1))
+					}
+					line = pos.Line
 				}
 			}
 		}
-	}
 
-	fsetFile := fset.File(file.Pos())
-	line := 1
-	for i := fsetFile.Base(); i < fsetFile.Base()+fsetFile.Size(); i++ {
-		pos := fset.Position(token.Pos(i))
-		if pos.Line != line {
-			if !newlinesInsideComments[line] {
-				f.AddNewline(token.Pos(i - 1))
+		switch val := node.(type) {
+		case *ast.File:
+			processFile(val)
+		case *ast.Package:
+			for _, file := range val.Files {
+				processFile(file)
 			}
-			line = pos.Line
 		}
+
 	}
 
 	sort.SliceStable(f.Fragments, func(i, j int) bool {
@@ -242,7 +254,7 @@ func (v CommentFragment) Position() token.Pos    { return v.Pos }
 func (v NewlineFragment) Position() token.Pos    { return v.Pos }
 func (v DecorationFragment) Position() token.Pos { return v.Pos }
 
-func (f Fragger) debug(w io.Writer, fset *token.FileSet) {
+func (f Fragger) debug(fset *token.FileSet, w io.Writer) {
 	formatPos := func(s token.Position) string {
 		return s.String()[strings.Index(s.String(), ":")+1:]
 	}

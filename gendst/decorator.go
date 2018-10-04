@@ -19,10 +19,10 @@ func generateDecorator(names []string) error {
 			}
 		}
 	*/
-	f.Func().Params(Id("d").Op("*").Id("decorator")).Id("decorateNode").Params(
+	f.Func().Params(Id("d").Op("*").Id("Decorator")).Id("decorateNode").Params(
 		Id("n").Qual("go/ast", "Node"),
 	).Qual(DSTPATH, "Node").BlockFunc(func(g *Group) {
-		g.If(List(Id("dn"), Id("ok")).Op(":=").Id("d").Dot("nodes").Index(Id("n")), Id("ok")).Block(
+		g.If(List(Id("dn"), Id("ok")).Op(":=").Id("d").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
 			Return(Id("dn")),
 		)
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
@@ -61,6 +61,16 @@ func generateDecorator(names []string) error {
 									frag.Field.Get("out"),
 									Id("d").Dot("decorateNode").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH)),
 								),
+							)
+						case fragment.Map:
+							g.Line().Commentf("Map: %s", frag.Name)
+							/*
+								for k, v := range n.<name> {
+									out.<name>[k] = d.DecorateNode(v).(<type>)
+								}
+							*/
+							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
+								frag.Field.Get("out").Index(Id("k")).Op("=").Id("d").Dot("decorateNode").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH)),
 							)
 						case fragment.Node:
 							g.Line().Commentf("Node: %s", frag.Name)
@@ -102,7 +112,7 @@ func generateDecorator(names []string) error {
 					}
 
 					g.Line()
-					g.Id("d").Dot("nodes").Index(Id("n")).Op("=").Id("out")
+					g.Id("d").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
 					g.Return(Id("out"))
 
 				})

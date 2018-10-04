@@ -91,10 +91,10 @@ func TestFragger(t *testing.T) {
 			}
 
 			p := &Fragger{}
-			p.Fragment(f, fset)
+			p.Fragment(fset, f)
 
 			buf := &bytes.Buffer{}
-			p.debug(buf, fset)
+			p.debug(fset, buf)
 
 			if test.expect == "" {
 				t.Error(buf.String())

@@ -8,7 +8,7 @@ import (
 )
 
 func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
-	if an, ok := r.nodes[n]; ok {
+	if an, ok := r.Nodes[n]; ok {
 		return an
 	}
 	switch n := n.(type) {
@@ -1067,6 +1067,18 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
+
+		return out
+	case *dst.Package:
+		out := &ast.Package{}
+
+		// Value: Name
+		out.Name = n.Name
+
+		// Map: Files
+		for k, v := range n.Files {
+			out.Files[k] = r.restoreNode(v).(*ast.File)
+		}
 
 		return out
 	case *dst.ParenExpr:

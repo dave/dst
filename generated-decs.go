@@ -434,6 +434,10 @@ type MapTypeDecorations struct {
 	End      Decorations
 }
 
+// PackageDecorations holds decorations for Package:
+//
+type PackageDecorations struct{}
+
 // ParenExprDecorations holds decorations for ParenExpr:
 //
 // 	var E = /*Start*/ ( /*AfterLparen*/ 1 + 1 /*AfterX*/) /*End*/ / 2

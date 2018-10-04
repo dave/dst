@@ -6,6 +6,9 @@ import (
 )
 
 func (f *Fragger) ProcessNode(n ast.Node) {
+	if n.Pos().IsValid() {
+		f.cursor = int(n.Pos())
+	}
 	switch n := n.(type) {
 	case *ast.ArrayType:
 
@@ -962,6 +965,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: End
 		f.AddDecoration(n, "End")
+
+	case *ast.Package:
+
+		// Map: Files
+		for _, v := range n.Files {
+			f.ProcessNode(v)
+		}
 
 	case *ast.ParenExpr:
 

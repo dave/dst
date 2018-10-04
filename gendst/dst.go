@@ -16,7 +16,7 @@ import (
 
 func generateDst(names []string) error {
 
-	names = append(names, "Package", "DecorationStmt", "DecorationDecl")
+	names = append(names, "DecorationStmt", "DecorationDecl")
 
 	f := NewFile("dst")
 	for _, name := range names {

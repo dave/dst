@@ -2183,6 +2183,30 @@ var Info = map[string][]Part{
 		// Never want to attach decorations to the end of a list of declarations - always better to
 		// attach to the last statement.
 	},
+	/*
+		// A Package node represents a set of source files
+		// collectively building a Go package.
+		//
+		type Package struct {
+			Name    string             // package name
+			Scope   *Scope             // package scope across all files
+			Imports map[string]*Object // map of package id -> package object
+			Files   map[string]*File   // Go source files by filename
+		}
+	*/
+	"Package": {
+		Value{
+			Name:  "Name",
+			Field: Field{"Name"},
+		},
+		// TODO: Scope
+		// TODO: Imports
+		Map{
+			Name:  "Files",
+			Field: Field{"Files"},
+			Elem:  Type{"File", true},
+		},
+	},
 }
 
 type Init struct {
@@ -2207,6 +2231,12 @@ type List struct {
 	Field     FieldSpec
 	Elem      Type
 	Separator token.Token
+}
+
+type Map struct {
+	Name  string
+	Field FieldSpec
+	Elem  Type
 }
 
 type Node struct {

@@ -3,8 +3,6 @@ package decorator
 import (
 	"bytes"
 	"go/format"
-	"go/parser"
-	"go/token"
 	"testing"
 
 	"github.com/andreyvit/diff"
@@ -524,14 +522,12 @@ func TestRestorer(t *testing.T) {
 			// use the formatted version (correct indents etc.)
 			test.code = string(b)
 
-			fset := token.NewFileSet()
-			f, err := parser.ParseFile(fset, "main.go", test.code, parser.ParseComments)
+			file, err := Parse(test.code)
 			if err != nil {
 				t.Fatal(err)
 			}
-			file := Decorate(f, fset)
 
-			restoredFile, restoredFset := Restore(file)
+			restoredFset, restoredFile := Restore(file)
 
 			buf := &bytes.Buffer{}
 			if err := format.Node(buf, restoredFset, restoredFile); err != nil {

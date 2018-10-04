@@ -18,7 +18,7 @@ func generateRestorer(names []string) error {
 	// 	}
 	// }
 	f.Func().Params(Id("r").Op("*").Id("fileRestorer")).Id("restoreNode").Params(Id("n").Qual(DSTPATH, "Node")).Qual("go/ast", "Node").BlockFunc(func(g *Group) {
-		g.If(List(Id("an"), Id("ok")).Op(":=").Id("r").Dot("nodes").Index(Id("n")), Id("ok")).Block(
+		g.If(List(Id("an"), Id("ok")).Op(":=").Id("r").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
 			Return(Id("an")),
 		)
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
@@ -81,6 +81,11 @@ func generateRestorer(names []string) error {
 									frag.Field.Get("out"),
 									Id("r").Dot("restoreNode").Call(Id("v")).Assert(frag.Elem.Literal("go/ast")),
 								),
+							)
+						case fragment.Map:
+							g.Line().Commentf("Map: %s", frag.Name)
+							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
+								frag.Field.Get("out").Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v")).Assert(frag.Elem.Literal("go/ast")),
 							)
 						case fragment.Ignored:
 							// TODO
