@@ -48,6 +48,8 @@ type fileRestorer struct {
 	comments []*ast.CommentGroup
 	base     int
 	cursor   token.Pos
+	nodeDecl map[*ast.Object]dst.Node // Objects that have a ast.Node Decl (look up after file has been rendered)
+	nodeData map[*ast.Object]dst.Node // Objects that have a ast.Node Data (look up after file has been rendered)
 }
 
 func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
@@ -60,6 +62,8 @@ func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
 		lines:    []int{0}, // initialise with the first line at Pos 0
 		base:     base,
 		cursor:   token.Pos(base),
+		nodeDecl: map[*ast.Object]dst.Node{},
+		nodeData: map[*ast.Object]dst.Node{},
 	}
 
 	// restore the file, populate comments and lines
@@ -74,6 +78,17 @@ func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
 	ff := r.Fset.AddFile(name, base, size)
 	if !ff.SetLines(fr.lines) {
 		panic("SetLines failed")
+	}
+
+	// Sometimes new nodes are created here (e.g. in RangeStmt the "Object" is an AssignStmt which
+	// never occurs in the actual code). These shouldn't have position information but perhaps it
+	// doesn't matter?
+	// TODO: Disable all position information on these nodes?
+	for o, dn := range fr.nodeDecl {
+		o.Decl = fr.restoreNode(dn)
+	}
+	for o, dn := range fr.nodeData {
+		o.Data = fr.restoreNode(dn)
 	}
 
 	return f
@@ -171,7 +186,10 @@ func (r *fileRestorer) restoreObject(o *dst.Object) *ast.Object {
 	case *dst.Scope:
 		out.Decl = r.restoreScope(decl)
 	case dst.Node:
-		out.Decl = r.restoreNode(decl)
+		// Can't use restoreNode here because we aren't at the right cursor position, so we store a link
+		// to the Object and Node so we can look the Nodes up in the cache after the file is fully processed.
+		r.nodeDecl[out] = decl
+	case nil:
 	default:
 		panic(fmt.Sprintf("o.Decl is %T", o.Decl))
 	}
@@ -183,7 +201,9 @@ func (r *fileRestorer) restoreObject(o *dst.Object) *ast.Object {
 	case *dst.Scope:
 		out.Data = r.restoreScope(data)
 	case dst.Node:
-		out.Data = r.restoreNode(data)
+		// Can't use restoreNode here because we aren't at the right cursor position, so we store a link
+		// to the Object and Node so we can look the Nodes up in the cache after the file is fully processed.
+		r.nodeData[out] = data
 	case nil:
 	default:
 		panic(fmt.Sprintf("o.Data is %T", o.Data))

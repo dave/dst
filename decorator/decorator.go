@@ -128,6 +128,7 @@ func (d *Decorator) decorateObject(o *ast.Object) *dst.Object {
 		out.Decl = d.decorateScope(decl)
 	case ast.Node:
 		out.Decl = d.decorateNode(decl)
+	case nil:
 	default:
 		panic(fmt.Sprintf("o.Decl is %T", o.Decl))
 	}

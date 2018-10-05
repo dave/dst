@@ -15,6 +15,16 @@ func TestRestorer(t *testing.T) {
 		code       string
 	}{
 		{
+			name: "RangeStmt",
+			code: `package main
+			
+			func main() {	
+				/*Start*/
+				for /*AfterFor*/ k /*AfterKey*/ := range /*AfterRange*/ a /*AfterX*/ {
+				} /*End*/
+			}`,
+		},
+		{
 			name: "empty func",
 			code: `package a
 

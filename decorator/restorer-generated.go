@@ -2,9 +2,10 @@ package decorator
 
 import (
 	"fmt"
-	"github.com/dave/dst"
 	"go/ast"
 	"go/token"
+
+	"github.com/dave/dst"
 )
 
 func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
