@@ -217,9 +217,9 @@ func TestRewrite(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				dstFile := decorator.Decorate(f, fset)
+				dstFile := decorator.Decorate(fset, f).(*dst.File)
 				dstFile = dstutil.Apply(dstFile, test.pre, test.post).(*dst.File)
-				restoredFile, restoredFset := decorator.Restore(dstFile)
+				restoredFset, restoredFile := decorator.Restore(dstFile)
 				var buf bytes.Buffer
 				if err := format.Node(&buf, restoredFset, restoredFile); err != nil {
 					t.Fatal(err)
@@ -245,7 +245,7 @@ func BenchmarkRewrite(b *testing.B) {
 				if err != nil {
 					b.Fatal(err)
 				}
-				d := decorator.Decorate(f, fset)
+				d := decorator.Decorate(fset, f)
 				b.StartTimer()
 				sink = dstutil.Apply(d, test.pre, test.post)
 			}

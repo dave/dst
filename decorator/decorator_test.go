@@ -21,6 +21,22 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "range bug",
+			code: `package main
+
+				func main() {
+					/*Start*/
+					for /*AfterFor*/ k /*AfterKey*/, v /*AfterValue*/ := range /*AfterRange*/ a /*AfterX*/ {
+						print(k, v)
+					} /*End*/
+				}`,
+			expect: `File [AfterName "\n" "\n"]
+            BlockStmt [AfterLbrace "\n"]
+            RangeStmt [Start "/*Start*/" "\n"] [AfterFor "/*AfterFor*/"] [AfterKey "/*AfterKey*/"] [AfterValue "/*AfterValue*/"] [AfterRange "/*AfterRange*/"] [AfterX "/*AfterX*/"] [End "/*End*/" "\n"]
+            BlockStmt [AfterLbrace "\n"]
+            ExprStmt [End "\n"]`,
+		},
+		{
 			name: "value spec",
 			code: `package main
 

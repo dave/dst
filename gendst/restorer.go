@@ -25,6 +25,7 @@ func generateRestorer(names []string) error {
 			for _, nodeName := range names {
 				g.Case(Op("*").Qual(DSTPATH, nodeName)).BlockFunc(func(g *Group) {
 					g.Id("out").Op(":=").Op("&").Qual("go/ast", nodeName).Values()
+					g.Id("r").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
 					for _, frag := range fragment.Info[nodeName] {
 						switch frag := frag.(type) {
 						case fragment.Init:
@@ -84,9 +85,14 @@ func generateRestorer(names []string) error {
 							)
 						case fragment.Map:
 							g.Line().Commentf("Map: %s", frag.Name)
-							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
-								frag.Field.Get("out").Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v")).Assert(frag.Elem.Literal("go/ast")),
-							)
+							g.Add(frag.Field.Get("out")).Op("=").Map(String()).Add(frag.Elem.Literal("go/ast")).Values()
+							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).BlockFunc(func(g *Group) {
+								if frag.Elem.Name == "Object" {
+									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreObject").Call(Id("v"))
+								} else {
+									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v")).Assert(frag.Elem.Literal("go/ast"))
+								}
+							})
 						case fragment.Ignored:
 							// TODO
 						case fragment.Value:
@@ -96,6 +102,12 @@ func generateRestorer(names []string) error {
 							} else {
 								g.Add(frag.Field.Get("out")).Op("=").Add(frag.Field.Get("n"))
 							}
+						case fragment.Scope:
+							g.Line().Commentf("Scope: %s", frag.Name)
+							g.Add(frag.Field.Get("out")).Op("=").Id("r").Dot("restoreScope").Call(frag.Field.Get("n"))
+						case fragment.Object:
+							g.Line().Commentf("Object: %s", frag.Name)
+							g.Add(frag.Field.Get("out")).Op("=").Id("r").Dot("restoreObject").Call(frag.Field.Get("n"))
 						}
 					}
 					g.Line()

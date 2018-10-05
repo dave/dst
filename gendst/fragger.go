@@ -43,9 +43,11 @@ func generateFragger(names []string) error {
 							)
 						case fragment.Map:
 							g.Line().Commentf("Map: %s", frag.Name)
-							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
-								Id("f").Dot("ProcessNode").Call(Id("v")),
-							)
+							if frag.Elem.Name != "Object" {
+								g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
+									Id("f").Dot("ProcessNode").Call(Id("v")),
+								)
+							}
 						case fragment.Token:
 							g.Line().Commentf("Token: %s", frag.Name)
 							pos := Qual("go/token", "NoPos")
@@ -65,7 +67,7 @@ func generateFragger(names []string) error {
 								pos = frag.PositionField.Get("n")
 							}
 							g.Id("f").Dot("AddString").Call(Id("n"), frag.ValueField.Get("n"), pos)
-						case fragment.Ignored, fragment.Init, fragment.Value:
+						case fragment.Ignored, fragment.Init, fragment.Value, fragment.Scope, fragment.Object:
 							// do nothing
 						default:
 							panic(fmt.Sprintf("unknown fragment type %T", frag))

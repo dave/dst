@@ -1,12 +1,12 @@
 package decorator
 
 import (
+	"fmt"
 	"go/ast"
 	"go/format"
 	"go/token"
 	"io"
 	"os"
-
 	"strings"
 
 	"github.com/dave/dst"
@@ -28,14 +28,18 @@ func Restore(file *dst.File) (*token.FileSet, *ast.File) {
 
 func NewRestorer() *Restorer {
 	return &Restorer{
-		Fset:  token.NewFileSet(),
-		Nodes: map[dst.Node]ast.Node{},
+		Fset:    token.NewFileSet(),
+		Nodes:   map[dst.Node]ast.Node{},
+		Scopes:  map[*dst.Scope]*ast.Scope{},
+		Objects: map[*dst.Object]*ast.Object{},
 	}
 }
 
 type Restorer struct {
-	Fset  *token.FileSet
-	Nodes map[dst.Node]ast.Node
+	Fset    *token.FileSet
+	Nodes   map[dst.Node]ast.Node
+	Objects map[*dst.Object]*ast.Object
+	Scopes  map[*dst.Scope]*ast.Scope
 }
 
 type fileRestorer struct {
@@ -129,4 +133,91 @@ func (f *fileRestorer) applyDecorations(decorations dst.Decorations) {
 			f.cursor++
 		}
 	}
+}
+
+func (r *fileRestorer) restoreObject(o *dst.Object) *ast.Object {
+	if o == nil {
+		return nil
+	}
+	if ro, ok := r.Objects[o]; ok {
+		return ro
+	}
+	/*
+		// An Object describes a named language entity such as a package,
+		// constant, type, variable, function (incl. methods), or label.
+		//
+		// The Data fields contains object-specific data:
+		//
+		//	Kind    Data type         Data value
+		//	Pkg     *Scope            package scope
+		//	Con     int               iota for the respective declaration
+		//
+		type Object struct {
+			Kind ObjKind
+			Name string      // declared name
+			Decl interface{} // corresponding Field, XxxSpec, FuncDecl, LabeledStmt, AssignStmt, Scope; or nil
+			Data interface{} // object-specific data; or nil
+			Type interface{} // placeholder for type information; may be nil
+		}
+	*/
+	out := &ast.Object{}
+
+	r.Objects[o] = out
+
+	out.Kind = ast.ObjKind(o.Kind)
+	out.Name = o.Name
+
+	switch decl := o.Decl.(type) {
+	case *dst.Scope:
+		out.Decl = r.restoreScope(decl)
+	case dst.Node:
+		out.Decl = r.restoreNode(decl)
+	default:
+		panic(fmt.Sprintf("o.Decl is %T", o.Decl))
+	}
+
+	// TODO: I believe Data is either a *Scope or an int. We will support both and panic if something else if found.
+	switch data := o.Data.(type) {
+	case int:
+		out.Data = data
+	case *dst.Scope:
+		out.Data = r.restoreScope(data)
+	case dst.Node:
+		out.Data = r.restoreNode(data)
+	case nil:
+	default:
+		panic(fmt.Sprintf("o.Data is %T", o.Data))
+	}
+
+	return out
+}
+
+func (r *fileRestorer) restoreScope(s *dst.Scope) *ast.Scope {
+	if s == nil {
+		return nil
+	}
+	if rs, ok := r.Scopes[s]; ok {
+		return rs
+	}
+	/*
+		// A Scope maintains the set of named language entities declared
+		// in the scope and a link to the immediately surrounding (outer)
+		// scope.
+		//
+		type Scope struct {
+			Outer   *Scope
+			Objects map[string]*Object
+		}
+	*/
+	out := &ast.Scope{}
+
+	r.Scopes[s] = out
+
+	out.Outer = r.restoreScope(s.Outer)
+	out.Objects = map[string]*ast.Object{}
+	for k, v := range s.Objects {
+		out.Objects[k] = r.restoreObject(v)
+	}
+
+	return out
 }

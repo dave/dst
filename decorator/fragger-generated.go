@@ -968,6 +968,8 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 	case *ast.Package:
 
+		// Map: Imports
+
 		// Map: Files
 		for _, v := range n.Files {
 			f.ProcessNode(v)

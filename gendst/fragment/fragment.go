@@ -142,6 +142,10 @@ var Info = map[string][]Part{
 		Decoration{
 			Name: "End",
 		},
+		Object{
+			Name:  "Obj",
+			Field: Field{"Obj"},
+		},
 	},
 	/*
 		// An Ellipsis node stands for the "..." type in a
@@ -2151,7 +2155,6 @@ var Info = map[string][]Part{
 			Comments   []*CommentGroup // list of all comments in the source file
 		}
 	*/
-	// TODO: File.Scope?
 	// TODO: File.Imports?
 	// TODO: File.Unresolved?
 	"File": {
@@ -2180,6 +2183,10 @@ var Info = map[string][]Part{
 			Elem:      Type{"Decl", false},
 			Separator: token.SEMICOLON,
 		},
+		Scope{
+			Name:  "Scope",
+			Field: Field{"Scope"},
+		},
 		// Never want to attach decorations to the end of a list of declarations - always better to
 		// attach to the last statement.
 	},
@@ -2199,8 +2206,15 @@ var Info = map[string][]Part{
 			Name:  "Name",
 			Field: Field{"Name"},
 		},
-		// TODO: Scope
-		// TODO: Imports
+		Scope{
+			Name:  "Scope",
+			Field: Field{"Scope"},
+		},
+		Map{
+			Name:  "Imports",
+			Field: Field{"Imports"},
+			Elem:  Type{"Object", true},
+		},
 		Map{
 			Name:  "Files",
 			Field: Field{"Files"},
@@ -2264,6 +2278,16 @@ type Value struct {
 	Name  string
 	Field FieldSpec
 	Value Code
+}
+
+type Scope struct {
+	Name  string
+	Field FieldSpec
+}
+
+type Object struct {
+	Name  string
+	Field FieldSpec
 }
 
 type Code interface {

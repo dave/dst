@@ -421,17 +421,22 @@ func TestRestorer(t *testing.T) {
 			code: `package main
 			
 			func main() {	
-				// RangeStmt
-				var a []int
+				// RangeStmt(0)
+				/*Start*/
+				for range /*AfterRange*/ a /*AfterX*/ {
+				} /*End*/
 
-				for range /*RangeStmtAfterFor*/ a /*RangeStmtAfterX*/ {
-				}
+				// RangeStmt(1)
+				/*Start*/
+				for /*AfterFor*/ k /*AfterKey*/ := range /*AfterRange*/ a /*AfterX*/ {
+					print(k)
+				} /*End*/
 
-				for /*RangeStmtAfterFor*/ k /*RangeStmtAfterKey*/ := range /*RangeStmtAfterTok*/ a /*RangeStmtAfterX*/ {
-				}
-
-				for /*RangeStmtAfterFor*/ k /*RangeStmtAfterKey*/, v /*RangeStmtAfterValue*/ := range /*RangeStmtAfterTok*/ a /*RangeStmtAfterX*/ {
-				}
+				// RangeStmt(2)
+				/*Start*/
+				for /*AfterFor*/ k /*AfterKey*/, v /*AfterValue*/ := range /*AfterRange*/ a /*AfterX*/ {
+					print(k, v)
+				} /*End*/
 			}`,
 		},
 		{
