@@ -69,6 +69,7 @@ func New() *Decorator {
 		Nodes:       map[ast.Node]dst.Node{},
 		Scopes:      map[*ast.Scope]*dst.Scope{},
 		Objects:     map[*ast.Object]*dst.Object{},
+		Info:        &Info{Filenames: map[*dst.File]string{}},
 		decorations: map[ast.Node]map[string][]string{},
 	}
 }
@@ -77,14 +78,33 @@ type Decorator struct {
 	Nodes       map[ast.Node]dst.Node
 	Scopes      map[*ast.Scope]*dst.Scope
 	Objects     map[*ast.Object]*dst.Object
+	Info        *Info
 	decorations map[ast.Node]map[string][]string
 }
 
+type Info struct {
+	Filenames map[*dst.File]string
+}
+
 func (d *Decorator) Decorate(fset *token.FileSet, n ast.Node) dst.Node {
+
 	fragger := &Fragger{}
 	fragger.Fragment(fset, n)
 	d.decorations = fragger.Link()
-	return d.decorateNode(n)
+
+	out := d.decorateNode(n)
+
+	// Populate Info with filenames if we're decorating a File or Package.
+	switch n := n.(type) {
+	case *ast.Package:
+		for k, v := range n.Files {
+			d.Info.Filenames[d.Nodes[v].(*dst.File)] = k
+		}
+	case *ast.File:
+		d.Info.Filenames[out.(*dst.File)] = fset.File(n.Pos()).Name()
+	}
+
+	return out
 }
 
 type decorationInfo struct {
