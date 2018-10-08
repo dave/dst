@@ -21,3 +21,11 @@ type DecorationStmtDecorations struct {
 type DecorationDeclDecorations struct {
 	Start Decorations
 }
+
+type SpaceType int
+
+const (
+	None      SpaceType = 0
+	NewLine   SpaceType = 1
+	EmptyLine SpaceType = 2
+)

@@ -306,7 +306,7 @@ func TestDecorator(t *testing.T) {
 					return false
 				}
 				var out string
-				infos := getDecorationInfo(n)
+				_, _, infos := getDecorationInfo(n)
 				for _, info := range infos {
 					if len(info.decs) > 0 {
 						var values string

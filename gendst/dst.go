@@ -93,12 +93,14 @@ func generateDstDecs(names []string) error {
 			f.Comment("")
 		}
 		f.Type().Id(name + "Decorations").StructFunc(func(g *Group) {
+			g.Id("Before").Id("SpaceType")
 			for _, frag := range fragment.Info[name] {
 				switch frag := frag.(type) {
 				case fragment.Decoration:
 					g.Id(frag.Name).Id("Decorations")
 				}
 			}
+			g.Id("After").Id("SpaceType")
 		})
 	}
 	return f.Save("./generated-decs.go")
