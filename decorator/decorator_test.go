@@ -223,9 +223,22 @@ func TestDecorator(t *testing.T) {
 			}`,
 			expect: `File [AfterName "\n" "\n"]
             CompositeLit [AfterLbrace "\n"]
+            KeyValueExpr [End "\n" "// foo" "\n"]
+            KeyValueExpr [End "\n"]`,
+		},
+		{
+			name: "composite literal 4a",
+			code: `package main
+
+			var A = B{
+				"a": "b",
+				// foo
+				"c": "d",
+			}`,
+			expect: `File [AfterName "\n" "\n"]
+            CompositeLit [AfterLbrace "\n"]
             KeyValueExpr [End "\n"]
-            KeyValueExpr [Start "// foo" "\n"] [End "\n"]`,
-			// TODO: Should "foo" be attached to the end of the first KeyValueExpr?
+            KeyValueExpr [Start "// foo"] [End "\n"]`,
 		},
 		{
 			name: "composite literal 5",

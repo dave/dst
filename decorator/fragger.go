@@ -105,6 +105,29 @@ func (f *Fragger) Fragment(fset *token.FileSet, node ast.Node) {
 	sort.SliceStable(f.Fragments, func(i, j int) bool {
 		return f.Fragments[i].Position() < f.Fragments[j].Position()
 	})
+
+	for i, v := range f.Fragments {
+		if i == 0 {
+			continue
+		}
+		switch n := v.(type) {
+		case NewlineFragment:
+			switch prev := f.Fragments[i-1].(type) {
+			case NewlineFragment:
+				f.Fragments[i] = NewlineFragment{
+					Pos:   n.Pos,
+					Empty: true,
+				}
+			case CommentFragment:
+				if strings.HasPrefix(prev.Text, "//") {
+					f.Fragments[i] = NewlineFragment{
+						Pos:   n.Pos,
+						Empty: true,
+					}
+				}
+			}
+		}
+	}
 }
 
 func appendDecoration(m map[ast.Node]map[string][]string, n ast.Node, pos, val string) {
@@ -129,6 +152,17 @@ func (f *Fragger) Link() map[ast.Node]map[string][]string {
 				continue
 			}
 
+			// Comments (or comment groups) attach to decoration points in this precedence:
+			//
+			// 1) Before the comment on the same line
+			// 2) After the comment on the same line
+			// 3) After the comment on line+1
+			// 4) Before the comment on line-1
+			// 5) After the comment on line+2
+			// 6) Before the comment on line-2
+			//
+			// We always stop at tokens, strings. If we get to the end without finding a decoration point we panic.
+
 			var dec DecorationFragment
 			var found bool
 			var try int
@@ -137,20 +171,21 @@ func (f *Fragger) Link() map[ast.Node]map[string][]string {
 				try++
 				switch try {
 				case 1:
-					// search backwards but stop at any newline or token
-					dec, index, found = f.nextDecoration(i, -1, true, true)
+					// Before the comment on the same line (search backwards and stop at any newline)
+					dec, index, found = f.nextDecoration(true, true, i, -1)
 				case 2:
-					// search forwards but stop at any token
-					dec, index, found = f.nextDecoration(i, 1, false, true)
+					// After the comment on the same line
+					// After the comment on line+1 (search forwards and stop at any empty line)
+					dec, index, found = f.nextDecoration(false, true, i, 1)
 				case 3:
-					// search backwards but stop at any token
-					dec, index, found = f.nextDecoration(i, -1, false, true)
+					// Before the comment on line-1 (search backwards and stop at any empty line)
+					dec, index, found = f.nextDecoration(false, true, i, -1)
 				case 4:
-					// search forwards
-					dec, index, found = f.nextDecoration(i, 1, false, false)
+					// After the comment on line+2 (search forwards)
+					dec, index, found = f.nextDecoration(false, false, i, 1)
 				case 5:
-					// search backwards
-					dec, index, found = f.nextDecoration(i, -1, false, false)
+					// After the comment on line-2 (search backwards)
+					dec, index, found = f.nextDecoration(false, false, i, -1)
 				default:
 					panic("no decoration found for " + frag.Text)
 				}
@@ -177,16 +212,10 @@ func (f *Fragger) Link() map[ast.Node]map[string][]string {
 				switch try {
 				case 1:
 					// search backwards but stop at any token
-					dec, index, found = f.nextDecoration(i, -1, false, true)
+					dec, index, found = f.nextDecoration(false, false, i, -1)
 				case 2:
 					// search forwards but stop at any token
-					dec, index, found = f.nextDecoration(i, 1, false, true)
-				case 3:
-					// search backwards
-					dec, index, found = f.nextDecoration(i, -1, false, false)
-				case 4:
-					// search backwards
-					dec, index, found = f.nextDecoration(i, 1, false, false)
+					dec, index, found = f.nextDecoration(false, false, i, 1)
 				default:
 					panic("no decoration found for newline")
 				}
@@ -199,7 +228,7 @@ func (f *Fragger) Link() map[ast.Node]map[string][]string {
 	return out
 }
 
-func (f *Fragger) nextDecoration(from int, direction int, stopAtNewline bool, stopAtToken bool) (frag DecorationFragment, index int, found bool) {
+func (f *Fragger) nextDecoration(stopAtNewline, stopAtEmptyLine bool, from int, direction int) (frag DecorationFragment, index int, found bool) {
 	for i := from; i < len(f.Fragments) && i >= 0; i += direction {
 		switch f := f.Fragments[i].(type) {
 		case DecorationFragment:
@@ -208,10 +237,11 @@ func (f *Fragger) nextDecoration(from int, direction int, stopAtNewline bool, st
 			if stopAtNewline {
 				return
 			}
-		case TokenFragment, StringFragment:
-			if stopAtToken {
+			if stopAtEmptyLine && f.Empty {
 				return
 			}
+		case TokenFragment, StringFragment:
+			return
 		}
 	}
 	return
@@ -239,7 +269,8 @@ type CommentFragment struct {
 }
 
 type NewlineFragment struct {
-	Pos token.Pos
+	Pos   token.Pos
+	Empty bool // true if this newline is an empty line (e.g. follows a "//" comment or "\n")
 }
 
 type DecorationFragment struct {
@@ -263,6 +294,12 @@ func (f Fragger) debug(fset *token.FileSet, w io.Writer) {
 	}
 	for _, v := range f.Fragments {
 		switch v := v.(type) {
+		case NewlineFragment:
+			if v.Empty {
+				fmt.Fprintf(w, "Empty line %s\n", formatPos(fset.Position(v.Pos)))
+			} else {
+				fmt.Fprintf(w, "New line %s\n", formatPos(fset.Position(v.Pos)))
+			}
 		case TokenFragment:
 			fmt.Fprintf(w, "%s %q %s\n", nodeType(v.Node), v.Token, formatPos(fset.Position(v.Pos)))
 		case StringFragment:
@@ -271,8 +308,8 @@ func (f Fragger) debug(fset *token.FileSet, w io.Writer) {
 			fmt.Fprintf(w, "%s %s %s\n", nodeType(v.Node), v.Name, formatPos(fset.Position(v.Pos)))
 		case CommentFragment:
 			fmt.Fprintf(w, "%q %s\n", v.Text, formatPos(fset.Position(v.Pos)))
-		case NewlineFragment:
-			fmt.Fprintf(w, "\"\\n\" %s\n", formatPos(fset.Position(v.Pos)))
+		default:
+			fmt.Fprintf(w, "%T %s\n", v, formatPos(fset.Position(v.Position())))
 		}
 	}
 }
