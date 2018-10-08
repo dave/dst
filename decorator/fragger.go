@@ -7,6 +7,8 @@ import (
 	"io"
 	"sort"
 	"strings"
+
+	"github.com/dave/dst"
 )
 
 type Fragger struct {
@@ -14,14 +16,7 @@ type Fragger struct {
 	Fragments []Fragment
 }
 
-func (f *Fragger) AddStart(n ast.Node, pos token.Pos) {
-	if pos.IsValid() {
-		f.cursor = int(pos)
-	}
-	f.Fragments = append(f.Fragments, DecorationFragment{Node: n, Name: "Start", Pos: token.Pos(f.cursor)})
-}
-
-func (f *Fragger) AddDecoration(n ast.Node, name string) {
+func (f *Fragger) AddDecoration(n ast.Node, name string, pos token.Pos) {
 	f.Fragments = append(f.Fragments, DecorationFragment{Node: n, Name: name, Pos: token.Pos(f.cursor)})
 }
 
@@ -137,8 +132,12 @@ func appendDecoration(m map[ast.Node]map[string][]string, n ast.Node, pos, val s
 	m[n][pos] = append(m[n][pos], val)
 }
 
-func (f *Fragger) Link() map[ast.Node]map[string][]string {
-	out := map[ast.Node]map[string][]string{}
+func (f *Fragger) Link() (before, after map[ast.Node]dst.SpaceType, decorations map[ast.Node]map[string][]string) {
+
+	before = map[ast.Node]dst.SpaceType{}
+	after = map[ast.Node]dst.SpaceType{}
+	decorations = map[ast.Node]map[string][]string{}
+
 	var lastIndex int
 	var lastDecoration DecorationFragment
 	for i, frag := range f.Fragments {
@@ -148,7 +147,7 @@ func (f *Fragger) Link() map[ast.Node]map[string][]string {
 			if i < lastIndex {
 				// If we've already moved something forward past this index, always move this to the
 				// same decoration
-				appendDecoration(out, lastDecoration.Node, lastDecoration.Name, frag.Text)
+				appendDecoration(decorations, lastDecoration.Node, lastDecoration.Name, frag.Text)
 				continue
 			}
 
@@ -190,7 +189,7 @@ func (f *Fragger) Link() map[ast.Node]map[string][]string {
 					panic("no decoration found for " + frag.Text)
 				}
 			}
-			appendDecoration(out, dec.Node, dec.Name, frag.Text)
+			appendDecoration(decorations, dec.Node, dec.Name, frag.Text)
 			lastIndex = index
 			lastDecoration = dec
 
@@ -199,9 +198,13 @@ func (f *Fragger) Link() map[ast.Node]map[string][]string {
 			if i < lastIndex {
 				// If we've already moved something forward past this index, always move this to the
 				// same decoration
-				appendDecoration(out, lastDecoration.Node, lastDecoration.Name, "\n")
+				appendDecoration(decorations, lastDecoration.Node, lastDecoration.Name, "\n")
 				continue
 			}
+
+			// If the newline is directly before / after a node, we can set the Before / After spacing
+			// of the node decoration instead of adding the newline as a decoration.
+			// TODO...
 
 			var dec DecorationFragment
 			var found bool
@@ -220,12 +223,12 @@ func (f *Fragger) Link() map[ast.Node]map[string][]string {
 					panic("no decoration found for newline")
 				}
 			}
-			appendDecoration(out, dec.Node, dec.Name, "\n")
+			appendDecoration(decorations, dec.Node, dec.Name, "\n")
 			lastIndex = index
 			lastDecoration = dec
 		}
 	}
-	return out
+	return
 }
 
 func (f *Fragger) nextDecoration(stopAtNewline, stopAtEmptyLine bool, from int, direction int) (frag DecorationFragment, index int, found bool) {
@@ -246,6 +249,10 @@ func (f *Fragger) nextDecoration(stopAtNewline, stopAtEmptyLine bool, from int, 
 	}
 	return
 }
+
+//func (f *Fragger) findNodeEnds(from int, direction int) (frag DecorationFragment, index int, found bool) {
+
+//}
 
 type Fragment interface {
 	Position() token.Pos

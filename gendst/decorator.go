@@ -30,6 +30,11 @@ func generateDecorator(names []string) error {
 				g.Case(Op("*").Qual("go/ast", nodeName)).BlockFunc(func(g *Group) {
 					g.Id("out").Op(":=").Op("&").Qual(DSTPATH, nodeName).Values()
 					g.Id("d").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
+					if nodeName != "Package" {
+						g.Line()
+						g.Id("out").Dot("Decs").Dot("Before").Op("=").Id("d").Dot("before").Index(Id("n"))
+						g.Id("out").Dot("Decs").Dot("After").Op("=").Id("d").Dot("after").Index(Id("n"))
+					}
 					for _, frag := range fragment.Info[nodeName] {
 						switch frag := frag.(type) {
 						case fragment.Init:

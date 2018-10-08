@@ -20,12 +20,17 @@ func generateFragger(names []string) error {
 						switch frag := frag.(type) {
 						case fragment.Decoration:
 							g.Line().Commentf("Decoration: %s", frag.Name)
-							var process *Statement
-							if frag.Name == "Start" {
-								process = Id("f").Dot("AddStart").Call(Id("n"), Id("n").Dot("Pos").Call())
-							} else {
-								process = Id("f").Dot("AddDecoration").Call(Id("n"), Lit(frag.Name))
+
+							pos := Qual("go/token", "NoPos")
+							switch frag.Name {
+							case "Start":
+								pos = Id("n").Dot("Pos").Call()
+							case "End":
+								pos = Id("n").Dot("End").Call()
 							}
+
+							process := Id("f").Dot("AddDecoration").Call(Id("n"), Lit(frag.Name), pos)
+
 							if frag.Use != nil {
 								g.If(frag.Use.Get("n", true)).Block(process)
 							} else {

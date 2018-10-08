@@ -306,8 +306,14 @@ func TestDecorator(t *testing.T) {
 					return false
 				}
 				var out string
-				_, _, infos := getDecorationInfo(n)
+				before, after, infos := getDecorationInfo(n)
 				for _, info := range infos {
+					switch before {
+					case dst.NewLine:
+						out += " [New line]"
+					case dst.EmptyLine:
+						out += " [Empty line]"
+					}
 					if len(info.decs) > 0 {
 						var values string
 						for i, dec := range info.decs {
@@ -317,6 +323,12 @@ func TestDecorator(t *testing.T) {
 							values += fmt.Sprintf("%q", dec)
 						}
 						out += fmt.Sprintf(" [%s %s]", info.name, values)
+					}
+					switch after {
+					case dst.NewLine:
+						out += " [New line]"
+					case dst.EmptyLine:
+						out += " [Empty line]"
 					}
 				}
 				if out != "" {

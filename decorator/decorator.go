@@ -71,6 +71,8 @@ func New() *Decorator {
 		Objects:     map[*ast.Object]*dst.Object{},
 		Info:        &Info{Filenames: map[*dst.File]string{}},
 		decorations: map[ast.Node]map[string][]string{},
+		before:      map[ast.Node]dst.SpaceType{},
+		after:       map[ast.Node]dst.SpaceType{},
 	}
 }
 
@@ -80,6 +82,8 @@ type Decorator struct {
 	Objects     map[*ast.Object]*dst.Object
 	Info        *Info
 	decorations map[ast.Node]map[string][]string
+	before      map[ast.Node]dst.SpaceType
+	after       map[ast.Node]dst.SpaceType
 }
 
 type Info struct {
@@ -90,7 +94,7 @@ func (d *Decorator) Decorate(fset *token.FileSet, n ast.Node) dst.Node {
 
 	fragger := &Fragger{}
 	fragger.Fragment(fset, n)
-	d.decorations = fragger.Link()
+	d.before, d.after, d.decorations = fragger.Link()
 
 	out := d.decorateNode(n)
 

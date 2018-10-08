@@ -13,13 +13,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.ArrayType:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Lbrack
 		f.AddToken(n, token.LBRACK, n.Lbrack)
 
 		// Decoration: AfterLbrack
-		f.AddDecoration(n, "AfterLbrack")
+		f.AddDecoration(n, "AfterLbrack", token.NoPos)
 
 		// Node: Len
 		if n.Len != nil {
@@ -30,7 +30,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		f.AddToken(n, token.RBRACK, token.NoPos)
 
 		// Decoration: AfterLen
-		f.AddDecoration(n, "AfterLen")
+		f.AddDecoration(n, "AfterLen", token.NoPos)
 
 		// Node: Elt
 		if n.Elt != nil {
@@ -38,12 +38,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.AssignStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// List: Lhs
 		for _, v := range n.Lhs {
@@ -51,13 +51,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterLhs
-		f.AddDecoration(n, "AfterLhs")
+		f.AddDecoration(n, "AfterLhs", token.NoPos)
 
 		// Token: Tok
 		f.AddToken(n, n.Tok, n.TokPos)
 
 		// Decoration: AfterTok
-		f.AddDecoration(n, "AfterTok")
+		f.AddDecoration(n, "AfterTok", token.NoPos)
 
 		// List: Rhs
 		for _, v := range n.Rhs {
@@ -65,7 +65,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.BadDecl:
 
@@ -76,18 +76,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.BasicLit:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// String: Value
 		f.AddString(n, n.Value, n.ValuePos)
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.BinaryExpr:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: X
 		if n.X != nil {
@@ -95,13 +95,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterX
-		f.AddDecoration(n, "AfterX")
+		f.AddDecoration(n, "AfterX", token.NoPos)
 
 		// Token: Op
 		f.AddToken(n, n.Op, n.OpPos)
 
 		// Decoration: AfterOp
-		f.AddDecoration(n, "AfterOp")
+		f.AddDecoration(n, "AfterOp", token.NoPos)
 
 		// Node: Y
 		if n.Y != nil {
@@ -109,18 +109,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.BlockStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Lbrace
 		f.AddToken(n, token.LBRACE, n.Lbrace)
 
 		// Decoration: AfterLbrace
-		f.AddDecoration(n, "AfterLbrace")
+		f.AddDecoration(n, "AfterLbrace", token.NoPos)
 
 		// List: List
 		for _, v := range n.List {
@@ -131,19 +131,19 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		f.AddToken(n, token.RBRACE, n.Rbrace)
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.BranchStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Tok
 		f.AddToken(n, n.Tok, n.TokPos)
 
 		// Decoration: AfterTok
 		if n.Label != nil {
-			f.AddDecoration(n, "AfterTok")
+			f.AddDecoration(n, "AfterTok", token.NoPos)
 		}
 
 		// Node: Label
@@ -152,12 +152,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.CallExpr:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: Fun
 		if n.Fun != nil {
@@ -165,13 +165,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterFun
-		f.AddDecoration(n, "AfterFun")
+		f.AddDecoration(n, "AfterFun", token.NoPos)
 
 		// Token: Lparen
 		f.AddToken(n, token.LPAREN, n.Lparen)
 
 		// Decoration: AfterLparen
-		f.AddDecoration(n, "AfterLparen")
+		f.AddDecoration(n, "AfterLparen", token.NoPos)
 
 		// List: Args
 		for _, v := range n.Args {
@@ -179,7 +179,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterArgs
-		f.AddDecoration(n, "AfterArgs")
+		f.AddDecoration(n, "AfterArgs", token.NoPos)
 
 		// Token: Ellipsis
 		if n.Ellipsis.IsValid() {
@@ -188,19 +188,19 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterEllipsis
 		if n.Ellipsis.IsValid() {
-			f.AddDecoration(n, "AfterEllipsis")
+			f.AddDecoration(n, "AfterEllipsis", token.NoPos)
 		}
 
 		// Token: Rparen
 		f.AddToken(n, token.RPAREN, n.Rparen)
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.CaseClause:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Case
 		f.AddToken(n, func() token.Token {
@@ -212,7 +212,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}(), n.Case)
 
 		// Decoration: AfterCase
-		f.AddDecoration(n, "AfterCase")
+		f.AddDecoration(n, "AfterCase", token.NoPos)
 
 		// List: List
 		for _, v := range n.List {
@@ -221,14 +221,14 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterList
 		if n.List != nil {
-			f.AddDecoration(n, "AfterList")
+			f.AddDecoration(n, "AfterList", token.NoPos)
 		}
 
 		// Token: Colon
 		f.AddToken(n, token.COLON, n.Colon)
 
 		// Decoration: AfterColon
-		f.AddDecoration(n, "AfterColon")
+		f.AddDecoration(n, "AfterColon", token.NoPos)
 
 		// List: Body
 		for _, v := range n.Body {
@@ -238,7 +238,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.ChanType:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Begin
 		f.AddToken(n, func() token.Token {
@@ -255,7 +255,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterBegin
-		f.AddDecoration(n, "AfterBegin")
+		f.AddDecoration(n, "AfterBegin", token.NoPos)
 
 		// Token: Arrow
 		if n.Dir == ast.SEND {
@@ -264,7 +264,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterArrow
 		if n.Dir == ast.SEND {
-			f.AddDecoration(n, "AfterArrow")
+			f.AddDecoration(n, "AfterArrow", token.NoPos)
 		}
 
 		// Node: Value
@@ -273,12 +273,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.CommClause:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Case
 		f.AddToken(n, func() token.Token {
@@ -290,7 +290,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}(), n.Case)
 
 		// Decoration: AfterCase
-		f.AddDecoration(n, "AfterCase")
+		f.AddDecoration(n, "AfterCase", token.NoPos)
 
 		// Node: Comm
 		if n.Comm != nil {
@@ -299,14 +299,14 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterComm
 		if n.Comm != nil {
-			f.AddDecoration(n, "AfterComm")
+			f.AddDecoration(n, "AfterComm", token.NoPos)
 		}
 
 		// Token: Colon
 		f.AddToken(n, token.COLON, n.Colon)
 
 		// Decoration: AfterColon
-		f.AddDecoration(n, "AfterColon")
+		f.AddDecoration(n, "AfterColon", token.NoPos)
 
 		// List: Body
 		for _, v := range n.Body {
@@ -316,7 +316,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.CompositeLit:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: Type
 		if n.Type != nil {
@@ -325,14 +325,14 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterType
 		if n.Type != nil {
-			f.AddDecoration(n, "AfterType")
+			f.AddDecoration(n, "AfterType", token.NoPos)
 		}
 
 		// Token: Lbrace
 		f.AddToken(n, token.LBRACE, n.Lbrace)
 
 		// Decoration: AfterLbrace
-		f.AddDecoration(n, "AfterLbrace")
+		f.AddDecoration(n, "AfterLbrace", token.NoPos)
 
 		// List: Elts
 		for _, v := range n.Elts {
@@ -343,12 +343,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		f.AddToken(n, token.RBRACE, n.Rbrace)
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.DeclStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: Decl
 		if n.Decl != nil {
@@ -356,18 +356,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.DeferStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Defer
 		f.AddToken(n, token.DEFER, n.Defer)
 
 		// Decoration: AfterDefer
-		f.AddDecoration(n, "AfterDefer")
+		f.AddDecoration(n, "AfterDefer", token.NoPos)
 
 		// Node: Call
 		if n.Call != nil {
@@ -375,19 +375,19 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.Ellipsis:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Ellipsis
 		f.AddToken(n, token.ELLIPSIS, n.Ellipsis)
 
 		// Decoration: AfterEllipsis
 		if n.Elt != nil {
-			f.AddDecoration(n, "AfterEllipsis")
+			f.AddDecoration(n, "AfterEllipsis", token.NoPos)
 		}
 
 		// Node: Elt
@@ -396,7 +396,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.EmptyStmt:
 
@@ -408,7 +408,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.ExprStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: X
 		if n.X != nil {
@@ -416,12 +416,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.Field:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// List: Names
 		for _, v := range n.Names {
@@ -429,7 +429,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterNames
-		f.AddDecoration(n, "AfterNames")
+		f.AddDecoration(n, "AfterNames", token.NoPos)
 
 		// Node: Type
 		if n.Type != nil {
@@ -438,7 +438,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterType
 		if n.Tag != nil {
-			f.AddDecoration(n, "AfterType")
+			f.AddDecoration(n, "AfterType", token.NoPos)
 		}
 
 		// Node: Tag
@@ -447,12 +447,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.FieldList:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Opening
 		if n.Opening.IsValid() {
@@ -460,7 +460,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterOpening
-		f.AddDecoration(n, "AfterOpening")
+		f.AddDecoration(n, "AfterOpening", token.NoPos)
 
 		// List: List
 		for _, v := range n.List {
@@ -473,18 +473,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.File:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Package
 		f.AddToken(n, token.PACKAGE, n.Package)
 
 		// Decoration: AfterPackage
-		f.AddDecoration(n, "AfterPackage")
+		f.AddDecoration(n, "AfterPackage", token.NoPos)
 
 		// Node: Name
 		if n.Name != nil {
@@ -492,7 +492,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterName
-		f.AddDecoration(n, "AfterName")
+		f.AddDecoration(n, "AfterName", token.NoPos)
 
 		// List: Decls
 		for _, v := range n.Decls {
@@ -502,13 +502,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.ForStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: For
 		f.AddToken(n, token.FOR, n.For)
 
 		// Decoration: AfterFor
-		f.AddDecoration(n, "AfterFor")
+		f.AddDecoration(n, "AfterFor", token.NoPos)
 
 		// Node: Init
 		if n.Init != nil {
@@ -522,7 +522,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterInit
 		if n.Init != nil {
-			f.AddDecoration(n, "AfterInit")
+			f.AddDecoration(n, "AfterInit", token.NoPos)
 		}
 
 		// Node: Cond
@@ -537,7 +537,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterCond
 		if n.Cond != nil {
-			f.AddDecoration(n, "AfterCond")
+			f.AddDecoration(n, "AfterCond", token.NoPos)
 		}
 
 		// Node: Post
@@ -547,7 +547,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterPost
 		if n.Post != nil {
-			f.AddDecoration(n, "AfterPost")
+			f.AddDecoration(n, "AfterPost", token.NoPos)
 		}
 
 		// Node: Body
@@ -556,12 +556,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.FuncDecl:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Func
 		if true {
@@ -569,7 +569,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterFunc
-		f.AddDecoration(n, "AfterFunc")
+		f.AddDecoration(n, "AfterFunc", token.NoPos)
 
 		// Node: Recv
 		if n.Recv != nil {
@@ -578,7 +578,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterRecv
 		if n.Recv != nil {
-			f.AddDecoration(n, "AfterRecv")
+			f.AddDecoration(n, "AfterRecv", token.NoPos)
 		}
 
 		// Node: Name
@@ -587,7 +587,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterName
-		f.AddDecoration(n, "AfterName")
+		f.AddDecoration(n, "AfterName", token.NoPos)
 
 		// Node: Params
 		if n.Type.Params != nil {
@@ -595,7 +595,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterParams
-		f.AddDecoration(n, "AfterParams")
+		f.AddDecoration(n, "AfterParams", token.NoPos)
 
 		// Node: Results
 		if n.Type.Results != nil {
@@ -604,7 +604,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterResults
 		if n.Type.Results != nil {
-			f.AddDecoration(n, "AfterResults")
+			f.AddDecoration(n, "AfterResults", token.NoPos)
 		}
 
 		// Node: Body
@@ -613,12 +613,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.FuncLit:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: Type
 		if n.Type != nil {
@@ -626,7 +626,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterType
-		f.AddDecoration(n, "AfterType")
+		f.AddDecoration(n, "AfterType", token.NoPos)
 
 		// Node: Body
 		if n.Body != nil {
@@ -634,12 +634,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.FuncType:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Func
 		if n.Func.IsValid() {
@@ -648,7 +648,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterFunc
 		if n.Func.IsValid() {
-			f.AddDecoration(n, "AfterFunc")
+			f.AddDecoration(n, "AfterFunc", token.NoPos)
 		}
 
 		// Node: Params
@@ -658,7 +658,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterParams
 		if n.Results != nil {
-			f.AddDecoration(n, "AfterParams")
+			f.AddDecoration(n, "AfterParams", token.NoPos)
 		}
 
 		// Node: Results
@@ -667,18 +667,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.GenDecl:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Tok
 		f.AddToken(n, n.Tok, n.TokPos)
 
 		// Decoration: AfterTok
-		f.AddDecoration(n, "AfterTok")
+		f.AddDecoration(n, "AfterTok", token.NoPos)
 
 		// Token: Lparen
 		if n.Lparen.IsValid() {
@@ -687,7 +687,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterLparen
 		if n.Lparen.IsValid() {
-			f.AddDecoration(n, "AfterLparen")
+			f.AddDecoration(n, "AfterLparen", token.NoPos)
 		}
 
 		// List: Specs
@@ -701,18 +701,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.GoStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Go
 		f.AddToken(n, token.GO, n.Go)
 
 		// Decoration: AfterGo
-		f.AddDecoration(n, "AfterGo")
+		f.AddDecoration(n, "AfterGo", token.NoPos)
 
 		// Node: Call
 		if n.Call != nil {
@@ -720,29 +720,29 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.Ident:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// String: Name
 		f.AddString(n, n.Name, n.NamePos)
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.IfStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: If
 		f.AddToken(n, token.IF, n.If)
 
 		// Decoration: AfterIf
-		f.AddDecoration(n, "AfterIf")
+		f.AddDecoration(n, "AfterIf", token.NoPos)
 
 		// Node: Init
 		if n.Init != nil {
@@ -751,7 +751,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterInit
 		if n.Init != nil {
-			f.AddDecoration(n, "AfterInit")
+			f.AddDecoration(n, "AfterInit", token.NoPos)
 		}
 
 		// Node: Cond
@@ -760,7 +760,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterCond
-		f.AddDecoration(n, "AfterCond")
+		f.AddDecoration(n, "AfterCond", token.NoPos)
 
 		// Node: Body
 		if n.Body != nil {
@@ -774,7 +774,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterElse
 		if n.Else != nil {
-			f.AddDecoration(n, "AfterElse")
+			f.AddDecoration(n, "AfterElse", token.NoPos)
 		}
 
 		// Node: Else
@@ -783,12 +783,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.ImportSpec:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: Name
 		if n.Name != nil {
@@ -797,7 +797,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterName
 		if n.Name != nil {
-			f.AddDecoration(n, "AfterName")
+			f.AddDecoration(n, "AfterName", token.NoPos)
 		}
 
 		// Node: Path
@@ -806,12 +806,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.IncDecStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: X
 		if n.X != nil {
@@ -819,18 +819,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterX
-		f.AddDecoration(n, "AfterX")
+		f.AddDecoration(n, "AfterX", token.NoPos)
 
 		// Token: Tok
 		f.AddToken(n, n.Tok, n.TokPos)
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.IndexExpr:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: X
 		if n.X != nil {
@@ -838,13 +838,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterX
-		f.AddDecoration(n, "AfterX")
+		f.AddDecoration(n, "AfterX", token.NoPos)
 
 		// Token: Lbrack
 		f.AddToken(n, token.LBRACK, n.Lbrack)
 
 		// Decoration: AfterLbrack
-		f.AddDecoration(n, "AfterLbrack")
+		f.AddDecoration(n, "AfterLbrack", token.NoPos)
 
 		// Node: Index
 		if n.Index != nil {
@@ -852,24 +852,24 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterIndex
-		f.AddDecoration(n, "AfterIndex")
+		f.AddDecoration(n, "AfterIndex", token.NoPos)
 
 		// Token: Rbrack
 		f.AddToken(n, token.RBRACK, n.Rbrack)
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.InterfaceType:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Interface
 		f.AddToken(n, token.INTERFACE, n.Interface)
 
 		// Decoration: AfterInterface
-		f.AddDecoration(n, "AfterInterface")
+		f.AddDecoration(n, "AfterInterface", token.NoPos)
 
 		// Node: Methods
 		if n.Methods != nil {
@@ -877,12 +877,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.KeyValueExpr:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: Key
 		if n.Key != nil {
@@ -890,13 +890,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterKey
-		f.AddDecoration(n, "AfterKey")
+		f.AddDecoration(n, "AfterKey", token.NoPos)
 
 		// Token: Colon
 		f.AddToken(n, token.COLON, n.Colon)
 
 		// Decoration: AfterColon
-		f.AddDecoration(n, "AfterColon")
+		f.AddDecoration(n, "AfterColon", token.NoPos)
 
 		// Node: Value
 		if n.Value != nil {
@@ -904,12 +904,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.LabeledStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: Label
 		if n.Label != nil {
@@ -917,13 +917,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterLabel
-		f.AddDecoration(n, "AfterLabel")
+		f.AddDecoration(n, "AfterLabel", token.NoPos)
 
 		// Token: Colon
 		f.AddToken(n, token.COLON, n.Colon)
 
 		// Decoration: AfterColon
-		f.AddDecoration(n, "AfterColon")
+		f.AddDecoration(n, "AfterColon", token.NoPos)
 
 		// Node: Stmt
 		if n.Stmt != nil {
@@ -931,12 +931,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.MapType:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Map
 		f.AddToken(n, token.MAP, n.Map)
@@ -945,7 +945,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		f.AddToken(n, token.LBRACK, token.NoPos)
 
 		// Decoration: AfterMap
-		f.AddDecoration(n, "AfterMap")
+		f.AddDecoration(n, "AfterMap", token.NoPos)
 
 		// Node: Key
 		if n.Key != nil {
@@ -956,7 +956,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		f.AddToken(n, token.RBRACK, token.NoPos)
 
 		// Decoration: AfterKey
-		f.AddDecoration(n, "AfterKey")
+		f.AddDecoration(n, "AfterKey", token.NoPos)
 
 		// Node: Value
 		if n.Value != nil {
@@ -964,7 +964,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.Package:
 
@@ -978,13 +978,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 	case *ast.ParenExpr:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Lparen
 		f.AddToken(n, token.LPAREN, n.Lparen)
 
 		// Decoration: AfterLparen
-		f.AddDecoration(n, "AfterLparen")
+		f.AddDecoration(n, "AfterLparen", token.NoPos)
 
 		// Node: X
 		if n.X != nil {
@@ -992,25 +992,25 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterX
-		f.AddDecoration(n, "AfterX")
+		f.AddDecoration(n, "AfterX", token.NoPos)
 
 		// Token: Rparen
 		f.AddToken(n, token.RPAREN, n.Rparen)
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.RangeStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: For
 		f.AddToken(n, token.FOR, n.For)
 
 		// Decoration: AfterFor
 		if n.Key != nil {
-			f.AddDecoration(n, "AfterFor")
+			f.AddDecoration(n, "AfterFor", token.NoPos)
 		}
 
 		// Node: Key
@@ -1025,7 +1025,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterKey
 		if n.Key != nil {
-			f.AddDecoration(n, "AfterKey")
+			f.AddDecoration(n, "AfterKey", token.NoPos)
 		}
 
 		// Node: Value
@@ -1035,7 +1035,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterValue
 		if n.Value != nil {
-			f.AddDecoration(n, "AfterValue")
+			f.AddDecoration(n, "AfterValue", token.NoPos)
 		}
 
 		// Token: Tok
@@ -1047,7 +1047,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		f.AddToken(n, token.RANGE, token.NoPos)
 
 		// Decoration: AfterRange
-		f.AddDecoration(n, "AfterRange")
+		f.AddDecoration(n, "AfterRange", token.NoPos)
 
 		// Node: X
 		if n.X != nil {
@@ -1055,7 +1055,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterX
-		f.AddDecoration(n, "AfterX")
+		f.AddDecoration(n, "AfterX", token.NoPos)
 
 		// Node: Body
 		if n.Body != nil {
@@ -1063,18 +1063,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.ReturnStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Return
 		f.AddToken(n, token.RETURN, n.Return)
 
 		// Decoration: AfterReturn
-		f.AddDecoration(n, "AfterReturn")
+		f.AddDecoration(n, "AfterReturn", token.NoPos)
 
 		// List: Results
 		for _, v := range n.Results {
@@ -1082,18 +1082,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.SelectStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Select
 		f.AddToken(n, token.SELECT, n.Select)
 
 		// Decoration: AfterSelect
-		f.AddDecoration(n, "AfterSelect")
+		f.AddDecoration(n, "AfterSelect", token.NoPos)
 
 		// Node: Body
 		if n.Body != nil {
@@ -1101,12 +1101,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.SelectorExpr:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: X
 		if n.X != nil {
@@ -1117,7 +1117,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		f.AddToken(n, token.PERIOD, token.NoPos)
 
 		// Decoration: AfterX
-		f.AddDecoration(n, "AfterX")
+		f.AddDecoration(n, "AfterX", token.NoPos)
 
 		// Node: Sel
 		if n.Sel != nil {
@@ -1125,12 +1125,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.SendStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: Chan
 		if n.Chan != nil {
@@ -1138,13 +1138,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterChan
-		f.AddDecoration(n, "AfterChan")
+		f.AddDecoration(n, "AfterChan", token.NoPos)
 
 		// Token: Arrow
 		f.AddToken(n, token.ARROW, n.Arrow)
 
 		// Decoration: AfterArrow
-		f.AddDecoration(n, "AfterArrow")
+		f.AddDecoration(n, "AfterArrow", token.NoPos)
 
 		// Node: Value
 		if n.Value != nil {
@@ -1152,12 +1152,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.SliceExpr:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: X
 		if n.X != nil {
@@ -1165,14 +1165,14 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterX
-		f.AddDecoration(n, "AfterX")
+		f.AddDecoration(n, "AfterX", token.NoPos)
 
 		// Token: Lbrack
 		f.AddToken(n, token.LBRACK, n.Lbrack)
 
 		// Decoration: AfterLbrack
 		if n.Low != nil {
-			f.AddDecoration(n, "AfterLbrack")
+			f.AddDecoration(n, "AfterLbrack", token.NoPos)
 		}
 
 		// Node: Low
@@ -1184,7 +1184,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		f.AddToken(n, token.COLON, token.NoPos)
 
 		// Decoration: AfterLow
-		f.AddDecoration(n, "AfterLow")
+		f.AddDecoration(n, "AfterLow", token.NoPos)
 
 		// Node: High
 		if n.High != nil {
@@ -1198,7 +1198,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterHigh
 		if n.High != nil {
-			f.AddDecoration(n, "AfterHigh")
+			f.AddDecoration(n, "AfterHigh", token.NoPos)
 		}
 
 		// Node: Max
@@ -1208,25 +1208,25 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterMax
 		if n.Max != nil {
-			f.AddDecoration(n, "AfterMax")
+			f.AddDecoration(n, "AfterMax", token.NoPos)
 		}
 
 		// Token: Rbrack
 		f.AddToken(n, token.RBRACK, n.Rbrack)
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.StarExpr:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Star
 		f.AddToken(n, token.MUL, n.Star)
 
 		// Decoration: AfterStar
-		f.AddDecoration(n, "AfterStar")
+		f.AddDecoration(n, "AfterStar", token.NoPos)
 
 		// Node: X
 		if n.X != nil {
@@ -1234,18 +1234,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.StructType:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Struct
 		f.AddToken(n, token.STRUCT, n.Struct)
 
 		// Decoration: AfterStruct
-		f.AddDecoration(n, "AfterStruct")
+		f.AddDecoration(n, "AfterStruct", token.NoPos)
 
 		// Node: Fields
 		if n.Fields != nil {
@@ -1253,18 +1253,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.SwitchStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Switch
 		f.AddToken(n, token.SWITCH, n.Switch)
 
 		// Decoration: AfterSwitch
-		f.AddDecoration(n, "AfterSwitch")
+		f.AddDecoration(n, "AfterSwitch", token.NoPos)
 
 		// Node: Init
 		if n.Init != nil {
@@ -1273,7 +1273,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterInit
 		if n.Init != nil {
-			f.AddDecoration(n, "AfterInit")
+			f.AddDecoration(n, "AfterInit", token.NoPos)
 		}
 
 		// Node: Tag
@@ -1283,7 +1283,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterTag
 		if n.Tag != nil {
-			f.AddDecoration(n, "AfterTag")
+			f.AddDecoration(n, "AfterTag", token.NoPos)
 		}
 
 		// Node: Body
@@ -1292,12 +1292,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.TypeAssertExpr:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: X
 		if n.X != nil {
@@ -1308,13 +1308,13 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		f.AddToken(n, token.PERIOD, token.NoPos)
 
 		// Decoration: AfterX
-		f.AddDecoration(n, "AfterX")
+		f.AddDecoration(n, "AfterX", token.NoPos)
 
 		// Token: Lparen
 		f.AddToken(n, token.LPAREN, n.Lparen)
 
 		// Decoration: AfterLparen
-		f.AddDecoration(n, "AfterLparen")
+		f.AddDecoration(n, "AfterLparen", token.NoPos)
 
 		// Node: Type
 		if n.Type != nil {
@@ -1327,18 +1327,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterType
-		f.AddDecoration(n, "AfterType")
+		f.AddDecoration(n, "AfterType", token.NoPos)
 
 		// Token: Rparen
 		f.AddToken(n, token.RPAREN, n.Rparen)
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.TypeSpec:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Node: Name
 		if n.Name != nil {
@@ -1351,7 +1351,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterName
-		f.AddDecoration(n, "AfterName")
+		f.AddDecoration(n, "AfterName", token.NoPos)
 
 		// Node: Type
 		if n.Type != nil {
@@ -1359,18 +1359,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.TypeSwitchStmt:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Switch
 		f.AddToken(n, token.SWITCH, n.Switch)
 
 		// Decoration: AfterSwitch
-		f.AddDecoration(n, "AfterSwitch")
+		f.AddDecoration(n, "AfterSwitch", token.NoPos)
 
 		// Node: Init
 		if n.Init != nil {
@@ -1379,7 +1379,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterInit
 		if n.Init != nil {
-			f.AddDecoration(n, "AfterInit")
+			f.AddDecoration(n, "AfterInit", token.NoPos)
 		}
 
 		// Node: Assign
@@ -1388,7 +1388,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: AfterAssign
-		f.AddDecoration(n, "AfterAssign")
+		f.AddDecoration(n, "AfterAssign", token.NoPos)
 
 		// Node: Body
 		if n.Body != nil {
@@ -1396,18 +1396,18 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.UnaryExpr:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// Token: Op
 		f.AddToken(n, n.Op, n.OpPos)
 
 		// Decoration: AfterOp
-		f.AddDecoration(n, "AfterOp")
+		f.AddDecoration(n, "AfterOp", token.NoPos)
 
 		// Node: X
 		if n.X != nil {
@@ -1415,12 +1415,12 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.ValueSpec:
 
 		// Decoration: Start
-		f.AddStart(n, n.Pos())
+		f.AddDecoration(n, "Start", n.Pos())
 
 		// List: Names
 		for _, v := range n.Names {
@@ -1429,7 +1429,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterNames
 		if n.Type != nil {
-			f.AddDecoration(n, "AfterNames")
+			f.AddDecoration(n, "AfterNames", token.NoPos)
 		}
 
 		// Node: Type
@@ -1444,7 +1444,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 
 		// Decoration: AfterAssign
 		if n.Values != nil {
-			f.AddDecoration(n, "AfterAssign")
+			f.AddDecoration(n, "AfterAssign", token.NoPos)
 		}
 
 		// List: Values
@@ -1453,7 +1453,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		f.AddDecoration(n, "End")
+		f.AddDecoration(n, "End", n.End())
 
 	}
 }

@@ -14,6 +14,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.ArrayType{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Lbrack
 
 		// Node: Len
@@ -48,6 +51,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.AssignStmt{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// List: Lhs
 		for _, v := range n.Lhs {
 			out.Lhs = append(out.Lhs, d.decorateNode(v).(dst.Expr))
@@ -81,20 +87,32 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.BadDecl{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		return out
 	case *ast.BadExpr:
 		out := &dst.BadExpr{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		return out
 	case *ast.BadStmt:
 		out := &dst.BadStmt{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		return out
 	case *ast.BasicLit:
 		out := &dst.BasicLit{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// String: Value
 		out.Value = n.Value
@@ -115,6 +133,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.BinaryExpr:
 		out := &dst.BinaryExpr{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Node: X
 		if n.X != nil {
@@ -149,6 +170,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.BlockStmt{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Lbrace
 
 		// List: List
@@ -175,6 +199,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.BranchStmt{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Tok
 		out.Tok = n.Tok
 
@@ -199,6 +226,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.CallExpr:
 		out := &dst.CallExpr{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Node: Fun
 		if n.Fun != nil {
@@ -243,6 +273,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.CaseClause{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Case
 
 		// List: List
@@ -276,6 +309,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.ChanType:
 		out := &dst.ChanType{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: Begin
 
@@ -311,6 +347,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.CommClause{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Case
 
 		// Node: Comm
@@ -344,6 +383,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.CompositeLit:
 		out := &dst.CompositeLit{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Node: Type
 		if n.Type != nil {
@@ -382,6 +424,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.DeclStmt{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Node: Decl
 		if n.Decl != nil {
 			out.Decl = d.decorateNode(n.Decl).(dst.Decl)
@@ -400,6 +445,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.DeferStmt:
 		out := &dst.DeferStmt{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: Defer
 
@@ -425,6 +473,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.Ellipsis{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Ellipsis
 
 		// Node: Elt
@@ -449,6 +500,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.EmptyStmt{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Semicolon
 
 		// Value: Implicit
@@ -458,6 +512,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.ExprStmt:
 		out := &dst.ExprStmt{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Node: X
 		if n.X != nil {
@@ -477,6 +534,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.Field:
 		out := &dst.Field{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// List: Names
 		for _, v := range n.Names {
@@ -513,6 +573,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.FieldList{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Opening
 		out.Opening = n.Opening.IsValid()
 
@@ -540,6 +603,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.File:
 		out := &dst.File{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: Package
 
@@ -572,6 +638,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.ForStmt:
 		out := &dst.ForStmt{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: For
 
@@ -624,6 +693,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.FuncDecl:
 		out := &dst.FuncDecl{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Init: Type
 		out.Type = &dst.FuncType{}
@@ -685,6 +757,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.FuncLit{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Node: Type
 		if n.Type != nil {
 			out.Type = d.decorateNode(n.Type).(*dst.FuncType)
@@ -711,6 +786,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.FuncType:
 		out := &dst.FuncType{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: Func
 		out.Func = n.Func.IsValid()
@@ -744,6 +822,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.GenDecl:
 		out := &dst.GenDecl{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: Tok
 		out.Tok = n.Tok
@@ -779,6 +860,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.GoStmt{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Go
 
 		// Node: Call
@@ -803,6 +887,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.Ident{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// String: Name
 		out.Name = n.Name
 
@@ -822,6 +909,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.IfStmt:
 		out := &dst.IfStmt{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: If
 
@@ -873,6 +963,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.ImportSpec{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Node: Name
 		if n.Name != nil {
 			out.Name = d.decorateNode(n.Name).(*dst.Ident)
@@ -900,6 +993,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.IncDecStmt{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Node: X
 		if n.X != nil {
 			out.X = d.decorateNode(n.X).(dst.Expr)
@@ -924,6 +1020,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.IndexExpr:
 		out := &dst.IndexExpr{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Node: X
 		if n.X != nil {
@@ -962,6 +1061,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.InterfaceType{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Interface
 
 		// Node: Methods
@@ -988,6 +1090,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.KeyValueExpr:
 		out := &dst.KeyValueExpr{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Node: Key
 		if n.Key != nil {
@@ -1021,6 +1126,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.LabeledStmt{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Node: Label
 		if n.Label != nil {
 			out.Label = d.decorateNode(n.Label).(*dst.Ident)
@@ -1052,6 +1160,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.MapType:
 		out := &dst.MapType{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: Map
 
@@ -1112,6 +1223,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.ParenExpr{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Lparen
 
 		// Node: X
@@ -1140,6 +1254,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.RangeStmt:
 		out := &dst.RangeStmt{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: For
 
@@ -1199,6 +1316,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.ReturnStmt{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Return
 
 		// List: Results
@@ -1223,6 +1343,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.SelectStmt{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Select
 
 		// Node: Body
@@ -1246,6 +1369,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.SelectorExpr:
 		out := &dst.SelectorExpr{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Node: X
 		if n.X != nil {
@@ -1275,6 +1401,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.SendStmt:
 		out := &dst.SendStmt{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Node: Chan
 		if n.Chan != nil {
@@ -1307,6 +1436,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.SliceExpr:
 		out := &dst.SliceExpr{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Node: X
 		if n.X != nil {
@@ -1368,6 +1500,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.StarExpr{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Star
 
 		// Node: X
@@ -1391,6 +1526,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.StructType:
 		out := &dst.StructType{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: Struct
 
@@ -1418,6 +1556,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.SwitchStmt:
 		out := &dst.SwitchStmt{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: Switch
 
@@ -1458,6 +1599,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.TypeAssertExpr:
 		out := &dst.TypeAssertExpr{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Node: X
 		if n.X != nil {
@@ -1500,6 +1644,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.TypeSpec{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Node: Name
 		if n.Name != nil {
 			out.Name = d.decorateNode(n.Name).(*dst.Ident)
@@ -1529,6 +1676,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.TypeSwitchStmt:
 		out := &dst.TypeSwitchStmt{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// Token: Switch
 
@@ -1570,6 +1720,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out := &dst.UnaryExpr{}
 		d.Nodes[n] = out
 
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
+
 		// Token: Op
 		out.Op = n.Op
 
@@ -1594,6 +1747,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 	case *ast.ValueSpec:
 		out := &dst.ValueSpec{}
 		d.Nodes[n] = out
+
+		out.Decs.Before = d.before[n]
+		out.Decs.After = d.after[n]
 
 		// List: Names
 		for _, v := range n.Names {
