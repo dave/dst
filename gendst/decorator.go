@@ -32,8 +32,7 @@ func generateDecorator(names []string) error {
 					g.Id("d").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
 					if nodeName != "Package" {
 						g.Line()
-						g.Id("out").Dot("Decs").Dot("Before").Op("=").Id("d").Dot("before").Index(Id("n"))
-						g.Id("out").Dot("Decs").Dot("After").Op("=").Id("d").Dot("after").Index(Id("n"))
+						g.Id("out").Dot("Decs").Dot("Space").Op("=").Id("d").Dot("space").Index(Id("n"))
 					}
 					for _, frag := range fragment.Info[nodeName] {
 						switch frag := frag.(type) {
@@ -153,13 +152,12 @@ func generateDecorator(names []string) error {
 func generateDecoratorTestHelper(names []string) error {
 	f := NewFile("decorator")
 	f.ImportName(DSTPATH, "dst")
-	f.Func().Id("getDecorationInfo").Params(Id("n").Qual(DSTPATH, "Node")).Params(Id("before"), Id("after").Qual(DSTPATH, "SpaceType"), Id("info").Index().Id("decorationInfo")).BlockFunc(func(g *Group) {
+	f.Func().Id("getDecorationInfo").Params(Id("n").Qual(DSTPATH, "Node")).Params(Id("space").Qual(DSTPATH, "SpaceType"), Id("info").Index().Id("decorationInfo")).BlockFunc(func(g *Group) {
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
 				g.Case(Op("*").Qual(DSTPATH, nodeName)).BlockFunc(func(g *Group) {
 					if nodeName != "Package" {
-						g.Id("before").Op("=").Id("n").Dot("Decs").Dot("Before")
-						g.Id("after").Op("=").Id("n").Dot("Decs").Dot("After")
+						g.Id("space").Op("=").Id("n").Dot("Decs").Dot("Space")
 					}
 					for _, frag := range fragment.Info[nodeName] {
 						switch frag := frag.(type) {

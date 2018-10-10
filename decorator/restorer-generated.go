@@ -15,7 +15,6 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 	case *dst.ArrayType:
 		out := &ast.ArrayType{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -45,13 +44,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.AssignStmt:
 		out := &ast.AssignStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -79,34 +77,30 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.BadDecl:
 		out := &ast.BadDecl{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.BadExpr:
 		out := &ast.BadExpr{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.BadStmt:
 		out := &ast.BadStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.BasicLit:
 		out := &ast.BasicLit{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -121,13 +115,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Value: Kind
 		out.Kind = n.Kind
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.BinaryExpr:
 		out := &ast.BinaryExpr{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -155,13 +148,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.BlockStmt:
 		out := &ast.BlockStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -184,13 +176,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.BranchStmt:
 		out := &ast.BranchStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -210,13 +201,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.CallExpr:
 		out := &ast.CallExpr{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -259,13 +249,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.CaseClause:
 		out := &ast.CaseClause{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -302,13 +291,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		for _, v := range n.Body {
 			out.Body = append(out.Body, r.restoreNode(v).(ast.Stmt))
 		}
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.ChanType:
 		out := &ast.ChanType{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -350,13 +338,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Value: Dir
 		out.Dir = ast.ChanDir(n.Dir)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.CommClause:
 		out := &ast.CommClause{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -393,13 +380,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		for _, v := range n.Body {
 			out.Body = append(out.Body, r.restoreNode(v).(ast.Stmt))
 		}
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.CompositeLit:
 		out := &ast.CompositeLit{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -433,13 +419,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Value: Incomplete
 		out.Incomplete = n.Incomplete
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.DeclStmt:
 		out := &ast.DeclStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -451,13 +436,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.DeferStmt:
 		out := &ast.DeferStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -476,13 +460,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.Ellipsis:
 		out := &ast.Ellipsis{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -501,13 +484,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.EmptyStmt:
 		out := &ast.EmptyStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Token: Semicolon
 		if !n.Implicit {
@@ -517,13 +499,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Value: Implicit
 		out.Implicit = n.Implicit
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.ExprStmt:
 		out := &ast.ExprStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -535,13 +516,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.Field:
 		out := &ast.Field{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -569,13 +549,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.FieldList:
 		out := &ast.FieldList{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -602,13 +581,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.File:
 		out := &ast.File{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -635,13 +613,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Scope: Scope
 		out.Scope = r.restoreScope(n.Scope)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.ForStmt:
 		out := &ast.ForStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -694,13 +671,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.FuncDecl:
 		out := &ast.FuncDecl{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Init: Type
 		out.Type = &ast.FuncType{}
@@ -756,13 +732,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.FuncLit:
 		out := &ast.FuncLit{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -782,13 +757,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.FuncType:
 		out := &ast.FuncType{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -817,13 +791,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.GenDecl:
 		out := &ast.GenDecl{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -858,13 +831,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.GoStmt:
 		out := &ast.GoStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -883,13 +855,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.Ident:
 		out := &ast.Ident{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -904,13 +875,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Object: Obj
 		out.Obj = r.restoreObject(n.Obj)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.IfStmt:
 		out := &ast.IfStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -958,13 +928,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.ImportSpec:
 		out := &ast.ImportSpec{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -984,13 +953,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.IncDecStmt:
 		out := &ast.IncDecStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1010,13 +978,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.IndexExpr:
 		out := &ast.IndexExpr{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1050,13 +1017,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.InterfaceType:
 		out := &ast.InterfaceType{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1078,13 +1044,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Value: Incomplete
 		out.Incomplete = n.Incomplete
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.KeyValueExpr:
 		out := &ast.KeyValueExpr{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1111,13 +1076,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.LabeledStmt:
 		out := &ast.LabeledStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1144,13 +1108,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.MapType:
 		out := &ast.MapType{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1183,7 +1146,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.Package:
@@ -1212,7 +1175,6 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 	case *dst.ParenExpr:
 		out := &ast.ParenExpr{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1238,13 +1200,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.RangeStmt:
 		out := &ast.RangeStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1305,13 +1266,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.ReturnStmt:
 		out := &ast.ReturnStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1330,13 +1290,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.SelectStmt:
 		out := &ast.SelectStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1355,13 +1314,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.SelectorExpr:
 		out := &ast.SelectorExpr{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1384,13 +1342,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.SendStmt:
 		out := &ast.SendStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1417,13 +1374,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.SliceExpr:
 		out := &ast.SliceExpr{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1484,13 +1440,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Value: Slice3
 		out.Slice3 = n.Slice3
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.StarExpr:
 		out := &ast.StarExpr{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1509,13 +1464,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.StructType:
 		out := &ast.StructType{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1537,13 +1491,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Value: Incomplete
 		out.Incomplete = n.Incomplete
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.SwitchStmt:
 		out := &ast.SwitchStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1578,13 +1531,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.TypeAssertExpr:
 		out := &ast.TypeAssertExpr{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1626,13 +1578,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.TypeSpec:
 		out := &ast.TypeSpec{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1658,13 +1609,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.TypeSwitchStmt:
 		out := &ast.TypeSwitchStmt{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1699,13 +1649,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.UnaryExpr:
 		out := &ast.UnaryExpr{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1725,13 +1674,12 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	case *dst.ValueSpec:
 		out := &ast.ValueSpec{}
 		r.Nodes[n] = out
-		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(n.Decs.Start)
@@ -1764,7 +1712,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(n.Decs.End)
-		r.applySpace(n.Decs.After)
+		r.applySpace(n.Decs.Space)
 
 		return out
 	default:

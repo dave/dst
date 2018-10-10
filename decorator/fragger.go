@@ -149,10 +149,9 @@ func appendNewLine(m map[ast.Node]map[string][]string, n ast.Node, pos string, e
 	}
 }
 
-func (f *Fragger) Link() (before, after map[ast.Node]dst.SpaceType, decorations map[ast.Node]map[string][]string) {
+func (f *Fragger) Link() (space map[ast.Node]dst.SpaceType, decorations map[ast.Node]map[string][]string) {
 
-	before = map[ast.Node]dst.SpaceType{}
-	after = map[ast.Node]dst.SpaceType{}
+	space = map[ast.Node]dst.SpaceType{}
 	decorations = map[ast.Node]map[string][]string{}
 
 	// Pass 1: associate comment groups with decorations. Sweep up any other comments / new-lines /
@@ -230,19 +229,12 @@ func (f *Fragger) Link() (before, after map[ast.Node]dst.SpaceType, decorations 
 
 			// If the newline is directly before / after a node, we can set the Before / After spacing
 			// of the node decoration instead of adding the newline as a decoration.
-			nextNode, _, nextNodeFound := f.findNode(i, 1)
-			prevNode, _, prevNodeFound := f.findNode(i, -1)
-			if nextNodeFound || prevNodeFound {
-				space := dst.NewLine
+			if node, _, found := f.findNode(i, -1); found {
+				spaceType := dst.NewLine
 				if frag.Empty {
-					space = dst.EmptyLine
+					spaceType = dst.EmptyLine
 				}
-				if nextNodeFound {
-					before[nextNode] = space
-				}
-				if prevNodeFound {
-					after[prevNode] = space
-				}
+				space[node] = spaceType
 				continue
 			}
 
