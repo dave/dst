@@ -30,10 +30,10 @@ func ExampleDecorations() {
 		case *dst.DeclStmt:
 			n.Decs.End.Replace("// foo")
 		case *dst.IncDecStmt:
-			n.Decs.AfterX.Add("/* bar */")
+			n.Decs.X.Add("/* bar */")
 		case *dst.CallExpr:
-			n.Decs.AfterLparen.Add("\n")
-			n.Decs.AfterArgs.Add("\n")
+			n.Decs.Lparen.Add("\n")
+			n.Decs.Args.Add("\n")
 		}
 		return true
 	}

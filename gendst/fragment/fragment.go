@@ -37,7 +37,7 @@ var Info = map[string][]Part{
 			Separator: token.COMMA,
 		},
 		Decoration{
-			Name: "AfterNames",
+			Name: "Names",
 		},
 		Node{
 			Name:  "Type",
@@ -45,7 +45,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterType",
+			Name: "Type",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Tag").Op("!=").Nil() }),
 		},
 		Node{
@@ -84,7 +84,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Opening"},
 		},
 		Decoration{
-			Name: "AfterOpening",
+			Name: "Opening",
 		},
 		List{
 			Name:      "List",
@@ -116,6 +116,9 @@ var Info = map[string][]Part{
 		}
 	*/
 	"BadExpr": {
+		Decoration{
+			Name: "Start",
+		},
 		Ignored{
 			Length: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement {
@@ -124,6 +127,9 @@ var Info = map[string][]Part{
 				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Length") }),
 			},
 			PositionField: Field{"From"},
+		},
+		Decoration{
+			Name: "End",
 		},
 	},
 	/*
@@ -170,7 +176,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Ellipsis"},
 		},
 		Decoration{
-			Name: "AfterEllipsis",
+			Name: "Ellipsis",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Elt").Op("!=").Nil() }),
 		},
 		Node{
@@ -224,7 +230,7 @@ var Info = map[string][]Part{
 			Type:  Type{"FuncType", true},
 		},
 		Decoration{
-			Name: "AfterType",
+			Name: "Type",
 		},
 		Node{
 			Name:  "Body",
@@ -255,7 +261,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterType",
+			Name: "Type",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Op("!=").Nil() }),
 		},
 		Token{
@@ -264,7 +270,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Lbrace"},
 		},
 		Decoration{
-			Name: "AfterLbrace",
+			Name: "Lbrace",
 		},
 		List{
 			Name:      "Elts",
@@ -272,7 +278,7 @@ var Info = map[string][]Part{
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
-		// TODO: removed AfterElts decoration - should we remove all decorations after comma separated lists?
+		// TODO: removed Elts decoration - should we remove all decorations after comma separated lists?
 		Token{
 			Name:          "Rbrace",
 			Token:         Basic{jen.Qual("go/token", "RBRACE")},
@@ -304,7 +310,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Lparen"},
 		},
 		Decoration{
-			Name: "AfterLparen",
+			Name: "Lparen",
 		},
 		Node{
 			Name:  "X",
@@ -312,7 +318,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterX",
+			Name: "X",
 		},
 		Token{
 			Name:          "Rparen",
@@ -344,7 +350,7 @@ var Info = map[string][]Part{
 			Token: Basic{jen.Qual("go/token", "PERIOD")},
 		},
 		Decoration{
-			Name: "AfterX",
+			Name: "X",
 		},
 		Node{
 			Name:  "Sel",
@@ -374,7 +380,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterX",
+			Name: "X",
 		},
 		Token{
 			Name:          "Lbrack",
@@ -382,7 +388,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Lbrack"},
 		},
 		Decoration{
-			Name: "AfterLbrack",
+			Name: "Lbrack",
 		},
 		Node{
 			Name:  "Index",
@@ -390,7 +396,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterIndex",
+			Name: "Index",
 		},
 		Token{
 			Name:          "Rbrack",
@@ -413,7 +419,7 @@ var Info = map[string][]Part{
 			Rbrack token.Pos // position of "]"
 		}
 	*/
-	// var H = /*Start*/ []int{0} /*AfterX*/ [ /*AfterLbrack*/ 1: /*AfterLow*/ 2: /*AfterHigh*/ 3 /*AfterMax*/] /*End*/
+	// var H = /*Start*/ []int{0} /*X*/ [ /*Lbrack*/ 1: /*Low*/ 2: /*High*/ 3 /*Max*/] /*End*/
 	// TODO: Why Slice3? Why not Max != nil... Can we have Max == nil && Slice3 == true?
 	"SliceExpr": {
 		Decoration{
@@ -425,7 +431,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterX",
+			Name: "X",
 		},
 		Token{
 			Name:          "Lbrack",
@@ -433,7 +439,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Lbrack"},
 		},
 		Decoration{
-			Name: "AfterLbrack",
+			Name: "Lbrack",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Low").Op("!=").Nil() }),
 		},
 		Node{
@@ -446,7 +452,7 @@ var Info = map[string][]Part{
 			Token: Basic{jen.Qual("go/token", "COLON")},
 		},
 		Decoration{
-			Name: "AfterLow",
+			Name: "Low",
 		},
 		Node{
 			Name:  "High",
@@ -459,7 +465,7 @@ var Info = map[string][]Part{
 			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Slice3") }),
 		},
 		Decoration{
-			Name: "AfterHigh",
+			Name: "High",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("High").Op("!=").Nil() }),
 		},
 		Node{
@@ -468,7 +474,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterMax",
+			Name: "Max",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Max").Op("!=").Nil() }), // TODO - Slice3 in here?
 		},
 		Token{
@@ -509,7 +515,7 @@ var Info = map[string][]Part{
 			Token: Basic{jen.Qual("go/token", "PERIOD")},
 		},
 		Decoration{
-			Name: "AfterX",
+			Name: "X",
 		},
 		Token{
 			Name:          "Lparen",
@@ -517,7 +523,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Lparen"},
 		},
 		Decoration{
-			Name: "AfterLparen",
+			Name: "Lparen",
 		},
 		Node{
 			Name:  "Type",
@@ -530,7 +536,7 @@ var Info = map[string][]Part{
 			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Op("==").Nil() }),
 		},
 		Decoration{
-			Name: "AfterType",
+			Name: "Type",
 		},
 		Token{
 			Name:          "Rparen",
@@ -561,7 +567,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterFun",
+			Name: "Fun",
 		},
 		Token{
 			Name:          "Lparen",
@@ -569,7 +575,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Lparen"},
 		},
 		Decoration{
-			Name: "AfterLparen",
+			Name: "Lparen",
 		},
 		List{
 			Name:      "Args",
@@ -578,7 +584,7 @@ var Info = map[string][]Part{
 			Separator: token.COMMA,
 		},
 		Decoration{
-			Name: "AfterArgs",
+			Name: "Args",
 		},
 		Token{
 			Name:  "Ellipsis",
@@ -591,7 +597,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Ellipsis"},
 		},
 		Decoration{
-			Name: "AfterEllipsis",
+			Name: "Ellipsis",
 			Use: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Ellipsis").Dot("IsValid").Call() }),
 				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Ellipsis") }),
@@ -625,7 +631,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Star"},
 		},
 		Decoration{
-			Name: "AfterStar",
+			Name: "Star",
 		},
 		Node{
 			Name:  "X",
@@ -657,7 +663,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"OpPos"},
 		},
 		Decoration{
-			Name: "AfterOp",
+			Name: "Op",
 		},
 		Node{
 			Name:  "X",
@@ -687,7 +693,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterX",
+			Name: "X",
 		},
 		Token{
 			Name:          "Op",
@@ -696,7 +702,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"OpPos"},
 		},
 		Decoration{
-			Name: "AfterOp",
+			Name: "Op",
 		},
 		Node{
 			Name:  "Y",
@@ -727,7 +733,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterKey",
+			Name: "Key",
 		},
 		Token{
 			Name:          "Colon",
@@ -735,7 +741,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Colon"},
 		},
 		Decoration{
-			Name: "AfterColon",
+			Name: "Colon",
 		},
 		Node{
 			Name:  "Value",
@@ -764,7 +770,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Lbrack"},
 		},
 		Decoration{
-			Name: "AfterLbrack",
+			Name: "Lbrack",
 		},
 		Node{
 			Name:  "Len",
@@ -776,7 +782,7 @@ var Info = map[string][]Part{
 			Token: Basic{jen.Qual("go/token", "RBRACK")},
 		},
 		Decoration{
-			Name: "AfterLen",
+			Name: "Len",
 		},
 		Node{
 			Name:  "Elt",
@@ -805,7 +811,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Struct"},
 		},
 		Decoration{
-			Name: "AfterStruct",
+			Name: "Struct",
 		},
 		Node{
 			Name:  "Fields",
@@ -843,7 +849,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Func"},
 		},
 		Decoration{
-			Name: "AfterFunc",
+			Name: "Func",
 			Use: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Func").Dot("IsValid").Call() }),
 				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Func") }),
@@ -855,7 +861,7 @@ var Info = map[string][]Part{
 			Type:  Type{"FieldList", true},
 		},
 		Decoration{
-			Name: "AfterParams",
+			Name: "Params",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Results").Op("!=").Nil() }),
 		},
 		Node{
@@ -885,7 +891,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Interface"},
 		},
 		Decoration{
-			Name: "AfterInterface",
+			Name: "Interface",
 		},
 		Node{
 			Name:  "Methods",
@@ -922,7 +928,7 @@ var Info = map[string][]Part{
 			Token: Basic{jen.Qual("go/token", "LBRACK")},
 		},
 		Decoration{
-			Name: "AfterMap",
+			Name: "Map",
 		},
 		Node{
 			Name:  "Key",
@@ -934,7 +940,7 @@ var Info = map[string][]Part{
 			Token: Basic{jen.Qual("go/token", "RBRACK")},
 		},
 		Decoration{
-			Name: "AfterKey",
+			Name: "Key",
 		},
 		Node{
 			Name:  "Value",
@@ -981,7 +987,7 @@ var Info = map[string][]Part{
 			},
 		},
 		Decoration{
-			Name: "AfterBegin",
+			Name: "Begin",
 		},
 		Token{
 			Name:  "Arrow",
@@ -993,7 +999,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Arrow"},
 		},
 		Decoration{
-			Name: "AfterArrow",
+			Name: "Arrow",
 			Use: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual("go/ast", "SEND") }),
 				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Dir").Op("==").Qual(DSTPATH, "SEND") }),
@@ -1026,6 +1032,9 @@ var Info = map[string][]Part{
 		}
 	*/
 	"BadStmt": {
+		Decoration{
+			Name: "Start",
+		},
 		Ignored{
 			Length: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement {
@@ -1034,6 +1043,9 @@ var Info = map[string][]Part{
 				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Length") }),
 			},
 			PositionField: Field{"From"},
+		},
+		Decoration{
+			Name: "End",
 		},
 	},
 	/*
@@ -1066,11 +1078,17 @@ var Info = map[string][]Part{
 		}
 	*/
 	"EmptyStmt": {
+		Decoration{
+			Name: "Start",
+		},
 		Token{
 			Name:          "Semicolon",
 			Token:         Basic{jen.Qual("go/token", "ARROW")},
 			Exists:        Expr(func(n *jen.Statement) *jen.Statement { return jen.Op("!").Add(n).Dot("Implicit") }),
 			PositionField: Field{"Semicolon"},
+		},
+		Decoration{
+			Name: "End",
 		},
 		Value{
 			Name:  "Implicit",
@@ -1095,7 +1113,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Ident", true},
 		},
 		Decoration{
-			Name: "AfterLabel",
+			Name: "Label",
 		},
 		Token{
 			Name:          "Colon",
@@ -1103,7 +1121,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Colon"},
 		},
 		Decoration{
-			Name: "AfterColon",
+			Name: "Colon",
 		},
 		Node{
 			Name:  "Stmt",
@@ -1144,7 +1162,7 @@ var Info = map[string][]Part{
 		}
 	*/
 	///*Start*/
-	//	c /*AfterChan*/ <- /*AfterArrow*/ 0 /*End*/
+	//	c /*Chan*/ <- /*Arrow*/ 0 /*End*/
 	"SendStmt": {
 		Decoration{
 			Name: "Start",
@@ -1155,7 +1173,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterChan",
+			Name: "Chan",
 		},
 		Token{
 			Name:          "Arrow",
@@ -1163,7 +1181,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Arrow"},
 		},
 		Decoration{
-			Name: "AfterArrow",
+			Name: "Arrow",
 		},
 		Node{
 			Name:  "Value",
@@ -1192,7 +1210,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterX",
+			Name: "X",
 		},
 		Token{
 			Name:          "Tok",
@@ -1226,7 +1244,7 @@ var Info = map[string][]Part{
 			Separator: token.COMMA,
 		},
 		Decoration{
-			Name: "AfterLhs",
+			Name: "Lhs",
 		},
 		Token{
 			Name:          "Tok",
@@ -1235,7 +1253,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"TokPos"},
 		},
 		Decoration{
-			Name: "AfterTok",
+			Name: "Tok",
 		},
 		List{
 			Name:      "Rhs",
@@ -1264,7 +1282,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Go"},
 		},
 		Decoration{
-			Name: "AfterGo",
+			Name: "Go",
 		},
 		Node{
 			Name:  "Call",
@@ -1292,7 +1310,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Defer"},
 		},
 		Decoration{
-			Name: "AfterDefer",
+			Name: "Defer",
 		},
 		Node{
 			Name:  "Call",
@@ -1320,7 +1338,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Return"},
 		},
 		Decoration{
-			Name: "AfterReturn",
+			Name: "Return",
 		},
 		List{
 			Name:      "Results",
@@ -1353,7 +1371,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"TokPos"},
 		},
 		Decoration{
-			Name: "AfterTok",
+			Name: "Tok",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Label").Op("!=").Nil() }),
 		},
 		Node{
@@ -1383,7 +1401,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Lbrace"},
 		},
 		Decoration{
-			Name: "AfterLbrace",
+			Name: "Lbrace",
 		},
 		List{
 			Name:      "List",
@@ -1420,7 +1438,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"If"},
 		},
 		Decoration{
-			Name: "AfterIf",
+			Name: "If",
 		},
 		Node{
 			Name:  "Init",
@@ -1428,7 +1446,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Stmt", false},
 		},
 		Decoration{
-			Name: "AfterInit",
+			Name: "Init",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Init").Op("!=").Nil() }),
 		},
 		Node{
@@ -1437,7 +1455,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterCond",
+			Name: "Cond",
 		},
 		Node{
 			Name:  "Body",
@@ -1450,7 +1468,7 @@ var Info = map[string][]Part{
 			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Else").Op("!=").Nil() }),
 		},
 		Decoration{
-			Name: "AfterElse",
+			Name: "Else",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Else").Op("!=").Nil() }),
 		},
 		Node{
@@ -1483,7 +1501,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Case"},
 		},
 		Decoration{
-			Name: "AfterCase",
+			Name: "Case",
 		},
 		List{
 			Name:      "List",
@@ -1492,7 +1510,7 @@ var Info = map[string][]Part{
 			Separator: token.COMMA,
 		},
 		Decoration{
-			Name: "AfterList",
+			Name: "List",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("List").Op("!=").Nil() }),
 		},
 		Token{
@@ -1501,7 +1519,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Colon"},
 		},
 		Decoration{
-			Name: "AfterColon",
+			Name: "Colon",
 		},
 		List{
 			Name:      "Body",
@@ -1531,7 +1549,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Switch"},
 		},
 		Decoration{
-			Name: "AfterSwitch",
+			Name: "Switch",
 		},
 		Node{
 			Name:  "Init",
@@ -1539,7 +1557,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Stmt", false},
 		},
 		Decoration{
-			Name: "AfterInit",
+			Name: "Init",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Init").Op("!=").Nil() }),
 		},
 		Node{
@@ -1548,7 +1566,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterTag",
+			Name: "Tag",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Tag").Op("!=").Nil() }),
 		},
 		Node{
@@ -1579,7 +1597,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Switch"},
 		},
 		Decoration{
-			Name: "AfterSwitch",
+			Name: "Switch",
 		},
 		Node{
 			Name:  "Init",
@@ -1587,7 +1605,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Stmt", false},
 		},
 		Decoration{
-			Name: "AfterInit",
+			Name: "Init",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Init").Op("!=").Nil() }),
 		},
 		Node{
@@ -1596,7 +1614,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Stmt", false},
 		},
 		Decoration{
-			Name: "AfterAssign",
+			Name: "Assign",
 		},
 		Node{
 			Name:  "Body",
@@ -1628,7 +1646,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Case"},
 		},
 		Decoration{
-			Name: "AfterCase",
+			Name: "Case",
 		},
 		Node{
 			Name:  "Comm",
@@ -1636,7 +1654,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Stmt", false},
 		},
 		Decoration{
-			Name: "AfterComm",
+			Name: "Comm",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Comm").Op("!=").Nil() }),
 		},
 		Token{
@@ -1645,7 +1663,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Colon"},
 		},
 		Decoration{
-			Name: "AfterColon",
+			Name: "Colon",
 		},
 		List{
 			Name:      "Body",
@@ -1673,7 +1691,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Select"},
 		},
 		Decoration{
-			Name: "AfterSelect",
+			Name: "Select",
 		},
 		Node{
 			Name:  "Body",
@@ -1704,7 +1722,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"For"},
 		},
 		Decoration{
-			Name: "AfterFor",
+			Name: "For",
 		},
 		Node{
 			Name:  "Init",
@@ -1717,7 +1735,7 @@ var Info = map[string][]Part{
 			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Init").Op("!=").Nil() }),
 		},
 		Decoration{
-			Name: "AfterInit",
+			Name: "Init",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Init").Op("!=").Nil() }),
 		},
 		Node{
@@ -1731,7 +1749,7 @@ var Info = map[string][]Part{
 			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Post").Op("!=").Nil() }),
 		},
 		Decoration{
-			Name: "AfterCond",
+			Name: "Cond",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Cond").Op("!=").Nil() }),
 		},
 		Node{
@@ -1740,7 +1758,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Stmt", false},
 		},
 		Decoration{
-			Name: "AfterPost",
+			Name: "Post",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Post").Op("!=").Nil() }),
 		},
 		Node{
@@ -1773,7 +1791,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"For"},
 		},
 		Decoration{
-			Name: "AfterFor",
+			Name: "For",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Key").Op("!=").Nil() }),
 		},
 		Node{
@@ -1787,7 +1805,7 @@ var Info = map[string][]Part{
 			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Value").Op("!=").Nil() }),
 		},
 		Decoration{
-			Name: "AfterKey",
+			Name: "Key",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Key").Op("!=").Nil() }),
 		},
 		Node{
@@ -1796,7 +1814,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterValue",
+			Name: "Value",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Value").Op("!=").Nil() }),
 		},
 		Token{
@@ -1811,7 +1829,7 @@ var Info = map[string][]Part{
 			Token: Basic{jen.Qual("go/token", "RANGE")},
 		},
 		Decoration{
-			Name: "AfterRange",
+			Name: "Range",
 		},
 		Node{
 			Name:  "X",
@@ -1819,7 +1837,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Expr", false},
 		},
 		Decoration{
-			Name: "AfterX",
+			Name: "X",
 		},
 		Node{
 			Name:  "Body",
@@ -1851,7 +1869,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Ident", true},
 		},
 		Decoration{
-			Name: "AfterName",
+			Name: "Name",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Name").Op("!=").Nil() }),
 		},
 		Node{
@@ -1886,7 +1904,7 @@ var Info = map[string][]Part{
 			Separator: token.COMMA,
 		},
 		Decoration{
-			Name: "AfterNames",
+			Name: "Names",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Op("!=").Nil() }),
 		},
 		Node{
@@ -1900,7 +1918,7 @@ var Info = map[string][]Part{
 			Exists: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Values").Op("!=").Nil() }),
 		},
 		Decoration{
-			Name: "AfterAssign",
+			Name: "Assign",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Values").Op("!=").Nil() }),
 		},
 		List{
@@ -1943,7 +1961,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Assign"},
 		},
 		Decoration{
-			Name: "AfterName",
+			Name: "Name",
 		},
 		Node{
 			Name:  "Type",
@@ -1964,6 +1982,9 @@ var Info = map[string][]Part{
 		}
 	*/
 	"BadDecl": {
+		Decoration{
+			Name: "Start",
+		},
 		Ignored{
 			Length: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement {
@@ -1972,6 +1993,9 @@ var Info = map[string][]Part{
 				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Length") }),
 			},
 			PositionField: Field{"From"},
+		},
+		Decoration{
+			Name: "End",
 		},
 	},
 	/*
@@ -2006,7 +2030,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"TokPos"},
 		},
 		Decoration{
-			Name: "AfterTok",
+			Name: "Tok",
 		},
 		Token{
 			Name:  "Lparen",
@@ -2019,7 +2043,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Lparen"},
 		},
 		Decoration{
-			Name: "AfterLparen",
+			Name: "Lparen",
 			Use: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Lparen").Dot("IsValid").Call() }),
 				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Lparen") }),
@@ -2080,16 +2104,16 @@ var Info = map[string][]Part{
 			PositionField: InnerField{"Type", "Func"},
 		},
 		Decoration{
-			Name: "AfterFunc",
+			Name: "Func",
 		},
-		// TODO: render any decorations from n.Type.AfterFunc (but never save them there)
+		// TODO: render any decorations from n.Type.Func (but never save them there)
 		Node{
 			Name:  "Recv",
 			Field: Field{"Recv"},
 			Type:  Type{"FieldList", true},
 		},
 		Decoration{
-			Name: "AfterRecv",
+			Name: "Recv",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Recv").Op("!=").Nil() }),
 		},
 		Node{
@@ -2098,7 +2122,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Ident", true},
 		},
 		Decoration{
-			Name: "AfterName",
+			Name: "Name",
 		},
 		Node{
 			Name:  "Params",
@@ -2106,19 +2130,19 @@ var Info = map[string][]Part{
 			Type:  Type{"FieldList", true},
 		},
 		Decoration{
-			Name: "AfterParams",
+			Name: "Params",
 		},
-		// TODO: render any decorations from n.Type.AfterParams (but never save them there)
+		// TODO: render any decorations from n.Type.Params (but never save them there)
 		Node{
 			Name:  "Results",
 			Field: InnerField{"Type", "Results"},
 			Type:  Type{"FieldList", true},
 		},
 		Decoration{
-			Name: "AfterResults",
+			Name: "Results",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Dot("Results").Op("!=").Nil() }),
 		},
-		// TODO: render any decorations from n.Type.AfterResults (but never save them there)
+		// TODO: render any decorations from n.Type.Results (but never save them there)
 		Node{
 			Name:  "Body",
 			Field: Field{"Body"},
@@ -2171,7 +2195,7 @@ var Info = map[string][]Part{
 			PositionField: Field{"Package"},
 		},
 		Decoration{
-			Name: "AfterPackage",
+			Name: "Package",
 		},
 		Node{
 			Name:  "Name",
@@ -2179,7 +2203,7 @@ var Info = map[string][]Part{
 			Type:  Type{"Ident", true},
 		},
 		Decoration{
-			Name: "AfterName",
+			Name: "Name",
 		},
 		List{
 			Name:      "Decls",

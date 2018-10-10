@@ -7,21 +7,27 @@ func getDecorationInfo(n dst.Node) (space dst.SpaceType, info []decorationInfo) 
 	case *dst.ArrayType:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterLbrack", n.Decs.AfterLbrack})
-		info = append(info, decorationInfo{"AfterLen", n.Decs.AfterLen})
+		info = append(info, decorationInfo{"Lbrack", n.Decs.Lbrack})
+		info = append(info, decorationInfo{"Len", n.Decs.Len})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.AssignStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterLhs", n.Decs.AfterLhs})
-		info = append(info, decorationInfo{"AfterTok", n.Decs.AfterTok})
+		info = append(info, decorationInfo{"Lhs", n.Decs.Lhs})
+		info = append(info, decorationInfo{"Tok", n.Decs.Tok})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.BadDecl:
 		space = n.Decs.Space
+		info = append(info, decorationInfo{"Start", n.Decs.Start})
+		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.BadExpr:
 		space = n.Decs.Space
+		info = append(info, decorationInfo{"Start", n.Decs.Start})
+		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.BadStmt:
 		space = n.Decs.Space
+		info = append(info, decorationInfo{"Start", n.Decs.Start})
+		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.BasicLit:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
@@ -29,50 +35,50 @@ func getDecorationInfo(n dst.Node) (space dst.SpaceType, info []decorationInfo) 
 	case *dst.BinaryExpr:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterX", n.Decs.AfterX})
-		info = append(info, decorationInfo{"AfterOp", n.Decs.AfterOp})
+		info = append(info, decorationInfo{"X", n.Decs.X})
+		info = append(info, decorationInfo{"Op", n.Decs.Op})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.BlockStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterLbrace", n.Decs.AfterLbrace})
+		info = append(info, decorationInfo{"Lbrace", n.Decs.Lbrace})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.BranchStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterTok", n.Decs.AfterTok})
+		info = append(info, decorationInfo{"Tok", n.Decs.Tok})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.CallExpr:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterFun", n.Decs.AfterFun})
-		info = append(info, decorationInfo{"AfterLparen", n.Decs.AfterLparen})
-		info = append(info, decorationInfo{"AfterArgs", n.Decs.AfterArgs})
-		info = append(info, decorationInfo{"AfterEllipsis", n.Decs.AfterEllipsis})
+		info = append(info, decorationInfo{"Fun", n.Decs.Fun})
+		info = append(info, decorationInfo{"Lparen", n.Decs.Lparen})
+		info = append(info, decorationInfo{"Args", n.Decs.Args})
+		info = append(info, decorationInfo{"Ellipsis", n.Decs.Ellipsis})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.CaseClause:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterCase", n.Decs.AfterCase})
-		info = append(info, decorationInfo{"AfterList", n.Decs.AfterList})
-		info = append(info, decorationInfo{"AfterColon", n.Decs.AfterColon})
+		info = append(info, decorationInfo{"Case", n.Decs.Case})
+		info = append(info, decorationInfo{"List", n.Decs.List})
+		info = append(info, decorationInfo{"Colon", n.Decs.Colon})
 	case *dst.ChanType:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterBegin", n.Decs.AfterBegin})
-		info = append(info, decorationInfo{"AfterArrow", n.Decs.AfterArrow})
+		info = append(info, decorationInfo{"Begin", n.Decs.Begin})
+		info = append(info, decorationInfo{"Arrow", n.Decs.Arrow})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.CommClause:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterCase", n.Decs.AfterCase})
-		info = append(info, decorationInfo{"AfterComm", n.Decs.AfterComm})
-		info = append(info, decorationInfo{"AfterColon", n.Decs.AfterColon})
+		info = append(info, decorationInfo{"Case", n.Decs.Case})
+		info = append(info, decorationInfo{"Comm", n.Decs.Comm})
+		info = append(info, decorationInfo{"Colon", n.Decs.Colon})
 	case *dst.CompositeLit:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterType", n.Decs.AfterType})
-		info = append(info, decorationInfo{"AfterLbrace", n.Decs.AfterLbrace})
+		info = append(info, decorationInfo{"Type", n.Decs.Type})
+		info = append(info, decorationInfo{"Lbrace", n.Decs.Lbrace})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.DeclStmt:
 		space = n.Decs.Space
@@ -81,15 +87,17 @@ func getDecorationInfo(n dst.Node) (space dst.SpaceType, info []decorationInfo) 
 	case *dst.DeferStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterDefer", n.Decs.AfterDefer})
+		info = append(info, decorationInfo{"Defer", n.Decs.Defer})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.Ellipsis:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterEllipsis", n.Decs.AfterEllipsis})
+		info = append(info, decorationInfo{"Ellipsis", n.Decs.Ellipsis})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.EmptyStmt:
 		space = n.Decs.Space
+		info = append(info, decorationInfo{"Start", n.Decs.Start})
+		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.ExprStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
@@ -97,57 +105,57 @@ func getDecorationInfo(n dst.Node) (space dst.SpaceType, info []decorationInfo) 
 	case *dst.Field:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterNames", n.Decs.AfterNames})
-		info = append(info, decorationInfo{"AfterType", n.Decs.AfterType})
+		info = append(info, decorationInfo{"Names", n.Decs.Names})
+		info = append(info, decorationInfo{"Type", n.Decs.Type})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.FieldList:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterOpening", n.Decs.AfterOpening})
+		info = append(info, decorationInfo{"Opening", n.Decs.Opening})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.File:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterPackage", n.Decs.AfterPackage})
-		info = append(info, decorationInfo{"AfterName", n.Decs.AfterName})
+		info = append(info, decorationInfo{"Package", n.Decs.Package})
+		info = append(info, decorationInfo{"Name", n.Decs.Name})
 	case *dst.ForStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterFor", n.Decs.AfterFor})
-		info = append(info, decorationInfo{"AfterInit", n.Decs.AfterInit})
-		info = append(info, decorationInfo{"AfterCond", n.Decs.AfterCond})
-		info = append(info, decorationInfo{"AfterPost", n.Decs.AfterPost})
+		info = append(info, decorationInfo{"For", n.Decs.For})
+		info = append(info, decorationInfo{"Init", n.Decs.Init})
+		info = append(info, decorationInfo{"Cond", n.Decs.Cond})
+		info = append(info, decorationInfo{"Post", n.Decs.Post})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.FuncDecl:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterFunc", n.Decs.AfterFunc})
-		info = append(info, decorationInfo{"AfterRecv", n.Decs.AfterRecv})
-		info = append(info, decorationInfo{"AfterName", n.Decs.AfterName})
-		info = append(info, decorationInfo{"AfterParams", n.Decs.AfterParams})
-		info = append(info, decorationInfo{"AfterResults", n.Decs.AfterResults})
+		info = append(info, decorationInfo{"Func", n.Decs.Func})
+		info = append(info, decorationInfo{"Recv", n.Decs.Recv})
+		info = append(info, decorationInfo{"Name", n.Decs.Name})
+		info = append(info, decorationInfo{"Params", n.Decs.Params})
+		info = append(info, decorationInfo{"Results", n.Decs.Results})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.FuncLit:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterType", n.Decs.AfterType})
+		info = append(info, decorationInfo{"Type", n.Decs.Type})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.FuncType:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterFunc", n.Decs.AfterFunc})
-		info = append(info, decorationInfo{"AfterParams", n.Decs.AfterParams})
+		info = append(info, decorationInfo{"Func", n.Decs.Func})
+		info = append(info, decorationInfo{"Params", n.Decs.Params})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.GenDecl:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterTok", n.Decs.AfterTok})
-		info = append(info, decorationInfo{"AfterLparen", n.Decs.AfterLparen})
+		info = append(info, decorationInfo{"Tok", n.Decs.Tok})
+		info = append(info, decorationInfo{"Lparen", n.Decs.Lparen})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.GoStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterGo", n.Decs.AfterGo})
+		info = append(info, decorationInfo{"Go", n.Decs.Go})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.Ident:
 		space = n.Decs.Space
@@ -156,143 +164,143 @@ func getDecorationInfo(n dst.Node) (space dst.SpaceType, info []decorationInfo) 
 	case *dst.IfStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterIf", n.Decs.AfterIf})
-		info = append(info, decorationInfo{"AfterInit", n.Decs.AfterInit})
-		info = append(info, decorationInfo{"AfterCond", n.Decs.AfterCond})
-		info = append(info, decorationInfo{"AfterElse", n.Decs.AfterElse})
+		info = append(info, decorationInfo{"If", n.Decs.If})
+		info = append(info, decorationInfo{"Init", n.Decs.Init})
+		info = append(info, decorationInfo{"Cond", n.Decs.Cond})
+		info = append(info, decorationInfo{"Else", n.Decs.Else})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.ImportSpec:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterName", n.Decs.AfterName})
+		info = append(info, decorationInfo{"Name", n.Decs.Name})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.IncDecStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterX", n.Decs.AfterX})
+		info = append(info, decorationInfo{"X", n.Decs.X})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.IndexExpr:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterX", n.Decs.AfterX})
-		info = append(info, decorationInfo{"AfterLbrack", n.Decs.AfterLbrack})
-		info = append(info, decorationInfo{"AfterIndex", n.Decs.AfterIndex})
+		info = append(info, decorationInfo{"X", n.Decs.X})
+		info = append(info, decorationInfo{"Lbrack", n.Decs.Lbrack})
+		info = append(info, decorationInfo{"Index", n.Decs.Index})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.InterfaceType:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterInterface", n.Decs.AfterInterface})
+		info = append(info, decorationInfo{"Interface", n.Decs.Interface})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.KeyValueExpr:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterKey", n.Decs.AfterKey})
-		info = append(info, decorationInfo{"AfterColon", n.Decs.AfterColon})
+		info = append(info, decorationInfo{"Key", n.Decs.Key})
+		info = append(info, decorationInfo{"Colon", n.Decs.Colon})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.LabeledStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterLabel", n.Decs.AfterLabel})
-		info = append(info, decorationInfo{"AfterColon", n.Decs.AfterColon})
+		info = append(info, decorationInfo{"Label", n.Decs.Label})
+		info = append(info, decorationInfo{"Colon", n.Decs.Colon})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.MapType:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterMap", n.Decs.AfterMap})
-		info = append(info, decorationInfo{"AfterKey", n.Decs.AfterKey})
+		info = append(info, decorationInfo{"Map", n.Decs.Map})
+		info = append(info, decorationInfo{"Key", n.Decs.Key})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.Package:
 	case *dst.ParenExpr:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterLparen", n.Decs.AfterLparen})
-		info = append(info, decorationInfo{"AfterX", n.Decs.AfterX})
+		info = append(info, decorationInfo{"Lparen", n.Decs.Lparen})
+		info = append(info, decorationInfo{"X", n.Decs.X})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.RangeStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterFor", n.Decs.AfterFor})
-		info = append(info, decorationInfo{"AfterKey", n.Decs.AfterKey})
-		info = append(info, decorationInfo{"AfterValue", n.Decs.AfterValue})
-		info = append(info, decorationInfo{"AfterRange", n.Decs.AfterRange})
-		info = append(info, decorationInfo{"AfterX", n.Decs.AfterX})
+		info = append(info, decorationInfo{"For", n.Decs.For})
+		info = append(info, decorationInfo{"Key", n.Decs.Key})
+		info = append(info, decorationInfo{"Value", n.Decs.Value})
+		info = append(info, decorationInfo{"Range", n.Decs.Range})
+		info = append(info, decorationInfo{"X", n.Decs.X})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.ReturnStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterReturn", n.Decs.AfterReturn})
+		info = append(info, decorationInfo{"Return", n.Decs.Return})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.SelectStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterSelect", n.Decs.AfterSelect})
+		info = append(info, decorationInfo{"Select", n.Decs.Select})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.SelectorExpr:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterX", n.Decs.AfterX})
+		info = append(info, decorationInfo{"X", n.Decs.X})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.SendStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterChan", n.Decs.AfterChan})
-		info = append(info, decorationInfo{"AfterArrow", n.Decs.AfterArrow})
+		info = append(info, decorationInfo{"Chan", n.Decs.Chan})
+		info = append(info, decorationInfo{"Arrow", n.Decs.Arrow})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.SliceExpr:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterX", n.Decs.AfterX})
-		info = append(info, decorationInfo{"AfterLbrack", n.Decs.AfterLbrack})
-		info = append(info, decorationInfo{"AfterLow", n.Decs.AfterLow})
-		info = append(info, decorationInfo{"AfterHigh", n.Decs.AfterHigh})
-		info = append(info, decorationInfo{"AfterMax", n.Decs.AfterMax})
+		info = append(info, decorationInfo{"X", n.Decs.X})
+		info = append(info, decorationInfo{"Lbrack", n.Decs.Lbrack})
+		info = append(info, decorationInfo{"Low", n.Decs.Low})
+		info = append(info, decorationInfo{"High", n.Decs.High})
+		info = append(info, decorationInfo{"Max", n.Decs.Max})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.StarExpr:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterStar", n.Decs.AfterStar})
+		info = append(info, decorationInfo{"Star", n.Decs.Star})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.StructType:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterStruct", n.Decs.AfterStruct})
+		info = append(info, decorationInfo{"Struct", n.Decs.Struct})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.SwitchStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterSwitch", n.Decs.AfterSwitch})
-		info = append(info, decorationInfo{"AfterInit", n.Decs.AfterInit})
-		info = append(info, decorationInfo{"AfterTag", n.Decs.AfterTag})
+		info = append(info, decorationInfo{"Switch", n.Decs.Switch})
+		info = append(info, decorationInfo{"Init", n.Decs.Init})
+		info = append(info, decorationInfo{"Tag", n.Decs.Tag})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.TypeAssertExpr:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterX", n.Decs.AfterX})
-		info = append(info, decorationInfo{"AfterLparen", n.Decs.AfterLparen})
-		info = append(info, decorationInfo{"AfterType", n.Decs.AfterType})
+		info = append(info, decorationInfo{"X", n.Decs.X})
+		info = append(info, decorationInfo{"Lparen", n.Decs.Lparen})
+		info = append(info, decorationInfo{"Type", n.Decs.Type})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.TypeSpec:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterName", n.Decs.AfterName})
+		info = append(info, decorationInfo{"Name", n.Decs.Name})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.TypeSwitchStmt:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterSwitch", n.Decs.AfterSwitch})
-		info = append(info, decorationInfo{"AfterInit", n.Decs.AfterInit})
-		info = append(info, decorationInfo{"AfterAssign", n.Decs.AfterAssign})
+		info = append(info, decorationInfo{"Switch", n.Decs.Switch})
+		info = append(info, decorationInfo{"Init", n.Decs.Init})
+		info = append(info, decorationInfo{"Assign", n.Decs.Assign})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.UnaryExpr:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterOp", n.Decs.AfterOp})
+		info = append(info, decorationInfo{"Op", n.Decs.Op})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.ValueSpec:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"AfterNames", n.Decs.AfterNames})
-		info = append(info, decorationInfo{"AfterAssign", n.Decs.AfterAssign})
+		info = append(info, decorationInfo{"Names", n.Decs.Names})
+		info = append(info, decorationInfo{"Assign", n.Decs.Assign})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	}
 	return
