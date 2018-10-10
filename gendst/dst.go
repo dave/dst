@@ -16,11 +16,34 @@ import (
 
 func generateDst(names []string) error {
 
-	names = append(names, "DecorationStmt", "DecorationDecl")
-
 	f := NewFile("dst")
 	for _, name := range names {
+
 		f.Func().Params(Id("v").Op("*").Id(name)).Id("isNode").Params().Block()
+
+		for _, frag := range fragment.Info[name] {
+			switch frag := frag.(type) {
+			case fragment.Decoration:
+				if frag.Name == "Start" {
+					f.Func().Params(Id("v").Op("*").Id(name)).Id("Start").Params().Op("*").Id("Decorations").Block(
+						Return(Op("&").Id("v").Dot("Decs").Dot("Start")),
+					)
+				}
+				if frag.Name == "End" {
+					f.Func().Params(Id("v").Op("*").Id(name)).Id("End").Params().Op("*").Id("Decorations").Block(
+						Return(Op("&").Id("v").Dot("Decs").Dot("End")),
+					)
+				}
+			}
+		}
+		if name != "Package" {
+			f.Func().Params(Id("v").Op("*").Id(name)).Id("Space").Params().Id("SpaceType").Block(
+				Return(Id("v").Dot("Decs").Dot("Space")),
+			)
+			f.Func().Params(Id("v").Op("*").Id(name)).Id("SetSpace").Params(Id("s").Id("SpaceType")).Block(
+				Id("v").Dot("Decs").Dot("Space").Op("=").Id("s"),
+			)
+		}
 	}
 	return f.Save("./generated.go")
 }
