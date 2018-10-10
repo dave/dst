@@ -28,7 +28,7 @@ func TestDecorator(t *testing.T) {
 					foo
 				*/
 				var i int`,
-			expect: `File [AfterName "\n" "\n"]
+			expect: `File [Name "\n" "\n"]
 				GenDecl [Start "/*\n\tfoo\n*/" "\n"]`,
 		},
 		{
@@ -44,19 +44,19 @@ func TestDecorator(t *testing.T) {
 						var i int
 					}
 				}`,
-			expect: `File [AfterName "\n" "\n"]
-				BlockStmt [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				BlockStmt [Lbrace "\n"]
 				SwitchStmt [New line]
-				BlockStmt [AfterLbrace "\n"]
-				CaseClause [AfterColon "\n" "// b" "// c" "\n"]
+				BlockStmt [Lbrace "\n"]
+				CaseClause [Colon "\n" "// b" "// c" "\n"]
 				DeclStmt [New line]`,
 		},
 		{
 			name: "file",
-			code: `/*Start*/ package /*AfterPackage*/ postests /*AfterName*/
+			code: `/*Start*/ package /*Package*/ postests /*Name*/
 
 			var i int`,
-			expect: `File [Start "/*Start*/"] [AfterPackage "/*AfterPackage*/"] [AfterName "/*AfterName*/" "\n" "\n"]`,
+			expect: `File [Start "/*Start*/"] [Package "/*Package*/"] [Name "/*Name*/" "\n" "\n"]`,
 		},
 		{
 
@@ -65,10 +65,10 @@ func TestDecorator(t *testing.T) {
 			
 			// TypeAssertExpr
 			var I interface{}
-			var J = I. /*TypeAssertExprAfterX*/ ( /*TypeAssertExprAfterLparen*/ int /*TypeAssertExprAfterType*/)`,
-			expect: `File [AfterName "\n" "\n"]
+			var J = I. /*TypeAssertExprX*/ ( /*TypeAssertExprLparen*/ int /*TypeAssertExprType*/)`,
+			expect: `File [Name "\n" "\n"]
 				GenDecl [Start "// TypeAssertExpr"] [New line]
-				TypeAssertExpr [AfterX "/*TypeAssertExprAfterX*/"] [AfterLparen "/*TypeAssertExprAfterLparen*/"] [AfterType "/*TypeAssertExprAfterType*/"]`,
+				TypeAssertExpr [X "/*TypeAssertExprX*/"] [Lparen "/*TypeAssertExprLparen*/"] [Type "/*TypeAssertExprType*/"]`,
 		},
 		{
 			name: "range bug",
@@ -76,14 +76,14 @@ func TestDecorator(t *testing.T) {
 
 				func main() {
 					/*Start*/
-					for /*AfterFor*/ k /*AfterKey*/, v /*AfterValue*/ := range /*AfterRange*/ a /*AfterX*/ {
+					for /*For*/ k /*Key*/, v /*Value*/ := range /*Range*/ a /*X*/ {
 						print(k, v)
 					} /*End*/
 				}`,
-			expect: `File [AfterName "\n" "\n"]
-				BlockStmt [AfterLbrace "\n"]
-				RangeStmt [Start "/*Start*/" "\n"] [AfterFor "/*AfterFor*/"] [AfterKey "/*AfterKey*/"] [AfterValue "/*AfterValue*/"] [AfterRange "/*AfterRange*/"] [AfterX "/*AfterX*/"] [End "/*End*/"] [New line]
-				BlockStmt [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				BlockStmt [Lbrace "\n"]
+				RangeStmt [Start "/*Start*/" "\n"] [For "/*For*/"] [Key "/*Key*/"] [Value "/*Value*/"] [Range "/*Range*/"] [X "/*X*/"] [End "/*End*/"] [New line]
+				BlockStmt [Lbrace "\n"]
 				ExprStmt [New line]`,
 		},
 		{
@@ -93,19 +93,19 @@ func TestDecorator(t *testing.T) {
 				func main() {
 					var foo int
 				}`,
-			expect: `File [AfterName "\n" "\n"]
-				BlockStmt [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				BlockStmt [Lbrace "\n"]
 				DeclStmt [New line]`,
 		},
 		{
 			name: "chan type",
 			code: `package main
 
-				type Y /*Start*/ chan /*AfterBegin*/ <- /*AfterArrow*/ int /*End*/`,
-			expect: `File [AfterName "\n" "\n"]
+				type Y /*Start*/ chan /*Begin*/ <- /*Arrow*/ int /*End*/`,
+			expect: `File [Name "\n" "\n"]
 				GenDecl [End "/*End*/"]
-				TypeSpec [AfterName "/*Start*/"]
-				ChanType [AfterBegin "/*AfterBegin*/"] [AfterArrow "/*AfterArrow*/"]`,
+				TypeSpec [Name "/*Start*/"]
+				ChanType [Begin "/*Begin*/"] [Arrow "/*Arrow*/"]`,
 		},
 		{
 			name: "inside if block",
@@ -116,10 +116,10 @@ func TestDecorator(t *testing.T) {
 						// a
 					}
 				}`,
-			expect: `File [AfterName "\n" "\n"]
-				BlockStmt [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				BlockStmt [Lbrace "\n"]
 				IfStmt [New line]
-				BlockStmt [AfterLbrace "\n" "// a"]`,
+				BlockStmt [Lbrace "\n" "// a"]`,
 		},
 		{
 			name: "simple",
@@ -128,8 +128,8 @@ func TestDecorator(t *testing.T) {
 			func main() {
 				i // foo
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				BlockStmt [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				BlockStmt [Lbrace "\n"]
 				ExprStmt [End "// foo"] [New line]`,
 		},
 		{
@@ -139,9 +139,9 @@ func TestDecorator(t *testing.T) {
 			func main() {
 				i /* foo */ ++
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				BlockStmt [AfterLbrace "\n"]
-				IncDecStmt [AfterX "/* foo */"] [New line]`,
+			expect: `File [Name "\n" "\n"]
+				BlockStmt [Lbrace "\n"]
+				IncDecStmt [X "/* foo */"] [New line]`,
 		},
 		{
 			name: "comment statement spaced",
@@ -153,8 +153,8 @@ func TestDecorator(t *testing.T) {
 
 				i
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				BlockStmt [AfterLbrace "\n" "\n"]
+			expect: `File [Name "\n" "\n"]
+				BlockStmt [Lbrace "\n" "\n"]
 				ExprStmt [Start "// foo" "\n"] [New line]`,
 		},
 		{
@@ -165,8 +165,8 @@ func TestDecorator(t *testing.T) {
 				// foo
 				i
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				BlockStmt [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				BlockStmt [Lbrace "\n"]
 				ExprStmt [Start "// foo"] [New line]`,
 		},
 		{
@@ -176,8 +176,8 @@ func TestDecorator(t *testing.T) {
 			func main() { // foo
 				i
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				BlockStmt [AfterLbrace "// foo"]
+			expect: `File [Name "\n" "\n"]
+				BlockStmt [Lbrace "// foo"]
 				ExprStmt [New line]`,
 		},
 		{
@@ -187,9 +187,9 @@ func TestDecorator(t *testing.T) {
 			func /* foo */ main() {
 				i
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				FuncDecl [AfterFunc "/* foo */"]
-				BlockStmt [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				FuncDecl [Func "/* foo */"]
+				BlockStmt [Lbrace "\n"]
 				ExprStmt [New line]`,
 		},
 		{
@@ -197,11 +197,11 @@ func TestDecorator(t *testing.T) {
 			code: `package main
 
 			type A struct {
-				A /*FieldAfterName*/ int /*FieldAfterType*/ ` + "`" + `a:"a"` + "`" + `
+				A /*FieldName*/ int /*FieldType*/ ` + "`" + `a:"a"` + "`" + `
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				FieldList [AfterOpening "\n"]
-				Field [AfterNames "/*FieldAfterName*/"] [AfterType "/*FieldAfterType*/"] [New line]`,
+			expect: `File [Name "\n" "\n"]
+				FieldList [Opening "\n"]
+				Field [Names "/*FieldName*/"] [Type "/*FieldType*/"] [New line]`,
 		},
 		{
 			name: "composite literal",
@@ -211,8 +211,8 @@ func TestDecorator(t *testing.T) {
 				"a": "b",
 				"c": "d", // foo
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				CompositeLit [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				CompositeLit [Lbrace "\n"]
 				KeyValueExpr [New line]
 				KeyValueExpr [End "// foo"] [New line]`,
 		},
@@ -225,8 +225,8 @@ func TestDecorator(t *testing.T) {
 				// foo
 				"c": "d",
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				CompositeLit [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				CompositeLit [Lbrace "\n"]
 				KeyValueExpr [New line]
 				KeyValueExpr [Start "// foo"] [New line]`,
 		},
@@ -240,8 +240,8 @@ func TestDecorator(t *testing.T) {
 				// foo
 				"c": "d",
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				CompositeLit [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				CompositeLit [Lbrace "\n"]
 				KeyValueExpr [Empty line]
 				KeyValueExpr [Start "// foo"] [New line]`,
 		},
@@ -256,8 +256,8 @@ func TestDecorator(t *testing.T) {
 
 				"c": "d",
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				CompositeLit [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				CompositeLit [Lbrace "\n"]
 				KeyValueExpr [Empty line]
 				KeyValueExpr [Start "// foo" "\n"] [New line]`,
 		},
@@ -271,8 +271,8 @@ func TestDecorator(t *testing.T) {
 
 				"c": "d",
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				CompositeLit [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				CompositeLit [Lbrace "\n"]
 				KeyValueExpr [End "\n" "// foo"] [Empty line]
 				KeyValueExpr [New line]`,
 		},
@@ -285,8 +285,8 @@ func TestDecorator(t *testing.T) {
 				// foo
 				"c": "d",
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				CompositeLit [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				CompositeLit [Lbrace "\n"]
 				KeyValueExpr [New line]
 				KeyValueExpr [Start "// foo"] [New line]`,
 		},
@@ -298,8 +298,8 @@ func TestDecorator(t *testing.T) {
 				"a": "b", // foo
 				"c": "d",
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				CompositeLit [AfterLbrace "\n"]
+			expect: `File [Name "\n" "\n"]
+				CompositeLit [Lbrace "\n"]
 				KeyValueExpr [End "// foo"] [New line]
 				KeyValueExpr [New line]`,
 		},
@@ -308,11 +308,11 @@ func TestDecorator(t *testing.T) {
 			code: `package main
 			
 			// FuncDecl
-			func /*FuncDeclAfterDoc*/ (a *b) /*FuncDeclAfterRecv*/ c /*FuncDeclAfterName*/ (d, e int) /*FuncDeclAfterParams*/ (f, g int) /*FuncDeclAfterType*/ {
+			func /*FuncDeclDoc*/ (a *b) /*FuncDeclRecv*/ c /*FuncDeclName*/ (d, e int) /*FuncDeclParams*/ (f, g int) /*FuncDeclType*/ {
 			}`,
-			expect: `File [AfterName "\n" "\n"]
-				FuncDecl [Start "// FuncDecl"] [AfterFunc "/*FuncDeclAfterDoc*/"] [AfterRecv "/*FuncDeclAfterRecv*/"] [AfterName "/*FuncDeclAfterName*/"] [AfterParams "/*FuncDeclAfterParams*/"] [AfterResults "/*FuncDeclAfterType*/"]
-				BlockStmt [AfterLbrace "\n"]`,
+			expect: `File [Name "\n" "\n"]
+				FuncDecl [Start "// FuncDecl"] [Func "/*FuncDeclDoc*/"] [Recv "/*FuncDeclRecv*/"] [Name "/*FuncDeclName*/"] [Params "/*FuncDeclParams*/"] [Results "/*FuncDeclType*/"]
+				BlockStmt [Lbrace "\n"]`,
 		},
 	}
 	var solo bool

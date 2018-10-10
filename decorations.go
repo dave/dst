@@ -14,12 +14,8 @@ func (d *Decorations) Clear() {
 	*d = nil
 }
 
-type DecorationStmtDecorations struct {
-	Start Decorations
-}
-
-type DecorationDeclDecorations struct {
-	Start Decorations
+func (d *Decorations) All() []string {
+	return *d
 }
 
 type SpaceType int

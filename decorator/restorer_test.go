@@ -41,7 +41,7 @@ func TestRestorer(t *testing.T) {
 		},
 		{
 			name: "file",
-			code: `/*Start*/ package /*AfterPackage*/ postests /*AfterName*/
+			code: `/*Start*/ package /*Package*/ postests /*Name*/
 
 			var i int`,
 		},
@@ -51,7 +51,7 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {	
 				/*Start*/
-				for /*AfterFor*/ k /*AfterKey*/ := range /*AfterRange*/ a /*AfterX*/ {
+				for /*For*/ k /*Key*/ := range /*Range*/ a /*X*/ {
 				} /*End*/
 			}`,
 		},
@@ -121,7 +121,7 @@ func TestRestorer(t *testing.T) {
 
 			// Field
 			type A struct {
-    			A /*FieldAfterName*/ int /*FieldAfterType*/ ` + "`" + `a:"a"` + "`" + `
+    			A /*FieldName*/ int /*FieldType*/ ` + "`" + `a:"a"` + "`" + `
 			}`,
 		},
 		{
@@ -129,49 +129,49 @@ func TestRestorer(t *testing.T) {
 			code: `package main
 			
 			// Ellipsis
-			func B(a ... /*EllipsisAfterEllipsis*/ int) {}`,
+			func B(a ... /*EllipsisEllipsis*/ int) {}`,
 		},
 		{
 			name: "FuncLit",
 			code: `package main
 			
 			// FuncLit
-			var C = func(a int, b ...int) (c int) /*FuncLitAfterType*/ { return 0 }`,
+			var C = func(a int, b ...int) (c int) /*FuncLitType*/ { return 0 }`,
 		},
 		{
 			name: "CompositeLit",
 			code: `package main
 			
 			// CompositeLit
-			var D = A /*CompositeLitAfterType*/ { /*CompositeLitAfterLbrace*/ A: 0 /*CompositeLitAfterElts*/}`,
+			var D = A /*CompositeLitType*/ { /*CompositeLitLbrace*/ A: 0 /*CompositeLitElts*/}`,
 		},
 		{
 			name: "ParenExpr",
 			code: `package main
 			
 			// ParenExpr
-			var E = ( /*ParenExprAfterLparen*/ 1 + 1 /*ParenExprAfterX*/) / 2`,
+			var E = ( /*ParenExprLparen*/ 1 + 1 /*ParenExprX*/) / 2`,
 		},
 		{
 			name: "SelectorExpr",
 			code: `package main
 			
 			// SelectorExpr
-			var F = fmt. /*SelectorExprAfterX*/ Sprint(0)`,
+			var F = fmt. /*SelectorExprX*/ Sprint(0)`,
 		},
 		{
 			name: "IndexExpr",
 			code: `package main
 			
 			// IndexExpr
-			var G = []int{0} /*IndexExprAfterX*/ [ /*IndexExprAfterLbrack*/ 0 /*IndexExprAfterIndex*/]`,
+			var G = []int{0} /*IndexExprX*/ [ /*IndexExprLbrack*/ 0 /*IndexExprIndex*/]`,
 		},
 		{
 			name: "SliceExpr",
 			code: `package main
 			
 			// SliceExpr
-			var H = []int{0} /*SliceExprAfterX*/ [ /*SliceExprAfterLbrack*/ 1: /*SliceExprAfterLow*/ 2: /*SliceExprAfterHigh*/ 3 /*SliceExprAfterMax*/]`,
+			var H = []int{0} /*SliceExprX*/ [ /*SliceExprLbrack*/ 1: /*SliceExprLow*/ 2: /*SliceExprHigh*/ 3 /*SliceExprMax*/]`,
 		},
 		{
 			name: "TypeAssertExpr",
@@ -179,56 +179,56 @@ func TestRestorer(t *testing.T) {
 			
 			// TypeAssertExpr
 			var I interface{}
-			var J = I. /*TypeAssertExprAfterX*/ ( /*TypeAssertExprAfterLparen*/ int /*TypeAssertExprAfterType*/)`,
+			var J = I. /*TypeAssertExprX*/ ( /*TypeAssertExprLparen*/ int /*TypeAssertExprType*/)`,
 		},
 		{
 			name: "CallExpr",
 			code: `package main
 			
 			// CallExpr
-			var L = C /*CallExprAfterFun*/ ( /*CallExprAfterLparen*/ 0, []int{} /*CallExprAfterArgs*/ ... /*CallExprAfterEllipsis*/)`,
+			var L = C /*CallExprFun*/ ( /*CallExprLparen*/ 0, []int{} /*CallExprArgs*/ ... /*CallExprEllipsis*/)`,
 		},
 		{
 			name: "StarExpr",
 			code: `package main
 			
 			// StarExpr
-			var M = * /*StarExprAfterStar*/ (&I)`,
+			var M = * /*StarExprStar*/ (&I)`,
 		},
 		{
 			name: "UnaryExpr",
 			code: `package main
 			
 			// UnaryExpr
-			var N = ^ /*UnaryExprAfterOp*/ 1`,
+			var N = ^ /*UnaryExprOp*/ 1`,
 		},
 		{
 			name: "BinaryExpr",
 			code: `package main
 			
 			// BinaryExpr
-			var O = 1 /*BinaryExprAfterX*/ & /*BinaryExprAfterOp*/ 2`,
+			var O = 1 /*BinaryExprX*/ & /*BinaryExprOp*/ 2`,
 		},
 		{
 			name: "KeyValueExpr",
 			code: `package main
 			
 			// KeyValueExpr
-			var P = map[string]string{"a" /*KeyValueExprAfterKey*/ : /*KeyValueExprAfterColon*/ "a"}`,
+			var P = map[string]string{"a" /*KeyValueExprKey*/ : /*KeyValueExprColon*/ "a"}`,
 		},
 		{
 			name: "ArrayType",
 			code: `package main
 			
 			// ArrayType
-			type Q [ /*ArrayTypeAfterLbrack*/ 1] /*ArrayTypeAfterLen*/ int`,
+			type Q [ /*ArrayTypeLbrack*/ 1] /*ArrayTypeLen*/ int`,
 		},
 		{
 			name: "StructType",
 			code: `package main
 			
 			// StructType
-			type R struct /*StructTypeAfterStruct*/ {
+			type R struct /*StructTypeStruct*/ {
 				A int
 			}`,
 		},
@@ -237,14 +237,14 @@ func TestRestorer(t *testing.T) {
 			code: `package main
 			
 			// FuncType
-			type S func /*FuncTypeAfterFunc*/ (a int) /*FuncTypeAfterParams*/ (b int)`,
+			type S func /*FuncTypeFunc*/ (a int) /*FuncTypeParams*/ (b int)`,
 		},
 		{
 			name: "InterfaceType",
 			code: `package main
 			
 			// InterfaceType
-			type T interface /*InterfaceTypeAfterInterface*/ {
+			type T interface /*InterfaceTypeInterface*/ {
 				A()
 			}`,
 		},
@@ -253,18 +253,18 @@ func TestRestorer(t *testing.T) {
 			code: `package main
 			
 			// MapType
-			type U map[ /*MapTypeAfterMap*/ int] /*MapTypeAfterKey*/ int`,
+			type U map[ /*MapTypeMap*/ int] /*MapTypeKey*/ int`,
 		},
 		{
 			name: "ChanType",
 			code: `package main
 			
 			// ChanType
-			type V chan /*ChanTypeAfterBegin*/ int
+			type V chan /*ChanTypeBegin*/ int
 
-			type W <-chan /*ChanTypeAfterBegin*/ int
+			type W <-chan /*ChanTypeBegin*/ int
 
-			type X chan /*ChanTypeAfterBegin*/ <- /*ChanTypeAfterArrow*/ int`,
+			type X chan /*ChanTypeBegin*/ <- /*ChanTypeArrow*/ int`,
 		},
 		{
 			name: "LabeledStmt, BranchStmt",
@@ -272,11 +272,11 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// LabeledStmt TODO: create cmd/gofmt issue for wonky BeforeNode comment positioning
-				A /*LabeledStmtAfterLabel*/ : /*LabeledStmtAfterColon*/
+				A /*LabeledStmtLabel*/ : /*LabeledStmtColon*/
 				1++
 
 				// BranchStmt
-				goto /*BranchStmtAfterTok*/ A
+				goto /*BranchStmtTok*/ A
 			}`,
 		},
 		{
@@ -286,7 +286,7 @@ func TestRestorer(t *testing.T) {
 			func main() {
 				// SendStmt
 				B := make(chan int)
-				B /*SendStmtAfterChan*/ <- /*SendStmtAfterArrow*/ 0
+				B /*SendStmtChan*/ <- /*SendStmtArrow*/ 0
 			}`,
 		},
 		{
@@ -296,7 +296,7 @@ func TestRestorer(t *testing.T) {
 			func main() {
 				// IncDecStmt
 				var C int
-				C /*IncDecStmtAfterX*/ ++
+				C /*IncDecStmtX*/ ++
 			}`,
 		},
 		{
@@ -305,7 +305,7 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// AssignStmt
-				D, E, F /*AssignStmtAfterLhs*/ := /*AssignStmtAfterTok*/ 1, 2, 3
+				D, E, F /*AssignStmtLhs*/ := /*AssignStmtTok*/ 1, 2, 3
 
 				fmt.Println(D, E, F)
 			}`,
@@ -316,7 +316,7 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// GoStmt
-				go /*GoStmtAfterGo*/ func() {}()
+				go /*GoStmtGo*/ func() {}()
 			}`,
 		},
 		{
@@ -325,7 +325,7 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// DeferStmt
-				defer /*DeferStmtAfterDefer*/ func() {}()
+				defer /*DeferStmtDefer*/ func() {}()
 			}`,
 		},
 		{
@@ -335,7 +335,7 @@ func TestRestorer(t *testing.T) {
 			func main() {
 				// ReturnStmt
 				func() (int, int, int) {
-					return /*ReturnStmtAfterReturn*/ 1, 2, 3
+					return /*ReturnStmtReturn*/ 1, 2, 3
 				}()
 			}`,
 		},
@@ -345,11 +345,11 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// BlockStmt
-				if true { /*BlockStmtAfterLbrace*/
+				if true { /*BlockStmtLbrace*/
 					1++
 				}
 
-				func() { /*BlockStmtAfterLbrace*/ 1++ }()
+				func() { /*BlockStmtLbrace*/ 1++ }()
 			}`,
 		},
 		{
@@ -358,9 +358,9 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// IfStmt
-				if /*IfStmtAfterIf*/ a := true; /*IfStmtAfterInit*/ a /*IfStmtAfterCond*/ {
+				if /*IfStmtIf*/ a := true; /*IfStmtInit*/ a /*IfStmtCond*/ {
 					1++
-				} else /*IfStmtAfterElse*/ {
+				} else /*IfStmtElse*/ {
 					1++
 				}
 			}`,
@@ -372,7 +372,7 @@ func TestRestorer(t *testing.T) {
 			func main() {
 				// CaseClause
 				switch C {
-				case /*CaseClauseAfterCase*/ 1, 2, 3 /*CaseClauseAfterList*/ : /*CaseClauseAfterColon*/
+				case /*CaseClauseCase*/ 1, 2, 3 /*CaseClauseList*/ : /*CaseClauseColon*/
 					1++
 				default:
 					1++
@@ -385,10 +385,10 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// SwitchStmt
-				switch /*SwitchStmtAfterSwitch*/ C /*SwitchStmtAfterTag*/ {
+				switch /*SwitchStmtSwitch*/ C /*SwitchStmtTag*/ {
 				}
 
-				switch /*SwitchStmtAfterSwitch*/ a := C; /*SwitchStmtAfterInit*/ a /*SwitchStmtAfterTag*/ {
+				switch /*SwitchStmtSwitch*/ a := C; /*SwitchStmtInit*/ a /*SwitchStmtTag*/ {
 				}
 			}`,
 		},
@@ -398,15 +398,15 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// TypeSwitchStmt
-				switch /*TypeSwitchStmtAfterSwitch*/ I.(type) /*TypeSwitchStmtAfterAssign*/ {
+				switch /*TypeSwitchStmtSwitch*/ I.(type) /*TypeSwitchStmtAssign*/ {
 				}
 
-				switch /*TypeSwitchStmtAfterSwitch*/ j := I.(type) /*TypeSwitchStmtAfterAssign*/ {
+				switch /*TypeSwitchStmtSwitch*/ j := I.(type) /*TypeSwitchStmtAssign*/ {
 				case int:
 					fmt.Print(j)
 				}
 
-				switch /*TypeSwitchStmtAfterSwitch*/ j := I; /*TypeSwitchStmtAfterInit*/ j := j.(type) /*TypeSwitchStmtAfterAssign*/ {
+				switch /*TypeSwitchStmtSwitch*/ j := I; /*TypeSwitchStmtInit*/ j := j.(type) /*TypeSwitchStmtAssign*/ {
 				case int:
 					fmt.Print(j)
 				}
@@ -420,7 +420,7 @@ func TestRestorer(t *testing.T) {
 				// CommClause
 				var a chan int
 				select {
-				case /*CommClauseAfterCase*/ b := <-a /*CommClauseAfterComm*/ : /*CommClauseAfterColon*/
+				case /*CommClauseCase*/ b := <-a /*CommClauseComm*/ : /*CommClauseColon*/
 					b++
 				default:
 				}		
@@ -432,7 +432,7 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// SelectStmt
-				select /*SelectStmtAfterSelect*/ {
+				select /*SelectStmtSelect*/ {
 				default:
 				}
 			}`,
@@ -444,15 +444,15 @@ func TestRestorer(t *testing.T) {
 			func main() {
 				// ForStmt
 				var i int
-				for /*ForStmtAfterFor*/ {
+				for /*ForStmtFor*/ {
 					i++
 				}
 
-				for /*ForStmtAfterFor*/ i < 1 /*ForStmtAfterCond*/ {
+				for /*ForStmtFor*/ i < 1 /*ForStmtCond*/ {
 					i++
 				}
 
-				for /*ForStmtAfterFor*/ i = 0; /*ForStmtAfterInit*/ i < 10; /*ForStmtAfterCond*/ i++ /*ForStmtAfterPost*/ {
+				for /*ForStmtFor*/ i = 0; /*ForStmtInit*/ i < 10; /*ForStmtCond*/ i++ /*ForStmtPost*/ {
 					i++
 				}
 			}`,
@@ -464,18 +464,18 @@ func TestRestorer(t *testing.T) {
 			func main() {	
 				// RangeStmt(0)
 				/*Start*/
-				for range /*AfterRange*/ a /*AfterX*/ {
+				for range /*Range*/ a /*X*/ {
 				} /*End*/
 
 				// RangeStmt(1)
 				/*Start*/
-				for /*AfterFor*/ k /*AfterKey*/ := range /*AfterRange*/ a /*AfterX*/ {
+				for /*For*/ k /*Key*/ := range /*Range*/ a /*X*/ {
 					print(k)
 				} /*End*/
 
 				// RangeStmt(2)
 				/*Start*/
-				for /*AfterFor*/ k /*AfterKey*/, v /*AfterValue*/ := range /*AfterRange*/ a /*AfterX*/ {
+				for /*For*/ k /*Key*/, v /*Value*/ := range /*Range*/ a /*X*/ {
 					print(k, v)
 				} /*End*/
 			}`,
@@ -487,7 +487,7 @@ func TestRestorer(t *testing.T) {
 			// ImportSpec
 			import (
 				// Doc
-				/*ImportSpecAfterDoc*/ fmt /*ImportSpecAfterName*/ "fmt" /*ImportSpecAfterPath*/ // Comment
+				/*ImportSpecDoc*/ fmt /*ImportSpecName*/ "fmt" /*ImportSpecPath*/ // Comment
 			)
 	
 			func main() {
@@ -500,11 +500,11 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// ValueSpec
-				var /*ValueSpecAfterDoc*/ a = /*ValueSpecAfterNames*/ 1 /*ValueSpecAfterValues*/
+				var /*ValueSpecDoc*/ a = /*ValueSpecNames*/ 1 /*ValueSpecValues*/
 
-				var /*ValueSpecAfterDoc*/ a, b = /*ValueSpecAfterNames*/ 1, 2 /*ValueSpecAfterValues*/
+				var /*ValueSpecDoc*/ a, b = /*ValueSpecNames*/ 1, 2 /*ValueSpecValues*/
 
-				var /*ValueSpecAfterDoc*/ a, b /*ValueSpecAfterNames*/ int = /*ValueSpecAfterType*/ 1, 2 /*ValueSpecAfterValues*/
+				var /*ValueSpecDoc*/ a, b /*ValueSpecNames*/ int = /*ValueSpecType*/ 1, 2 /*ValueSpecValues*/
 
 			}`,
 		},
@@ -514,9 +514,9 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// TypeSpec
-				type /*TypeSpecAfterDoc*/ T1 /*TypeSpecAfterName*/ []int /*TypeSpecAfterType*/
+				type /*TypeSpecDoc*/ T1 /*TypeSpecName*/ []int /*TypeSpecType*/
 
-				type /*TypeSpecAfterDoc*/ T2 = /*TypeSpecAfterName*/ T1 /*TypeSpecAfterType*/
+				type /*TypeSpecDoc*/ T2 = /*TypeSpecName*/ T1 /*TypeSpecType*/
 			}`,
 		},
 		{
@@ -525,10 +525,10 @@ func TestRestorer(t *testing.T) {
 			
 			func main() {
 				// GenDecl
-				const /*GenDeclAfterTok*/ ( /*GenDeclAfterLparen*/
+				const /*GenDeclTok*/ ( /*GenDeclLparen*/
 					a, b = 1, 2
 					c    = 3
-				) /*GenDeclAfterRparen*/
+				) /*GenDeclRparen*/
 			}`,
 		},
 		{
@@ -536,7 +536,7 @@ func TestRestorer(t *testing.T) {
 			code: `package main
 			
 			// FuncDecl
-			func /*FuncDeclAfterDoc*/ (a *b) /*FuncDeclAfterRecv*/ c /*FuncDeclAfterName*/ (d, e int) (f, g int) /*FuncDeclAfterType*/ {
+			func /*FuncDeclDoc*/ (a *b) /*FuncDeclRecv*/ c /*FuncDeclName*/ (d, e int) (f, g int) /*FuncDeclType*/ {
 			}`,
 		},
 	}

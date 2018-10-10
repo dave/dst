@@ -8,9 +8,10 @@ import (
 	"go/format"
 	"os"
 
+	"fmt"
+
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
-	"github.com/dave/dst/dstutil"
 )
 
 func ExampleDecorations() {
@@ -25,19 +26,22 @@ func ExampleDecorations() {
 	if err != nil {
 		panic(err)
 	}
-	apply := func(c *dstutil.Cursor) bool {
-		switch n := c.Node().(type) {
-		case *dst.DeclStmt:
-			n.Decs.End.Replace("// foo")
-		case *dst.IncDecStmt:
-			n.Decs.AfterX.Add("/* bar */")
-		case *dst.CallExpr:
-			n.Decs.AfterLparen.Add("\n")
-			n.Decs.AfterArgs.Add("\n")
-		}
-		return true
+
+	body := f.Decls[0].(*dst.FuncDecl).Body
+	for i, stmt := range body.List {
+		stmt.Start().Replace(fmt.Sprintf("// foo %d", i))
+		stmt.SetSpace(dst.EmptyLine)
 	}
-	f = dstutil.Apply(f, apply, nil).(*dst.File)
+
+	call := body.List[2].(*dst.ExprStmt).X.(*dst.CallExpr)
+	call.Args = append(call.Args, dst.NewIdent("b"), dst.NewIdent("c"))
+	call.Decs.Lparen.Add("\n")
+	for i, expr := range call.Args {
+		expr.SetSpace(dst.NewLine)
+		expr.Start().Add(fmt.Sprintf("/* bar %d */", i))
+		expr.End().Add(fmt.Sprintf("// baz %d", i))
+	}
+
 	if err := decorator.Print(f); err != nil {
 		panic(err)
 	}
@@ -46,11 +50,19 @@ func ExampleDecorations() {
 	//package main
 	//
 	//func main() {
-	//	var a int // foo
-	//	a /* bar */ ++
+	//	// foo 0
+	//	var a int
+	//
+	//	// foo 1
+	//	a++
+	//
+	//	// foo 2
 	//	print(
-	//		a,
+	//		/* bar 0 */ a, // baz 0
+	//		/* bar 1 */ b, // baz 1
+	//		/* bar 2 */ c, // baz 2
 	//	)
+	//
 	//}
 }
 

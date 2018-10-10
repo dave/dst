@@ -35,21 +35,41 @@ type Node interface {
 	isNode()
 }
 
+type Starter interface {
+	Start() *Decorations
+}
+type Ender interface {
+	End() *Decorations
+}
+type Spacer interface {
+	Space() SpaceType
+	SetSpace(SpaceType)
+}
+
 // All expression nodes implement the Expr interface.
 type Expr interface {
 	Node
+	Starter
+	Ender
+	Spacer
 	exprNode()
 }
 
 // All statement nodes implement the Stmt interface.
 type Stmt interface {
 	Node
+	Starter
+	// CaseClause, CommClause don't have the "End" decoration position
+	Spacer
 	stmtNode()
 }
 
 // All declaration nodes implement the Decl interface.
 type Decl interface {
 	Node
+	Starter
+	Ender
+	Spacer
 	declNode()
 }
 
@@ -347,12 +367,6 @@ func (id *Ident) String() string {
 // or more of the following concrete statement nodes.
 //
 type (
-	// DecorationStmt is for comments in a statement list that are
-	// separated from other statements by a blank line.
-	DecorationStmt struct {
-		Decs DecorationStmtDecorations
-	}
-
 	// A BadStmt node is a placeholder for statements containing
 	// syntax errors for which no correct statement nodes can be
 	// created.
@@ -537,7 +551,6 @@ func (*CommClause) stmtNode()     {}
 func (*SelectStmt) stmtNode()     {}
 func (*ForStmt) stmtNode()        {}
 func (*RangeStmt) stmtNode()      {}
-func (*DecorationStmt) stmtNode() {}
 
 // ----------------------------------------------------------------------------
 // Declarations
@@ -590,12 +603,6 @@ func (*TypeSpec) specNode()   {}
 // A declaration is represented by one of the following declaration nodes.
 //
 type (
-	// DecorationDecl is for comments in a declaration list that are
-	// separated from other declarations by a blank line.
-	DecorationDecl struct {
-		Decs DecorationDeclDecorations
-	}
-
 	// A BadDecl node is a placeholder for declarations containing
 	// syntax errors for which no correct declaration nodes can be
 	// created.
@@ -637,10 +644,9 @@ type (
 // declNode() ensures that only declaration nodes can be
 // assigned to a Decl.
 //
-func (*DecorationDecl) declNode() {}
-func (*BadDecl) declNode()        {}
-func (*GenDecl) declNode()        {}
-func (*FuncDecl) declNode()       {}
+func (*BadDecl) declNode()  {}
+func (*GenDecl) declNode()  {}
+func (*FuncDecl) declNode() {}
 
 // ----------------------------------------------------------------------------
 // Files and packages
