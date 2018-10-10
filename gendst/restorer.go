@@ -26,6 +26,11 @@ func generateRestorer(names []string) error {
 				g.Case(Op("*").Qual(DSTPATH, nodeName)).BlockFunc(func(g *Group) {
 					g.Id("out").Op(":=").Op("&").Qual("go/ast", nodeName).Values()
 					g.Id("r").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
+
+					if nodeName != "Package" {
+						g.Id("r").Dot("applySpace").Call(Id("n").Dot("Decs").Dot("Before"))
+					}
+
 					for _, frag := range fragment.Info[nodeName] {
 						switch frag := frag.(type) {
 						case fragment.Init:
@@ -110,6 +115,11 @@ func generateRestorer(names []string) error {
 							g.Add(frag.Field.Get("out")).Op("=").Id("r").Dot("restoreObject").Call(frag.Field.Get("n"))
 						}
 					}
+
+					if nodeName != "Package" {
+						g.Id("r").Dot("applySpace").Call(Id("n").Dot("Decs").Dot("After"))
+					}
+
 					g.Line()
 					g.Return(Id("out"))
 				})

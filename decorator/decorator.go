@@ -5,7 +5,9 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/dave/dst"
 )
@@ -94,6 +96,9 @@ func (d *Decorator) Decorate(fset *token.FileSet, n ast.Node) dst.Node {
 
 	fragger := &Fragger{}
 	fragger.Fragment(fset, n)
+
+	//fragger.debug(fset, os.Stdout)
+
 	d.before, d.after, d.decorations = fragger.Link()
 
 	out := d.decorateNode(n)
@@ -201,4 +206,47 @@ func (d *Decorator) decorateScope(s *ast.Scope) *dst.Scope {
 	}
 
 	return out
+}
+
+func debug(w io.Writer, file dst.Node) {
+	var result string
+	nodeType := func(n dst.Node) string {
+		return strings.Replace(fmt.Sprintf("%T", n), "*dst.", "", -1)
+	}
+	dst.Inspect(file, func(n dst.Node) bool {
+		if n == nil {
+			return false
+		}
+		var out string
+		before, after, infos := getDecorationInfo(n)
+		switch before {
+		case dst.NewLine:
+			out += " [New line before]"
+		case dst.EmptyLine:
+			out += " [Empty line before]"
+		}
+		for _, info := range infos {
+			if len(info.decs) > 0 {
+				var values string
+				for i, dec := range info.decs {
+					if i > 0 {
+						values += " "
+					}
+					values += fmt.Sprintf("%q", dec)
+				}
+				out += fmt.Sprintf(" [%s %s]", info.name, values)
+			}
+		}
+		switch after {
+		case dst.NewLine:
+			out += " [New line after]"
+		case dst.EmptyLine:
+			out += " [Empty line after]"
+		}
+		if out != "" {
+			result += nodeType(n) + out + "\n"
+		}
+		return true
+	})
+	fmt.Fprint(w, result)
 }

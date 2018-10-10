@@ -5,6 +5,8 @@ import (
 	"go/format"
 	"testing"
 
+	"os"
+
 	"github.com/andreyvit/diff"
 )
 
@@ -14,6 +16,35 @@ func TestRestorer(t *testing.T) {
 		name       string
 		code       string
 	}{
+		{
+			name: "block comment",
+			code: `package a
+				
+				/*
+					foo
+				*/
+				var i int`,
+		},
+		{
+			name: "case comment",
+			code: `package a
+
+				func main() {
+					switch {
+					default:
+						// b
+						// c
+
+						var i int
+					}
+				}`,
+		},
+		{
+			name: "file",
+			code: `/*Start*/ package /*AfterPackage*/ postests /*AfterName*/
+
+			var i int`,
+		},
 		{
 			name: "RangeStmt",
 			code: `package main
@@ -555,6 +586,7 @@ func TestRestorer(t *testing.T) {
 			}
 
 			if string(formatted) != test.code {
+				debug(os.Stdout, file)
 				t.Errorf("diff: %s", diff.LineDiff(test.code, string(formatted)))
 			}
 		})

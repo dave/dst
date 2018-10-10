@@ -18,6 +18,117 @@ func TestFragger(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "block comment",
+			code: `package a
+				
+				/*
+					foo
+				*/
+				var i int`,
+			expect: `File Start 1:1
+            File "package" 1:1
+            File AfterPackage 1:8
+            Ident Start 1:9
+            Ident "a" 1:9
+            Ident End 1:10
+            File AfterName 1:10
+            Empty line 1:10
+            "/*\n\tfoo\n*/" 3:1
+            New line 5:3
+            GenDecl Start 6:1
+            GenDecl "var" 6:1
+            GenDecl AfterTok 6:4
+            ValueSpec Start 6:5
+            Ident Start 6:5
+            Ident "i" 6:5
+            Ident End 6:6
+            ValueSpec AfterNames 6:6
+            Ident Start 6:7
+            Ident "int" 6:7
+            Ident End 6:10
+            ValueSpec End 6:10
+            GenDecl End 6:10`,
+		},
+		{
+			name: "case clause",
+			code: `package a
+
+				func main() {
+					switch {
+					default:
+						// b
+						// c
+
+						var i int
+					}
+				}`,
+			expect: `File Start 1:1
+            File "package" 1:1
+            File AfterPackage 1:8
+            Ident Start 1:9
+            Ident "a" 1:9
+            Ident End 1:10
+            File AfterName 1:10
+            Empty line 1:10
+            FuncDecl Start 3:1
+            FuncDecl "func" 3:1
+            FuncDecl AfterFunc 3:5
+            Ident Start 3:6
+            Ident "main" 3:6
+            Ident End 3:10
+            FuncDecl AfterName 3:10
+            FieldList Start 3:10
+            FieldList "(" 3:10
+            FieldList AfterOpening 3:11
+            FieldList ")" 3:11
+            FieldList End 3:12
+            FuncDecl AfterParams 3:12
+            BlockStmt Start 3:13
+            BlockStmt "{" 3:13
+            BlockStmt AfterLbrace 3:14
+            New line 3:14
+            SwitchStmt Start 4:2
+            SwitchStmt "switch" 4:2
+            SwitchStmt AfterSwitch 4:8
+            BlockStmt Start 4:9
+            BlockStmt "{" 4:9
+            BlockStmt AfterLbrace 4:10
+            New line 4:10
+            CaseClause Start 5:2
+            CaseClause "default" 5:2
+            CaseClause AfterCase 5:9
+            CaseClause ":" 5:9
+            CaseClause AfterColon 5:10
+            New line 5:10
+            "// b" 6:3
+            New line 6:7
+            "// c" 7:3
+            Empty line 7:7
+            DeclStmt Start 9:3
+            GenDecl Start 9:3
+            GenDecl "var" 9:3
+            GenDecl AfterTok 9:6
+            ValueSpec Start 9:7
+            Ident Start 9:7
+            Ident "i" 9:7
+            Ident End 9:8
+            ValueSpec AfterNames 9:8
+            Ident Start 9:9
+            Ident "int" 9:9
+            Ident End 9:12
+            ValueSpec End 9:12
+            GenDecl End 9:12
+            DeclStmt End 9:12
+            New line 9:12
+            BlockStmt "}" 10:2
+            BlockStmt End 10:3
+            SwitchStmt End 10:3
+            New line 10:3
+            BlockStmt "}" 11:1
+            BlockStmt End 11:2
+            FuncDecl End 11:2`,
+		},
+		{
 			name: "empty func",
 			code: `package a
 
@@ -34,8 +145,7 @@ func TestFragger(t *testing.T) {
             Ident "a" 1:9
             Ident End 1:10
             File AfterName 1:10
-            New line 1:10
-            Empty line 2:1
+            Empty line 1:10
             FuncDecl Start 3:1
             FuncDecl "func" 3:1
             FuncDecl AfterFunc 3:5
@@ -70,6 +180,7 @@ func TestFragger(t *testing.T) {
             DeclStmt End 4:11
             New line 4:11
             "// c" 5:2
+            New line 5:6
             DeclStmt Start 6:2
             GenDecl Start 6:2
             GenDecl "var" 6:2

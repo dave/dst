@@ -114,7 +114,8 @@ var after2 int
 var after1 int
 `,
 		pre: func(c *dstutil.Cursor) bool {
-			if _, ok := c.Node().(*dst.GenDecl); ok {
+			if gd, ok := c.Node().(*dst.GenDecl); ok {
+				gd.Decs.Before = dst.NewLine // clear the empty line before the var decl
 				c.InsertBefore(vardecl("before1", "int"))
 				c.InsertAfter(vardecl("after1", "int"))
 				c.InsertAfter(vardecl("after2", "int"))

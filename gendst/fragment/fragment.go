@@ -65,6 +65,10 @@ var Info = map[string][]Part{
 			Closing token.Pos // position of closing parenthesis/brace, if any
 		}
 	*/
+	// There's nothing in the AST to tell us if Opening / Closing are BRACE or PAREN, apart from
+	// the type of the parent. For now it doesn't actually matter - all we care about is the
+	// length of the token (one in both cases) so we can use anything here. If the future we may
+	// need to determine the type...
 	"FieldList": {
 		Decoration{
 			Name: "Start",

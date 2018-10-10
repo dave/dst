@@ -44,12 +44,13 @@ type Restorer struct {
 
 type fileRestorer struct {
 	*Restorer
-	lines    []int
-	comments []*ast.CommentGroup
-	base     int
-	cursor   token.Pos
-	nodeDecl map[*ast.Object]dst.Node // Objects that have a ast.Node Decl (look up after file has been rendered)
-	nodeData map[*ast.Object]dst.Node // Objects that have a ast.Node Data (look up after file has been rendered)
+	lines           []int
+	comments        []*ast.CommentGroup
+	base            int
+	cursor          token.Pos
+	nodeDecl        map[*ast.Object]dst.Node // Objects that have a ast.Node Decl (look up after file has been rendered)
+	nodeData        map[*ast.Object]dst.Node // Objects that have a ast.Node Data (look up after file has been rendered)
+	cursorAtNewLine token.Pos                // The cursor position directly after adding a newline decoration (or a line comment which ends in a "\n"). If we're still at this cursor position when we add a line space, reduce the "\n" by one.
 }
 
 func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
@@ -127,9 +128,9 @@ func (f *fileRestorer) applyDecorations(decorations dst.Decorations) {
 
 		// for multi-line comments, add a newline for each \n
 		if isMultiLineComment {
-			for i, char := range d {
+			for charIndex, char := range d {
 				if char == '\n' {
-					lineOffset := int(f.cursor) - f.base + i // remember lines are relative to the file base
+					lineOffset := int(f.cursor) - f.base + charIndex // remember lines are relative to the file base
 					f.lines = append(f.lines, lineOffset)
 				}
 			}
@@ -146,7 +147,28 @@ func (f *fileRestorer) applyDecorations(decorations dst.Decorations) {
 			lineOffset := int(f.cursor) - f.base // remember lines are relative to the file base
 			f.lines = append(f.lines, lineOffset)
 			f.cursor++
+
+			f.cursorAtNewLine = f.cursor
 		}
+	}
+}
+
+func (f *fileRestorer) applySpace(space dst.SpaceType) {
+	var newlines int
+	switch space {
+	case dst.NewLine:
+		newlines = 1
+	case dst.EmptyLine:
+		newlines = 2
+	}
+	if f.cursor == f.cursorAtNewLine {
+		newlines--
+	}
+	for i := 0; i < newlines; i++ {
+		lineOffset := int(f.cursor) - f.base // remember lines are relative to the file base
+		f.lines = append(f.lines, lineOffset)
+		f.cursor++
+		f.cursorAtNewLine = f.cursor
 	}
 }
 
