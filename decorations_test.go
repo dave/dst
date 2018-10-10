@@ -57,18 +57,16 @@ func ExampleDecorations() {
 func ExampleAstBroken() {
 	code := `package a
 
-	func main() { 
-		var a int    // foo
-		var b string // bar
-	}`
+	var a int    // foo
+	var b string // bar
+	`
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, "a.go", code, parser.ParseComments)
 	if err != nil {
 		panic(err)
 	}
 
-	body := f.Decls[0].(*ast.FuncDecl).Body
-	body.List = []ast.Stmt{body.List[1], body.List[0]}
+	f.Decls = []ast.Decl{f.Decls[1], f.Decls[0]}
 
 	if err := format.Node(os.Stdout, fset, f); err != nil {
 		panic(err)
@@ -77,29 +75,25 @@ func ExampleAstBroken() {
 	//Output:
 	//package a
 	//
-	//func main() {
-	//	// foo
-	//	var b string
-	//	var a int
-	//	// bar
-	//}
+	//// foo
+	//var b string
+	//var a int
+	//
+	//// bar
 }
 
 func ExampleDstFixed() {
 	code := `package a
 
-	func main() { 
-		var a int    // foo
-		var b string // bar
-	}
+	var a int    // foo
+	var b string // bar
 	`
 	f, err := decorator.Parse(code)
 	if err != nil {
 		panic(err)
 	}
 
-	body := f.Decls[0].(*dst.FuncDecl).Body
-	body.List = []dst.Stmt{body.List[1], body.List[0]}
+	f.Decls = []dst.Decl{f.Decls[1], f.Decls[0]}
 
 	if err := decorator.Print(f); err != nil {
 		panic(err)
@@ -108,8 +102,6 @@ func ExampleDstFixed() {
 	//Output:
 	//package a
 	//
-	//func main() {
-	//	var b string // bar
-	//	var a int    // foo
-	//}
+	//var b string // bar
+	//var a int    // foo
 }
