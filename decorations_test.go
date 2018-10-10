@@ -29,7 +29,7 @@ func ExampleDecorations() {
 
 	body := f.Decls[0].(*dst.FuncDecl).Body
 	for i, stmt := range body.List {
-		stmt.Start().Replace(fmt.Sprintf("// foo %d", i))
+		stmt.Start().Add(fmt.Sprintf("// foo %d", i))
 		stmt.SetSpace(dst.EmptyLine)
 	}
 
