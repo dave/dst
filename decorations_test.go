@@ -14,6 +14,70 @@ import (
 	"github.com/dave/dst/decorator"
 )
 
+func ExampleSpace() {
+	code := `package main
+
+	func main() {
+		println(a, b, c)
+	}`
+	f, err := decorator.Parse(code)
+	if err != nil {
+		panic(err)
+	}
+
+	callExpr := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
+	callExpr.Decs.Lparen.Add("\n")
+	for _, v := range callExpr.Args {
+		v.SetSpace(dst.NewLine)
+	}
+	callExpr.Args[0].End().Add("// you can adjust line-spacing")
+
+	if err := decorator.Print(f); err != nil {
+		panic(err)
+	}
+
+	//Output:
+	//package main
+	//
+	//func main() {
+	//	println(
+	//		a, // you can adjust line-spacing
+	//		b,
+	//		c,
+	//	)
+	//}
+}
+
+func ExampleComment() {
+	code := `package main
+
+	func main() {
+		println("Hello World!")
+	}`
+	f, err := decorator.Parse(code)
+	if err != nil {
+		panic(err)
+	}
+
+	callExpr := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
+
+	callExpr.Decs.Start.Add("// you can add comments at the start...")
+	callExpr.Decs.Fun.Add("/* ...in the middle... */")
+	callExpr.Decs.End.Add("// or at the end.")
+
+	if err := decorator.Print(f); err != nil {
+		panic(err)
+	}
+
+	//Output:
+	//package main
+	//
+	//func main() {
+	//	// you can add comments at the start...
+	//	println /* ...in the middle... */ ("Hello World!") // or at the end.
+	//}
+}
+
 func ExampleDecorations() {
 	code := `package main
 

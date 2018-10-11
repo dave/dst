@@ -16,11 +16,15 @@ Here's the same example using `dst`:
 
 {{ "ExampleDstFixed" | example }}
 
-### Example
+### Examples
 
-This would be prohibitively difficult using `go/ast`:
+Adding comments:
 
-{{ "ExampleDecorations" | example }}
+{{ "ExampleComment" | example }}
+
+Adjusting line-spacing:
+
+{{ "ExampleSpace" | example }}
 
 ### Status
 
