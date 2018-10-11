@@ -27,11 +27,13 @@ func ExampleDecorated() {
 		panic(err)
 	}
 
-	body := f.Decls[0].(*dst.FuncDecl).Body
+	list := f.Decls[0].(*dst.FuncDecl).Body.List
 
-	body.List[0].End().Add("// the Decorated interface allows access to the common")
-	body.List[1].End().Add("// decoration properties (Space, Start, End and After)")
-	body.List[2].End().Add("// for all Expr, Stmt and Decl nodes.")
+	list[0].SetSpace(dst.EmptyLine)
+	list[0].End().Add("// the Decorated interface allows access to the common")
+	list[1].End().Add("// decoration properties (Space, Start, End and After)")
+	list[2].End().Add("// for all Expr, Stmt and Decl nodes.")
+	list[2].SetAfter(dst.EmptyLine)
 
 	if err := decorator.Print(f); err != nil {
 		panic(err)
@@ -41,9 +43,11 @@ func ExampleDecorated() {
 	//package main
 	//
 	//func main() {
+	//
 	//	var i int  // the Decorated interface allows access to the common
 	//	i++        // decoration properties (Space, Start, End and After)
 	//	println(i) // for all Expr, Stmt and Decl nodes.
+	//
 	//}
 }
 
@@ -97,11 +101,11 @@ func ExampleComment() {
 		panic(err)
 	}
 
-	callExpr := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
+	call := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
 
-	callExpr.Decs.Start.Add("// you can add comments at the start...")
-	callExpr.Decs.Fun.Add("/* ...in the middle... */")
-	callExpr.Decs.End.Add("// or at the end.")
+	call.Decs.Start.Add("// you can add comments at the start...")
+	call.Decs.Fun.Add("/* ...in the middle... */")
+	call.Decs.End.Add("// or at the end.")
 
 	if err := decorator.Print(f); err != nil {
 		panic(err)

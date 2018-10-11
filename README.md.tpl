@@ -18,18 +18,28 @@ Here's the same example using `dst`:
 
 ## Examples
 
-#### Adding comments 
+#### Line spacing
 
-{{ "ExampleComment" | example }}
-
-See [generated-decorations.go](https://github.com/dave/dst/blob/master/generated-decorations.go) for a full 
-list of decoration attachment points.
-
-#### Adjusting line-spacing
+The `Space` property marks the node as having a line space (new-line or empty-line) before the node. 
+These spaces are rendered before any decorations attached to the `Start` decoration point. The `After`
+property is similar but rendered after the node (and after any `End` decorations).
 
 {{ "ExampleSpace" | example }}
 
-### Access common properties by interface
+#### Comments
+
+Comments are added at decoration attachment points. See [generated-decorations.go](https://github.com/dave/dst/blob/master/generated-decorations.go) 
+for a full list of these points, along with demonstration code of where they are rendered in the output.
+
+The the decoration points have convenience functions `Add`, `Replace`, `Clear` and `All` to accomplish 
+common tasks. 
+
+{{ "ExampleComment" | example }}
+
+### Common properties
+
+The common decoration properties (Space, Start, End and After) occur on all Expr, Stmt and Decl nodes, 
+so are available on those interfaces:
 
 {{ "ExampleDecorated" | example }}
 
