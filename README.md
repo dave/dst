@@ -127,7 +127,8 @@ Comments are added at decoration attachment points. See [generated-decorations.g
 for a full list of these points, along with demonstration code of where they are rendered in the output.
 
 The the decoration points have convenience functions `Add`, `Replace`, `Clear` and `All` to accomplish 
-common tasks. Use the full text of your comment including the `//` `/*` and `*/` markers.
+common tasks. Use the full text of your comment including the `//` or `/**/` markers. When adding a 
+line comment, a newline is automatically rendered.
 
 ```go
 code := `package main
@@ -205,6 +206,88 @@ if err := decorator.Print(f); err != nil {
 
 The `Space` and `After` properties cover the vast majority of cases, but occasionally a newline needs 
 to be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
+
+#### Apply function from astutil
+
+The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package is a fork of `golang.org/x/tools/go/ast/astutil`, 
+and provides the `Apply` function with similar semantics.
+
+#### Integrating with go/types
+
+Forking the `go/types` package to use a `dst` tree as input is non-trivial because `go/types` uses 
+position information in several places. A work-around is to convert `ast` to `dst` using a 
+[Decorator](https://github.com/dave/dst/blob/master/decorator/decorator.go). After conversion, this 
+exposes the `DstNodes` and `AstNodes` properties which map between `ast.Node` and `dst.Node`. This 
+way the `go/types` package can be used:
+
+```go
+code := `package main
+
+func main() {
+	var i int
+	i++
+	println(i)
+}`
+
+// Parse the code to AST
+fset := token.NewFileSet()
+astFile, err := parser.ParseFile(fset, "a.go", code, parser.ParseComments)
+if err != nil {
+	panic(err)
+}
+
+// Invoke the type checker using AST as input
+typesInfo := types.Info{
+	Defs:	make(map[*ast.Ident]types.Object),
+	Uses:	make(map[*ast.Ident]types.Object),
+}
+conf := &types.Config{}
+if _, err := conf.Check("a", fset, []*ast.File{astFile}, &typesInfo); err != nil {
+	panic(err)
+}
+
+// Decorate the *ast.File to give us a *dst.File
+dec := decorator.New()
+f := dec.Decorate(fset, astFile).(*dst.File)
+
+// Find the *dst.Ident for the definition of "i"
+dstDef := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.DeclStmt).Decl.(*dst.GenDecl).Specs[0].(*dst.ValueSpec).Names[0]
+
+// Find the *ast.Ident using the AstNodes mapping
+astDef := dec.AstNodes[dstDef].(*ast.Ident)
+
+// Find the types.Object corresponding to "i"
+obj := typesInfo.Defs[astDef]
+
+// Find all the uses of that object
+var uses []*dst.Ident
+for id, ob := range typesInfo.Uses {
+	if ob != obj {
+		continue
+	}
+	uses = append(uses, dec.DstNodes[id].(*dst.Ident))
+}
+
+// Change the name of all uses
+dstDef.Name = "foo"
+for _, id := range uses {
+	id.Name = "foo"
+}
+
+// Print the DST
+if err := decorator.Print(f); err != nil {
+	panic(err)
+}
+
+//Output:
+//package main
+//
+//func main() {
+//	var foo int
+//	foo++
+//	println(foo)
+//}
+```
 
 ### Status
 

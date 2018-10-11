@@ -68,9 +68,12 @@ func DecorateFile(fset *token.FileSet, f *ast.File) *dst.File {
 
 func New() *Decorator {
 	return &Decorator{
-		Nodes:       map[ast.Node]dst.Node{},
-		Scopes:      map[*ast.Scope]*dst.Scope{},
-		Objects:     map[*ast.Object]*dst.Object{},
+		DstNodes:    map[ast.Node]dst.Node{},
+		DstScopes:   map[*ast.Scope]*dst.Scope{},
+		DstObjects:  map[*ast.Object]*dst.Object{},
+		AstNodes:    map[dst.Node]ast.Node{},
+		AstScopes:   map[*dst.Scope]*ast.Scope{},
+		AstObjects:  map[*dst.Object]*ast.Object{},
 		Info:        &Info{Filenames: map[*dst.File]string{}},
 		decorations: map[ast.Node]map[string][]string{},
 		space:       map[ast.Node]dst.SpaceType{},
@@ -79,9 +82,12 @@ func New() *Decorator {
 }
 
 type Decorator struct {
-	Nodes        map[ast.Node]dst.Node
-	Scopes       map[*ast.Scope]*dst.Scope
-	Objects      map[*ast.Object]*dst.Object
+	DstNodes     map[ast.Node]dst.Node
+	DstScopes    map[*ast.Scope]*dst.Scope
+	DstObjects   map[*ast.Object]*dst.Object
+	AstNodes     map[dst.Node]ast.Node
+	AstScopes    map[*dst.Scope]*ast.Scope
+	AstObjects   map[*dst.Object]*ast.Object
 	Info         *Info
 	decorations  map[ast.Node]map[string][]string
 	space, after map[ast.Node]dst.SpaceType
@@ -106,7 +112,7 @@ func (d *Decorator) Decorate(fset *token.FileSet, n ast.Node) dst.Node {
 	switch n := n.(type) {
 	case *ast.Package:
 		for k, v := range n.Files {
-			d.Info.Filenames[d.Nodes[v].(*dst.File)] = k
+			d.Info.Filenames[d.DstNodes[v].(*dst.File)] = k
 		}
 	case *ast.File:
 		d.Info.Filenames[out.(*dst.File)] = fset.File(n.Pos()).Name()
@@ -124,7 +130,7 @@ func (d *Decorator) decorateObject(o *ast.Object) *dst.Object {
 	if o == nil {
 		return nil
 	}
-	if do, ok := d.Objects[o]; ok {
+	if do, ok := d.DstObjects[o]; ok {
 		return do
 	}
 	/*
@@ -147,7 +153,8 @@ func (d *Decorator) decorateObject(o *ast.Object) *dst.Object {
 	*/
 
 	out := &dst.Object{}
-	d.Objects[o] = out
+	d.DstObjects[o] = out
+	d.AstObjects[out] = o
 	out.Kind = dst.ObjKind(o.Kind)
 	out.Name = o.Name
 
@@ -181,7 +188,7 @@ func (d *Decorator) decorateScope(s *ast.Scope) *dst.Scope {
 	if s == nil {
 		return nil
 	}
-	if ds, ok := d.Scopes[s]; ok {
+	if ds, ok := d.DstScopes[s]; ok {
 		return ds
 	}
 	/*
@@ -196,7 +203,8 @@ func (d *Decorator) decorateScope(s *ast.Scope) *dst.Scope {
 	*/
 	out := &dst.Scope{}
 
-	d.Scopes[s] = out
+	d.DstScopes[s] = out
+	d.AstScopes[out] = s
 
 	out.Outer = d.decorateScope(s.Outer)
 	out.Objects = map[string]*dst.Object{}

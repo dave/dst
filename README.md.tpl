@@ -49,6 +49,21 @@ and `Decl` nodes, so are available on those interfaces:
 The `Space` and `After` properties cover the vast majority of cases, but occasionally a newline needs 
 to be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
 
+#### Apply function from astutil
+
+The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package is a fork of `golang.org/x/tools/go/ast/astutil`, 
+and provides the `Apply` function with similar semantics.
+
+#### Integrating with go/types
+
+Forking the `go/types` package to use a `dst` tree as input is non-trivial because `go/types` uses 
+position information in several places. A work-around is to convert `ast` to `dst` using a 
+[Decorator](https://github.com/dave/dst/blob/master/decorator/decorator.go). After conversion, this 
+exposes the `DstNodes` and `AstNodes` properties which map between `ast.Node` and `dst.Node`. This 
+way the `go/types` package can be used:
+
+{{ "ExampleTypes" | example }}
+
 ### Status
 
 This is an experimental package under development, so the API and behaviour is expected to change 

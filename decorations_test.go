@@ -10,9 +10,81 @@ import (
 
 	"fmt"
 
+	"go/types"
+
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 )
+
+func ExampleTypes() {
+	code := `package main
+
+	func main() {
+		var i int
+		i++
+		println(i)
+	}`
+
+	// Parse the code to AST
+	fset := token.NewFileSet()
+	astFile, err := parser.ParseFile(fset, "a.go", code, parser.ParseComments)
+	if err != nil {
+		panic(err)
+	}
+
+	// Invoke the type checker using AST as input
+	typesInfo := types.Info{
+		Defs: make(map[*ast.Ident]types.Object),
+		Uses: make(map[*ast.Ident]types.Object),
+	}
+	conf := &types.Config{}
+	if _, err := conf.Check("a", fset, []*ast.File{astFile}, &typesInfo); err != nil {
+		panic(err)
+	}
+
+	// Decorate the *ast.File to give us a *dst.File
+	dec := decorator.New()
+	f := dec.Decorate(fset, astFile).(*dst.File)
+
+	// Find the *dst.Ident for the definition of "i"
+	dstDef := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.DeclStmt).Decl.(*dst.GenDecl).Specs[0].(*dst.ValueSpec).Names[0]
+
+	// Find the *ast.Ident using the AstNodes mapping
+	astDef := dec.AstNodes[dstDef].(*ast.Ident)
+
+	// Find the types.Object corresponding to "i"
+	obj := typesInfo.Defs[astDef]
+
+	// Find all the uses of that object
+	var uses []*dst.Ident
+	for id, ob := range typesInfo.Uses {
+		if ob != obj {
+			continue
+		}
+		uses = append(uses, dec.DstNodes[id].(*dst.Ident))
+	}
+
+	// Change the name of all uses
+	dstDef.Name = "foo"
+	for _, id := range uses {
+		id.Name = "foo"
+	}
+
+	// Print the DST
+	if err := decorator.Print(f); err != nil {
+		panic(err)
+	}
+
+	//Output:
+	//package main
+	//
+	//func main() {
+	//	var foo int
+	//	foo++
+	//	println(foo)
+	//}
+
+}
 
 func ExampleDecorated() {
 	code := `package main
