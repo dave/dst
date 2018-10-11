@@ -125,5 +125,5 @@ func generateDstDecs(names []string) error {
 			g.Id("Space").Id("SpaceType")
 		})
 	}
-	return f.Save("./generated-decs.go")
+	return f.Save("./generated-decorations.go")
 }

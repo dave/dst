@@ -3,7 +3,7 @@
 The `dst` package enables manipulation of a Go syntax tree with high fidelity. Decorations (e.g. 
 comments and newlines) remain attached to the correct nodes as the tree is modified.
 
-### Where does `go/ast` break?
+## Where does `go/ast` break?
 
 See [this golang issue](https://github.com/golang/go/issues/20744) for more information.
 
@@ -64,9 +64,9 @@ if err := decorator.Print(f); err != nil {
 //var a int    // foo
 ```
 
-### Examples
+## Examples
 
-Adding comments:
+#### Adding comments 
 
 ```go
 code := `package main
@@ -98,7 +98,10 @@ if err := decorator.Print(f); err != nil {
 //}
 ```
 
-Adjusting line-spacing:
+See [generated-decorations.go](https://github.com/dave/dst/blob/master/generated-decorations.go) for a full 
+list of decoration attachment points.
+
+#### Adjusting line-spacing
 
 ```go
 code := `package main
@@ -134,12 +137,12 @@ if err := decorator.Print(f); err != nil {
 //}
 ```
 
-### Status
+## Status
 
 This is an experimental package under development, so the API and behaviour is expected to change 
 frequently. However I'm now inviting people to try it out and give feedback. 
 
-### Chat?
+## Chat?
 
 Feel free to create an [issue](https://github.com/dave/dst/issues) or chat in the 
 [#dst](https://gophers.slack.com/messages/CCVL24MTQ) Gophers Slack channel.
