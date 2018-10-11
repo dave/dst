@@ -7,7 +7,7 @@ comments and newlines) remain attached to the correct nodes as the tree is modif
 
 See [this golang issue](https://github.com/golang/go/issues/20744) for more information.
 
-Consider this example where we want to reverse the order of the two declarations. As you can see the 
+Consider this example where we want to reverse the order of the two statements. As you can see the 
 comments don't remain attached to the correct nodes:
 
 {{ "ExampleAstBroken" | example }}
@@ -36,12 +36,17 @@ common tasks.
 
 {{ "ExampleComment" | example }}
 
-### Common properties
+#### Common properties
 
-The common decoration properties (Space, Start, End and After) occur on all Expr, Stmt and Decl nodes, 
-so are available on those interfaces:
+The common decoration properties (`Start`, `End`, `Space` and `After`) occur on all `Expr`, `Stmt` 
+and `Decl` nodes, so are available on those interfaces:
 
 {{ "ExampleDecorated" | example }}
+
+#### Newlines as decorations
+
+The `Space` and `After` properties cover the vast majority of cases, but occasionally a newline needs 
+to be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
 
 ## Status
 

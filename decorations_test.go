@@ -62,16 +62,15 @@ func ExampleSpace() {
 		panic(err)
 	}
 
-	callExpr := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
-	for i, v := range callExpr.Args {
-		switch v := v.(type) {
-		case *dst.Ident:
-			if i == 0 {
-				v.Decs.End.Add("// you can adjust line-spacing")
-			}
-			v.Decs.Space = dst.NewLine
-			v.Decs.After = dst.NewLine
-		}
+	call := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
+
+	call.Decs.Space = dst.EmptyLine
+	call.Decs.After = dst.EmptyLine
+
+	for _, v := range call.Args {
+		v := v.(*dst.Ident)
+		v.Decs.Space = dst.NewLine
+		v.Decs.After = dst.NewLine
 	}
 
 	if err := decorator.Print(f); err != nil {
@@ -82,11 +81,13 @@ func ExampleSpace() {
 	//package main
 	//
 	//func main() {
+	//
 	//	println(
-	//		a, // you can adjust line-spacing
+	//		a,
 	//		b,
 	//		c,
 	//	)
+	//
 	//}
 }
 

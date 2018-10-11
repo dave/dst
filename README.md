@@ -7,7 +7,7 @@ comments and newlines) remain attached to the correct nodes as the tree is modif
 
 See [this golang issue](https://github.com/golang/go/issues/20744) for more information.
 
-Consider this example where we want to reverse the order of the two declarations. As you can see the 
+Consider this example where we want to reverse the order of the two statements. As you can see the 
 comments don't remain attached to the correct nodes:
 
 ```go
@@ -92,16 +92,15 @@ if err != nil {
 	panic(err)
 }
 
-callExpr := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
-for i, v := range callExpr.Args {
-	switch v := v.(type) {
-	case *dst.Ident:
-		if i == 0 {
-			v.Decs.End.Add("// you can adjust line-spacing")
-		}
-		v.Decs.Space = dst.NewLine
-		v.Decs.After = dst.NewLine
-	}
+call := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
+
+call.Decs.Space = dst.EmptyLine
+call.Decs.After = dst.EmptyLine
+
+for _, v := range call.Args {
+	v := v.(*dst.Ident)
+	v.Decs.Space = dst.NewLine
+	v.Decs.After = dst.NewLine
 }
 
 if err := decorator.Print(f); err != nil {
@@ -112,11 +111,13 @@ if err := decorator.Print(f); err != nil {
 //package main
 //
 //func main() {
+//
 //	println(
-//		a, // you can adjust line-spacing
+//		a,
 //		b,
 //		c,
 //	)
+//
 //}
 ```
 
@@ -158,10 +159,10 @@ if err := decorator.Print(f); err != nil {
 //}
 ```
 
-### Common properties
+#### Common properties
 
-The common decoration properties (Space, Start, End and After) occur on all Expr, Stmt and Decl nodes, 
-so are available on those interfaces:
+The common decoration properties (`Start`, `End`, `Space` and `After`) occur on all `Expr`, `Stmt` 
+and `Decl` nodes, so are available on those interfaces:
 
 ```go
 code := `package main
@@ -199,6 +200,11 @@ if err := decorator.Print(f); err != nil {
 //
 //}
 ```
+
+#### Newlines as decorations
+
+The `Space` and `After` properties cover the vast majority of cases, but occasionally a newline needs 
+to be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
 
 ## Status
 
