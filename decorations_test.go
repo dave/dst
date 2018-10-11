@@ -29,9 +29,9 @@ func ExampleDecorated() {
 
 	body := f.Decls[0].(*dst.FuncDecl).Body
 
-	body.List[0].End().Add("// the Decorated interface allows access to common")
-	body.List[1].End().Add("// decoration properties (Start, End and Space) for")
-	body.List[2].End().Add("// all Expr, Stmt and Decl nodes.")
+	body.List[0].End().Add("// the Decorated interface allows access to the common")
+	body.List[1].End().Add("// decoration properties (Space, Start, End and After)")
+	body.List[2].End().Add("// for all Expr, Stmt and Decl nodes.")
 
 	if err := decorator.Print(f); err != nil {
 		panic(err)
@@ -41,9 +41,9 @@ func ExampleDecorated() {
 	//package main
 	//
 	//func main() {
-	//	var i int  // the Decorated interface allows access to common
-	//	i++        // decoration properties (Start, End and Space) for
-	//	println(i) // all Expr, Stmt and Decl nodes.
+	//	var i int  // the Decorated interface allows access to the common
+	//	i++        // decoration properties (Space, Start, End and After)
+	//	println(i) // for all Expr, Stmt and Decl nodes.
 	//}
 }
 
@@ -59,7 +59,6 @@ func ExampleSpace() {
 	}
 
 	callExpr := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
-	callExpr.Decs.Lparen.Add("\n")
 	for i, v := range callExpr.Args {
 		switch v := v.(type) {
 		case *dst.Ident:
@@ -67,6 +66,7 @@ func ExampleSpace() {
 				v.Decs.End.Add("// you can adjust line-spacing")
 			}
 			v.Decs.Space = dst.NewLine
+			v.Decs.After = dst.NewLine
 		}
 	}
 
@@ -131,15 +131,15 @@ func ExampleDecorations() {
 
 	body := f.Decls[0].(*dst.FuncDecl).Body
 	for i, stmt := range body.List {
-		stmt.Start().Add(fmt.Sprintf("// foo %d", i))
 		stmt.SetSpace(dst.EmptyLine)
+		stmt.Start().Add(fmt.Sprintf("// foo %d", i))
 	}
 
 	call := body.List[2].(*dst.ExprStmt).X.(*dst.CallExpr)
 	call.Args = append(call.Args, dst.NewIdent("b"), dst.NewIdent("c"))
-	call.Decs.Lparen.Add("\n")
 	for i, expr := range call.Args {
 		expr.SetSpace(dst.NewLine)
+		expr.SetAfter(dst.NewLine)
 		expr.Start().Add(fmt.Sprintf("/* bar %d */", i))
 		expr.End().Add(fmt.Sprintf("// baz %d", i))
 	}
@@ -152,6 +152,7 @@ func ExampleDecorations() {
 	//package main
 	//
 	//func main() {
+	//
 	//	// foo 0
 	//	var a int
 	//
@@ -164,15 +165,16 @@ func ExampleDecorations() {
 	//		/* bar 1 */ b, // baz 1
 	//		/* bar 2 */ c, // baz 2
 	//	)
-	//
 	//}
 }
 
 func ExampleAstBroken() {
 	code := `package a
 
-	var a int    // foo
-	var b string // bar
+	func main(){
+		var a int    // foo
+		var b string // bar
+	}
 	`
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, "a.go", code, parser.ParseComments)
@@ -180,7 +182,8 @@ func ExampleAstBroken() {
 		panic(err)
 	}
 
-	f.Decls = []ast.Decl{f.Decls[1], f.Decls[0]}
+	list := f.Decls[0].(*ast.FuncDecl).Body.List
+	list[0], list[1] = list[1], list[0]
 
 	if err := format.Node(os.Stdout, fset, f); err != nil {
 		panic(err)
@@ -189,25 +192,29 @@ func ExampleAstBroken() {
 	//Output:
 	//package a
 	//
-	//// foo
-	//var b string
-	//var a int
-	//
-	//// bar
+	//func main() {
+	//	// foo
+	//	var b string
+	//	var a int
+	//	// bar
+	//}
 }
 
 func ExampleDstFixed() {
 	code := `package a
 
-	var a int    // foo
-	var b string // bar
+	func main(){
+		var a int    // foo
+		var b string // bar
+	}
 	`
 	f, err := decorator.Parse(code)
 	if err != nil {
 		panic(err)
 	}
 
-	f.Decls = []dst.Decl{f.Decls[1], f.Decls[0]}
+	list := f.Decls[0].(*dst.FuncDecl).Body.List
+	list[0], list[1] = list[1], list[0]
 
 	if err := decorator.Print(f); err != nil {
 		panic(err)
@@ -216,6 +223,8 @@ func ExampleDstFixed() {
 	//Output:
 	//package a
 	//
-	//var b string // bar
-	//var a int    // foo
+	//func main() {
+	//	var b string // bar
+	//	var a int    // foo
+	//}
 }

@@ -5,11 +5,12 @@ package dst
 // 	type R /*Start*/ [ /*Lbrack*/ 1] /*Len*/ int /*End*/
 //
 type ArrayTypeDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Lbrack Decorations
 	Len    Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // AssignStmtDecorations holds decorations for AssignStmt:
@@ -18,43 +19,48 @@ type ArrayTypeDecorations struct {
 // 	i /*Lhs*/ = /*Tok*/ 1 /*End*/
 //
 type AssignStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Lhs   Decorations
 	Tok   Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // BadDeclDecorations holds decorations for BadDecl:
 //
 type BadDeclDecorations struct {
+	Space SpaceType
 	Start Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // BadExprDecorations holds decorations for BadExpr:
 //
 type BadExprDecorations struct {
+	Space SpaceType
 	Start Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // BadStmtDecorations holds decorations for BadStmt:
 //
 type BadStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // BasicLitDecorations holds decorations for BasicLit:
 //
 type BasicLitDecorations struct {
+	Space SpaceType
 	Start Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // BinaryExprDecorations holds decorations for BinaryExpr:
@@ -62,11 +68,12 @@ type BasicLitDecorations struct {
 // 	var P = /*Start*/ 1 /*X*/ & /*Op*/ 2 /*End*/
 //
 type BinaryExprDecorations struct {
+	Space SpaceType
 	Start Decorations
 	X     Decorations
 	Op    Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // BlockStmtDecorations holds decorations for BlockStmt:
@@ -78,10 +85,11 @@ type BinaryExprDecorations struct {
 // 	func() /*Start*/ { /*Lbrace*/ i++ } /*End*/ ()
 //
 type BlockStmtDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Lbrace Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // BranchStmtDecorations holds decorations for BranchStmt:
@@ -90,10 +98,11 @@ type BlockStmtDecorations struct {
 // 	goto /*Tok*/ A /*End*/
 //
 type BranchStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Tok   Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // CallExprDecorations holds decorations for CallExpr:
@@ -101,13 +110,14 @@ type BranchStmtDecorations struct {
 // 	var L = /*Start*/ C /*Fun*/ ( /*Lparen*/ 0, []int{} /*Args*/ ... /*Ellipsis*/) /*End*/
 //
 type CallExprDecorations struct {
+	Space    SpaceType
 	Start    Decorations
 	Fun      Decorations
 	Lparen   Decorations
 	Args     Decorations
 	Ellipsis Decorations
 	End      Decorations
-	Space    SpaceType
+	After    SpaceType
 }
 
 // CaseClauseDecorations holds decorations for CaseClause:
@@ -118,12 +128,13 @@ type CallExprDecorations struct {
 // 	}
 //
 type CaseClauseDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Case  Decorations
 	List  Decorations
 	Colon Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // ChanTypeDecorations holds decorations for ChanType:
@@ -135,11 +146,12 @@ type CaseClauseDecorations struct {
 // 	type Y /*Start*/ chan /*Begin*/ <- /*Arrow*/ int /*End*/
 //
 type ChanTypeDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Begin Decorations
 	Arrow Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // CommClauseDecorations holds decorations for CommClause:
@@ -150,12 +162,13 @@ type ChanTypeDecorations struct {
 // 	}
 //
 type CommClauseDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Case  Decorations
 	Comm  Decorations
 	Colon Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // CompositeLitDecorations holds decorations for CompositeLit:
@@ -163,19 +176,21 @@ type CommClauseDecorations struct {
 // 	var D = /*Start*/ A /*Type*/ { /*Lbrace*/ A: 0} /*End*/
 //
 type CompositeLitDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Type   Decorations
 	Lbrace Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // DeclStmtDecorations holds decorations for DeclStmt:
 //
 type DeclStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // DeferStmtDecorations holds decorations for DeferStmt:
@@ -184,10 +199,11 @@ type DeclStmtDecorations struct {
 // 	defer /*Defer*/ func() {}() /*End*/
 //
 type DeferStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Defer Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // EllipsisDecorations holds decorations for Ellipsis:
@@ -195,26 +211,29 @@ type DeferStmtDecorations struct {
 // 	func B(a /*Start*/ ... /*Ellipsis*/ int /*End*/) {}
 //
 type EllipsisDecorations struct {
+	Space    SpaceType
 	Start    Decorations
 	Ellipsis Decorations
 	End      Decorations
-	Space    SpaceType
+	After    SpaceType
 }
 
 // EmptyStmtDecorations holds decorations for EmptyStmt:
 //
 type EmptyStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // ExprStmtDecorations holds decorations for ExprStmt:
 //
 type ExprStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // FieldDecorations holds decorations for Field:
@@ -224,11 +243,12 @@ type ExprStmtDecorations struct {
 // 	}
 //
 type FieldDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Names Decorations
 	Type  Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // FieldListDecorations holds decorations for FieldList:
@@ -239,10 +259,11 @@ type FieldDecorations struct {
 // 	} /*End*/
 //
 type FieldListDecorations struct {
+	Space   SpaceType
 	Start   Decorations
 	Opening Decorations
 	End     Decorations
-	Space   SpaceType
+	After   SpaceType
 }
 
 // FileDecorations holds decorations for File:
@@ -250,10 +271,11 @@ type FieldListDecorations struct {
 // 	/*Start*/ package /*Package*/ postests /*Name*/
 //
 type FileDecorations struct {
+	Space   SpaceType
 	Start   Decorations
 	Package Decorations
 	Name    Decorations
-	Space   SpaceType
+	After   SpaceType
 }
 
 // ForStmtDecorations holds decorations for ForStmt:
@@ -274,13 +296,14 @@ type FileDecorations struct {
 // 	} /*End*/
 //
 type ForStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	For   Decorations
 	Init  Decorations
 	Cond  Decorations
 	Post  Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // FuncDeclDecorations holds decorations for FuncDecl:
@@ -301,6 +324,7 @@ type ForStmtDecorations struct {
 // 	}
 //
 type FuncDeclDecorations struct {
+	Space   SpaceType
 	Start   Decorations
 	Func    Decorations
 	Recv    Decorations
@@ -308,7 +332,7 @@ type FuncDeclDecorations struct {
 	Params  Decorations
 	Results Decorations
 	End     Decorations
-	Space   SpaceType
+	After   SpaceType
 }
 
 // FuncLitDecorations holds decorations for FuncLit:
@@ -316,10 +340,11 @@ type FuncDeclDecorations struct {
 // 	var C = /*Start*/ func(a int, b ...int) (c int) /*Type*/ { return 0 } /*End*/
 //
 type FuncLitDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Type  Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // FuncTypeDecorations holds decorations for FuncType:
@@ -327,11 +352,12 @@ type FuncLitDecorations struct {
 // 	type T /*Start*/ func /*Func*/ (a int) /*Params*/ (b int) /*End*/
 //
 type FuncTypeDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Func   Decorations
 	Params Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // GenDeclDecorations holds decorations for GenDecl:
@@ -348,11 +374,12 @@ type FuncTypeDecorations struct {
 // }
 //
 type GenDeclDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Tok    Decorations
 	Lparen Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // GoStmtDecorations holds decorations for GoStmt:
@@ -361,18 +388,20 @@ type GenDeclDecorations struct {
 // 	go /*Go*/ func() {}() /*End*/
 //
 type GoStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Go    Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // IdentDecorations holds decorations for Ident:
 //
 type IdentDecorations struct {
+	Space SpaceType
 	Start Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // IfStmtDecorations holds decorations for IfStmt:
@@ -385,13 +414,14 @@ type IdentDecorations struct {
 // 	} /*End*/
 //
 type IfStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	If    Decorations
 	Init  Decorations
 	Cond  Decorations
 	Else  Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // ImportSpecDecorations holds decorations for ImportSpec:
@@ -401,10 +431,11 @@ type IfStmtDecorations struct {
 // 	)
 //
 type ImportSpecDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Name  Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // IncDecStmtDecorations holds decorations for IncDecStmt:
@@ -413,10 +444,11 @@ type ImportSpecDecorations struct {
 // 	i /*X*/ ++ /*End*/
 //
 type IncDecStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	X     Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // IndexExprDecorations holds decorations for IndexExpr:
@@ -424,12 +456,13 @@ type IncDecStmtDecorations struct {
 // 	var G = /*Start*/ []int{0} /*X*/ [ /*Lbrack*/ 0 /*Index*/] /*End*/
 //
 type IndexExprDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	X      Decorations
 	Lbrack Decorations
 	Index  Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // InterfaceTypeDecorations holds decorations for InterfaceType:
@@ -439,10 +472,11 @@ type IndexExprDecorations struct {
 // 	} /*End*/
 //
 type InterfaceTypeDecorations struct {
+	Space     SpaceType
 	Start     Decorations
 	Interface Decorations
 	End       Decorations
-	Space     SpaceType
+	After     SpaceType
 }
 
 // KeyValueExprDecorations holds decorations for KeyValueExpr:
@@ -452,11 +486,12 @@ type InterfaceTypeDecorations struct {
 // 	}
 //
 type KeyValueExprDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Key   Decorations
 	Colon Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // LabeledStmtDecorations holds decorations for LabeledStmt:
@@ -466,11 +501,12 @@ type KeyValueExprDecorations struct {
 // 		print("Stmt") /*End*/
 //
 type LabeledStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Label Decorations
 	Colon Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // MapTypeDecorations holds decorations for MapType:
@@ -478,17 +514,19 @@ type LabeledStmtDecorations struct {
 // 	type V /*Start*/ map[ /*Map*/ int] /*Key*/ int /*End*/
 //
 type MapTypeDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Map   Decorations
 	Key   Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // PackageDecorations holds decorations for Package:
 //
 type PackageDecorations struct {
 	Space SpaceType
+	After SpaceType
 }
 
 // ParenExprDecorations holds decorations for ParenExpr:
@@ -496,11 +534,12 @@ type PackageDecorations struct {
 // 	var E = /*Start*/ ( /*Lparen*/ 1 + 1 /*X*/) /*End*/ / 2
 //
 type ParenExprDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Lparen Decorations
 	X      Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // RangeStmtDecorations holds decorations for RangeStmt:
@@ -520,6 +559,7 @@ type ParenExprDecorations struct {
 // 	} /*End*/
 //
 type RangeStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	For   Decorations
 	Key   Decorations
@@ -527,7 +567,7 @@ type RangeStmtDecorations struct {
 	Range Decorations
 	X     Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // ReturnStmtDecorations holds decorations for ReturnStmt:
@@ -537,10 +577,11 @@ type RangeStmtDecorations struct {
 // 	}()
 //
 type ReturnStmtDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Return Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // SelectStmtDecorations holds decorations for SelectStmt:
@@ -550,10 +591,11 @@ type ReturnStmtDecorations struct {
 // 	} /*End*/
 //
 type SelectStmtDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Select Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // SelectorExprDecorations holds decorations for SelectorExpr:
@@ -561,10 +603,11 @@ type SelectStmtDecorations struct {
 // 	var F = /*Start*/ fmt. /*X*/ Sprint /*End*/ (0)
 //
 type SelectorExprDecorations struct {
+	Space SpaceType
 	Start Decorations
 	X     Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // SendStmtDecorations holds decorations for SendStmt:
@@ -573,11 +616,12 @@ type SelectorExprDecorations struct {
 // 	c /*Chan*/ <- /*Arrow*/ 0 /*End*/
 //
 type SendStmtDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Chan  Decorations
 	Arrow Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // SliceExprDecorations holds decorations for SliceExpr:
@@ -595,6 +639,7 @@ type SendStmtDecorations struct {
 // 	var H5 = /*Start*/ []int{0} /*X*/ [: /*Low*/ 2: /*High*/ 3 /*Max*/] /*End*/
 //
 type SliceExprDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	X      Decorations
 	Lbrack Decorations
@@ -602,7 +647,7 @@ type SliceExprDecorations struct {
 	High   Decorations
 	Max    Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // StarExprDecorations holds decorations for StarExpr:
@@ -610,10 +655,11 @@ type SliceExprDecorations struct {
 // 	var N = /*Start*/ * /*Star*/ p /*End*/
 //
 type StarExprDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Star  Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // StructTypeDecorations holds decorations for StructType:
@@ -623,10 +669,11 @@ type StarExprDecorations struct {
 // 	} /*End*/
 //
 type StructTypeDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Struct Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // SwitchStmtDecorations holds decorations for SwitchStmt:
@@ -640,12 +687,13 @@ type StructTypeDecorations struct {
 // 	} /*End*/
 //
 type SwitchStmtDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Switch Decorations
 	Init   Decorations
 	Tag    Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // TypeAssertExprDecorations holds decorations for TypeAssertExpr:
@@ -653,12 +701,13 @@ type SwitchStmtDecorations struct {
 // 	var J = /*Start*/ f. /*X*/ ( /*Lparen*/ int /*Type*/) /*End*/
 //
 type TypeAssertExprDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	X      Decorations
 	Lparen Decorations
 	Type   Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // TypeSpecDecorations holds decorations for TypeSpec:
@@ -672,10 +721,11 @@ type TypeAssertExprDecorations struct {
 // 	)
 //
 type TypeSpecDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Name  Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // TypeSwitchStmtDecorations holds decorations for TypeSwitchStmt:
@@ -697,12 +747,13 @@ type TypeSpecDecorations struct {
 // 	} /*End*/
 //
 type TypeSwitchStmtDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Switch Decorations
 	Init   Decorations
 	Assign Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }
 
 // UnaryExprDecorations holds decorations for UnaryExpr:
@@ -710,10 +761,11 @@ type TypeSwitchStmtDecorations struct {
 // 	var O = /*Start*/ ^ /*Op*/ 1 /*End*/
 //
 type UnaryExprDecorations struct {
+	Space SpaceType
 	Start Decorations
 	Op    Decorations
 	End   Decorations
-	Space SpaceType
+	After SpaceType
 }
 
 // ValueSpecDecorations holds decorations for ValueSpec:
@@ -731,9 +783,10 @@ type UnaryExprDecorations struct {
 // 	)
 //
 type ValueSpecDecorations struct {
+	Space  SpaceType
 	Start  Decorations
 	Names  Decorations
 	Assign Decorations
 	End    Decorations
-	Space  SpaceType
+	After  SpaceType
 }

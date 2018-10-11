@@ -34,7 +34,7 @@ func TestPositions(t *testing.T) {
 		if n == nil {
 			return false
 		}
-		_, infos := getDecorationInfo(n)
+		_, _, infos := getDecorationInfo(n)
 		for _, info := range infos {
 			for _, text := range info.decs {
 				if r1.MatchString(text) || r2.MatchString(text) {
@@ -55,7 +55,7 @@ func TestPositions(t *testing.T) {
 		}
 		if fmt.Sprintf("%T", n) == currentNodeType {
 			//fmt.Printf("*** Testing %s (%d)\n", currentNodeType, currentTestIndex)
-			_, infos := getDecorationInfo(n)
+			_, _, infos := getDecorationInfo(n)
 			for _, info := range infos {
 				for _, text := range info.decs {
 					if !strings.HasPrefix(text, "/*") {
@@ -69,7 +69,7 @@ func TestPositions(t *testing.T) {
 			}
 			done = true
 		} else {
-			_, infos := getDecorationInfo(n)
+			_, _, infos := getDecorationInfo(n)
 			for _, info := range infos {
 				for _, text := range info.decs {
 					if !strings.HasPrefix(text, "/*") {

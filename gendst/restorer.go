@@ -27,6 +27,10 @@ func generateRestorer(names []string) error {
 					g.Id("out").Op(":=").Op("&").Qual("go/ast", nodeName).Values()
 					g.Id("r").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
 
+					if nodeName != "Package" {
+						g.Id("r").Dot("applySpace").Call(Id("n").Dot("Decs").Dot("Space"))
+					}
+
 					for _, frag := range fragment.Info[nodeName] {
 						switch frag := frag.(type) {
 						case fragment.Init:
@@ -113,7 +117,7 @@ func generateRestorer(names []string) error {
 					}
 
 					if nodeName != "Package" {
-						g.Id("r").Dot("applySpace").Call(Id("n").Dot("Decs").Dot("Space"))
+						g.Id("r").Dot("applySpace").Call(Id("n").Dot("Decs").Dot("After"))
 					}
 
 					g.Line()

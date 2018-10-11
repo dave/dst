@@ -74,16 +74,17 @@ func New() *Decorator {
 		Info:        &Info{Filenames: map[*dst.File]string{}},
 		decorations: map[ast.Node]map[string][]string{},
 		space:       map[ast.Node]dst.SpaceType{},
+		after:       map[ast.Node]dst.SpaceType{},
 	}
 }
 
 type Decorator struct {
-	Nodes       map[ast.Node]dst.Node
-	Scopes      map[*ast.Scope]*dst.Scope
-	Objects     map[*ast.Object]*dst.Object
-	Info        *Info
-	decorations map[ast.Node]map[string][]string
-	space       map[ast.Node]dst.SpaceType
+	Nodes        map[ast.Node]dst.Node
+	Scopes       map[*ast.Scope]*dst.Scope
+	Objects      map[*ast.Object]*dst.Object
+	Info         *Info
+	decorations  map[ast.Node]map[string][]string
+	space, after map[ast.Node]dst.SpaceType
 }
 
 type Info struct {
@@ -97,7 +98,7 @@ func (d *Decorator) Decorate(fset *token.FileSet, n ast.Node) dst.Node {
 
 	//fragger.debug(fset, os.Stdout)
 
-	d.space, d.decorations = fragger.Link()
+	d.space, d.after, d.decorations = fragger.Link()
 
 	out := d.decorateNode(n)
 
@@ -216,7 +217,13 @@ func debug(w io.Writer, file dst.Node) {
 			return false
 		}
 		var out string
-		space, infos := getDecorationInfo(n)
+		space, after, infos := getDecorationInfo(n)
+		switch space {
+		case dst.NewLine:
+			out += " [New line space]"
+		case dst.EmptyLine:
+			out += " [Empty line space]"
+		}
 		for _, info := range infos {
 			if len(info.decs) > 0 {
 				var values string
@@ -229,11 +236,11 @@ func debug(w io.Writer, file dst.Node) {
 				out += fmt.Sprintf(" [%s %s]", info.name, values)
 			}
 		}
-		switch space {
+		switch after {
 		case dst.NewLine:
-			out += " [New line]"
+			out += " [New line after]"
 		case dst.EmptyLine:
-			out += " [Empty line]"
+			out += " [Empty line after]"
 		}
 		if out != "" {
 			result += nodeType(n) + out + "\n"

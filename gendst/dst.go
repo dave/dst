@@ -43,6 +43,12 @@ func generateDst(names []string) error {
 			f.Func().Params(Id("v").Op("*").Id(name)).Id("SetSpace").Params(Id("s").Id("SpaceType")).Block(
 				Id("v").Dot("Decs").Dot("Space").Op("=").Id("s"),
 			)
+			f.Func().Params(Id("v").Op("*").Id(name)).Id("After").Params().Id("SpaceType").Block(
+				Return(Id("v").Dot("Decs").Dot("After")),
+			)
+			f.Func().Params(Id("v").Op("*").Id(name)).Id("SetAfter").Params(Id("s").Id("SpaceType")).Block(
+				Id("v").Dot("Decs").Dot("After").Op("=").Id("s"),
+			)
 		}
 	}
 	return f.Save("./generated.go")
@@ -116,13 +122,14 @@ func generateDstDecs(names []string) error {
 			f.Comment("")
 		}
 		f.Type().Id(name + "Decorations").StructFunc(func(g *Group) {
+			g.Id("Space").Id("SpaceType")
 			for _, frag := range fragment.Info[name] {
 				switch frag := frag.(type) {
 				case fragment.Decoration:
 					g.Id(frag.Name).Id("Decorations")
 				}
 			}
-			g.Id("Space").Id("SpaceType")
+			g.Id("After").Id("SpaceType")
 		})
 	}
 	return f.Save("./generated-decorations.go")

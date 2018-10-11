@@ -13,8 +13,10 @@ comments don't remain attached to the correct nodes:
 ```go
 code := `package a
 
-var a int    // foo
-var b string // bar
+func main(){
+	var a int    // foo
+	var b string // bar
+}
 `
 fset := token.NewFileSet()
 f, err := parser.ParseFile(fset, "a.go", code, parser.ParseComments)
@@ -22,7 +24,8 @@ if err != nil {
 	panic(err)
 }
 
-f.Decls = []ast.Decl{f.Decls[1], f.Decls[0]}
+list := f.Decls[0].(*ast.FuncDecl).Body.List
+list[0], list[1] = list[1], list[0]
 
 if err := format.Node(os.Stdout, fset, f); err != nil {
 	panic(err)
@@ -31,11 +34,12 @@ if err := format.Node(os.Stdout, fset, f); err != nil {
 //Output:
 //package a
 //
-//// foo
-//var b string
-//var a int
-//
-//// bar
+//func main() {
+//	// foo
+//	var b string
+//	var a int
+//	// bar
+//}
 ```
 
 Here's the same example using `dst`:
@@ -43,15 +47,18 @@ Here's the same example using `dst`:
 ```go
 code := `package a
 
-var a int    // foo
-var b string // bar
+func main(){
+	var a int    // foo
+	var b string // bar
+}
 `
 f, err := decorator.Parse(code)
 if err != nil {
 	panic(err)
 }
 
-f.Decls = []dst.Decl{f.Decls[1], f.Decls[0]}
+list := f.Decls[0].(*dst.FuncDecl).Body.List
+list[0], list[1] = list[1], list[0]
 
 if err := decorator.Print(f); err != nil {
 	panic(err)
@@ -60,8 +67,10 @@ if err := decorator.Print(f); err != nil {
 //Output:
 //package a
 //
-//var b string // bar
-//var a int    // foo
+//func main() {
+//	var b string // bar
+//	var a int    // foo
+//}
 ```
 
 ## Examples
@@ -115,7 +124,6 @@ if err != nil {
 }
 
 callExpr := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
-callExpr.Decs.Lparen.Add("\n")
 for i, v := range callExpr.Args {
 	switch v := v.(type) {
 	case *dst.Ident:
@@ -123,6 +131,7 @@ for i, v := range callExpr.Args {
 			v.Decs.End.Add("// you can adjust line-spacing")
 		}
 		v.Decs.Space = dst.NewLine
+		v.Decs.After = dst.NewLine
 	}
 }
 
@@ -159,9 +168,9 @@ if err != nil {
 
 body := f.Decls[0].(*dst.FuncDecl).Body
 
-body.List[0].End().Add("// the Decorated interface allows access to common")
-body.List[1].End().Add("// decoration properties (Start, End and Space) for")
-body.List[2].End().Add("// all Expr, Stmt and Decl nodes.")
+body.List[0].End().Add("// the Decorated interface allows access to the common")
+body.List[1].End().Add("// decoration properties (Space, Start, End and After)")
+body.List[2].End().Add("// for all Expr, Stmt and Decl nodes.")
 
 if err := decorator.Print(f); err != nil {
 	panic(err)
@@ -171,9 +180,9 @@ if err := decorator.Print(f); err != nil {
 //package main
 //
 //func main() {
-//	var i int  // the Decorated interface allows access to common
-//	i++        // decoration properties (Start, End and Space) for
-//	println(i) // all Expr, Stmt and Decl nodes.
+//	var i int  // the Decorated interface allows access to the common
+//	i++        // decoration properties (Space, Start, End and After)
+//	println(i) // for all Expr, Stmt and Decl nodes.
 //}
 ```
 

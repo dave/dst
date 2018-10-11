@@ -36,10 +36,12 @@ type Node interface {
 }
 
 type Decorated interface {
-	Start() *Decorations
-	End() *Decorations
 	Space() SpaceType
 	SetSpace(SpaceType)
+	Start() *Decorations
+	End() *Decorations
+	After() SpaceType
+	SetAfter(SpaceType)
 }
 
 // All expression nodes implement the Expr interface.
