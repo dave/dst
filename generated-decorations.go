@@ -122,6 +122,7 @@ type CaseClauseDecorations struct {
 	Case  Decorations
 	List  Decorations
 	Colon Decorations
+	End   Decorations
 	Space SpaceType
 }
 
@@ -153,6 +154,7 @@ type CommClauseDecorations struct {
 	Case  Decorations
 	Comm  Decorations
 	Colon Decorations
+	End   Decorations
 	Space SpaceType
 }
 

@@ -116,10 +116,15 @@ if err != nil {
 
 callExpr := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
 callExpr.Decs.Lparen.Add("\n")
-for _, v := range callExpr.Args {
-	v.SetSpace(dst.NewLine)
+for i, v := range callExpr.Args {
+	switch v := v.(type) {
+	case *dst.Ident:
+		if i == 0 {
+			v.Decs.End.Add("// you can adjust line-spacing")
+		}
+		v.Decs.Space = dst.NewLine
+	}
 }
-callExpr.Args[0].End().Add("// you can adjust line-spacing")
 
 if err := decorator.Print(f); err != nil {
 	panic(err)
@@ -134,6 +139,41 @@ if err := decorator.Print(f); err != nil {
 //		b,
 //		c,
 //	)
+//}
+```
+
+### Access common properties by interface
+
+```go
+code := `package main
+
+func main() {
+	var i int
+	i++
+	println(i)
+}`
+f, err := decorator.Parse(code)
+if err != nil {
+	panic(err)
+}
+
+body := f.Decls[0].(*dst.FuncDecl).Body
+
+body.List[0].End().Add("// the Decorated interface allows access to common")
+body.List[1].End().Add("// decoration properties (Start, End and Space) for")
+body.List[2].End().Add("// all Expr, Stmt and Decl nodes.")
+
+if err := decorator.Print(f); err != nil {
+	panic(err)
+}
+
+//Output:
+//package main
+//
+//func main() {
+//	var i int  // the Decorated interface allows access to common
+//	i++        // decoration properties (Start, End and Space) for
+//	println(i) // all Expr, Stmt and Decl nodes.
 //}
 ```
 

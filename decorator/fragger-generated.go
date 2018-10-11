@@ -253,6 +253,11 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 			f.ProcessNode(v)
 		}
 
+		// Decoration: End
+		if false {
+			f.AddDecoration(n, "End", n.End())
+		}
+
 	case *ast.ChanType:
 
 		// Decoration: Start
@@ -329,6 +334,11 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		// List: Body
 		for _, v := range n.Body {
 			f.ProcessNode(v)
+		}
+
+		// Decoration: End
+		if false {
+			f.AddDecoration(n, "End", n.End())
 		}
 
 	case *ast.CompositeLit:

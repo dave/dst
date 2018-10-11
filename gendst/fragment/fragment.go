@@ -1527,8 +1527,12 @@ var Info = map[string][]Part{
 			Elem:      Type{"Stmt", false},
 			Separator: token.SEMICOLON,
 		},
-		// Never want to attach decorations to the end of a list of statements - always better to
-		// attach to the last statement.
+		Decoration{
+			Name: "End",
+			// Never want to attach decorations to the end of a list of statements - always better to
+			// attach to the last statement.
+			Use: Basic{jen.False()},
+		},
 	},
 	/*
 		// A SwitchStmt node represents an expression switch statement.
@@ -1671,8 +1675,12 @@ var Info = map[string][]Part{
 			Elem:      Type{"Stmt", false},
 			Separator: token.SEMICOLON,
 		},
-		// Never want to attach decorations to the end of a list of statements - always better to
-		// attach to the last statement.
+		Decoration{
+			Name: "End",
+			// Never want to attach decorations to the end of a list of statements - always better to
+			// attach to the last statement:
+			Use: Basic{jen.False()},
+		},
 	},
 	/*
 		// An SelectStmt node represents a select statement.

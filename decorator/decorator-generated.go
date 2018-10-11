@@ -319,6 +319,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 			if decs, ok := nd["Colon"]; ok {
 				out.Decs.Colon = decs
 			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		return out
@@ -390,6 +393,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 			}
 			if decs, ok := nd["Colon"]; ok {
 				out.Decs.Colon = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
 			}
 		}
 

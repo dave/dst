@@ -62,6 +62,7 @@ func getDecorationInfo(n dst.Node) (space dst.SpaceType, info []decorationInfo) 
 		info = append(info, decorationInfo{"Case", n.Decs.Case})
 		info = append(info, decorationInfo{"List", n.Decs.List})
 		info = append(info, decorationInfo{"Colon", n.Decs.Colon})
+		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.ChanType:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
@@ -74,6 +75,7 @@ func getDecorationInfo(n dst.Node) (space dst.SpaceType, info []decorationInfo) 
 		info = append(info, decorationInfo{"Case", n.Decs.Case})
 		info = append(info, decorationInfo{"Comm", n.Decs.Comm})
 		info = append(info, decorationInfo{"Colon", n.Decs.Colon})
+		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.CompositeLit:
 		space = n.Decs.Space
 		info = append(info, decorationInfo{"Start", n.Decs.Start})

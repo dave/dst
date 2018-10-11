@@ -134,6 +134,9 @@ func (v *CaseClause) isNode() {}
 func (v *CaseClause) Start() *Decorations {
 	return &v.Decs.Start
 }
+func (v *CaseClause) End() *Decorations {
+	return &v.Decs.End
+}
 func (v *CaseClause) Space() SpaceType {
 	return v.Decs.Space
 }
@@ -156,6 +159,9 @@ func (v *ChanType) SetSpace(s SpaceType) {
 func (v *CommClause) isNode() {}
 func (v *CommClause) Start() *Decorations {
 	return &v.Decs.Start
+}
+func (v *CommClause) End() *Decorations {
+	return &v.Decs.End
 }
 func (v *CommClause) Space() SpaceType {
 	return v.Decs.Space

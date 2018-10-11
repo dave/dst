@@ -35,13 +35,9 @@ type Node interface {
 	isNode()
 }
 
-type Starter interface {
+type Decorated interface {
 	Start() *Decorations
-}
-type Ender interface {
 	End() *Decorations
-}
-type Spacer interface {
 	Space() SpaceType
 	SetSpace(SpaceType)
 }
@@ -49,27 +45,21 @@ type Spacer interface {
 // All expression nodes implement the Expr interface.
 type Expr interface {
 	Node
-	Starter
-	Ender
-	Spacer
+	Decorated
 	exprNode()
 }
 
 // All statement nodes implement the Stmt interface.
 type Stmt interface {
 	Node
-	Starter
-	// CaseClause, CommClause don't have the "End" decoration position
-	Spacer
+	Decorated
 	stmtNode()
 }
 
 // All declaration nodes implement the Decl interface.
 type Decl interface {
 	Node
-	Starter
-	Ender
-	Spacer
+	Decorated
 	declNode()
 }
 

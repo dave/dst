@@ -29,6 +29,10 @@ list of decoration attachment points.
 
 {{ "ExampleSpace" | example }}
 
+### Access common properties by interface
+
+{{ "ExampleDecorated" | example }}
+
 ## Status
 
 This is an experimental package under development, so the API and behaviour is expected to change 

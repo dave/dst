@@ -309,6 +309,9 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		for _, v := range n.Body {
 			out.Body = append(out.Body, r.restoreNode(v).(ast.Stmt))
 		}
+
+		// Decoration: End
+		r.applyDecorations(n.Decs.End)
 		r.applySpace(n.Decs.Space)
 
 		return out
@@ -398,6 +401,9 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		for _, v := range n.Body {
 			out.Body = append(out.Body, r.restoreNode(v).(ast.Stmt))
 		}
+
+		// Decoration: End
+		r.applyDecorations(n.Decs.End)
 		r.applySpace(n.Decs.Space)
 
 		return out
