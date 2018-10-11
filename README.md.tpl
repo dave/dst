@@ -32,7 +32,8 @@ Comments are added at decoration attachment points. See [generated-decorations.g
 for a full list of these points, along with demonstration code of where they are rendered in the output.
 
 The the decoration points have convenience functions `Add`, `Replace`, `Clear` and `All` to accomplish 
-common tasks. Use the full text of your comment including the `//` `/*` and `*/` markers.
+common tasks. Use the full text of your comment including the `//` or `/**/` markers. When adding a 
+line comment, a newline is automatically rendered.
 
 {{ "ExampleComment" | example }}
 
