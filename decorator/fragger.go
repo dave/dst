@@ -279,18 +279,20 @@ func (f *Fragger) Link() (space, after map[ast.Node]dst.SpaceType, decorations m
 
 	// Search for nodes that start directly after newlines. We note their indent.
 	for i, frag := range f.Fragments {
+		if i == 0 {
+			continue
+		}
+		if !f.Fragments[i-1].HasNewline() {
+			continue
+		}
 		switch frag := frag.(type) {
 		case *DecorationFragment:
-			if i == 0 {
-				continue
-			}
-			if !f.Fragments[i-1].HasNewline() {
-				continue
-			}
 			if frag.Name != "Start" {
 				continue
 			}
 			f.Indents[frag.Node] = f.fset.Position(frag.Node.Pos()).Column
+		case *CommentFragment:
+			frag.Indent = f.fset.Position(frag.Pos).Column
 		}
 	}
 	return
@@ -386,6 +388,7 @@ type CommentFragment struct {
 	Text     string
 	Pos      token.Pos
 	Attached *DecorationFragment // where did we attach this comment in pass 1?
+	Indent   int                 // indent if this comment follows a newline
 }
 
 type NewlineFragment struct {
