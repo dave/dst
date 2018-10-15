@@ -17,7 +17,6 @@ func TestRestorer(t *testing.T) {
 		code       string
 	}{
 		{
-			skip: true,
 			name: "case clause",
 			code: `package a
 			

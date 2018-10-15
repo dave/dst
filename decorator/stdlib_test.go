@@ -34,8 +34,6 @@ func TestStdLib(t *testing.T) {
 	}
 	skip := map[string]bool{
 		"archive/tar:format.go": true,
-		"archive/zip:struct.go": true,
-		"os:stat_darwin.go":     true,
 	}
 
 	for _, pkgPath := range all {
