@@ -17,6 +17,21 @@ func TestRestorer(t *testing.T) {
 		code       string
 	}{
 		{
+			skip: true,
+			name: "case clause",
+			code: `package a
+			
+				func main() {
+					switch a {
+					case 1:
+						// a
+					case 2:
+					// b
+					case 3:
+					}
+				}`,
+		},
+		{
 			name: "block comment",
 			code: `package a
 				
@@ -72,31 +87,6 @@ func TestRestorer(t *testing.T) {
 						// a
 					}
 				}`,
-		},
-		{
-			skip: true,
-			name: "indented comment in case",
-			code: `package main
-
-			func main() {
-				switch true {
-				case true:
-					// a
-				case false:
-				}
-			}`,
-		},
-		{
-			name: "non indented comment in case",
-			code: `package main
-
-			func main() {
-				switch true {
-				case true:
-				// a
-				case false:
-				}
-			}`,
 		},
 		{
 			name: "comment in final case",

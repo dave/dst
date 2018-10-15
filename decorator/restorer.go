@@ -126,6 +126,10 @@ func (f *fileRestorer) applyDecorations(decorations dst.Decorations) {
 		isComment := isLineComment || isInlineComment
 		isMultiLineComment := isInlineComment && strings.Contains(d, "\n")
 
+		//if f.cursorAtNewLine == f.cursor {
+		//	f.cursor++ // indent all comments
+		//}
+
 		// for multi-line comments, add a newline for each \n
 		if isMultiLineComment {
 			for charIndex, char := range d {
