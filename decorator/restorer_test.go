@@ -15,6 +15,27 @@ func TestRestorer(t *testing.T) {
 		code       string
 	}{
 		{
+			skip: true,
+			name: "hanging-indent",
+			code: `package a
+
+const a = 1 +
+	1
+	// a1
+
+	// a2
+const b = 1
+
+const c = 1 +
+	1
+
+// d1
+
+// d2
+const d = 1
+`,
+		},
+		{
 			name: "net-hook",
 			code: `package a
 
@@ -42,8 +63,9 @@ func TestRestorer(t *testing.T) {
 					switch a {
 					case 1:
 						// a
-					case 2:
 					// b
+					case 2:
+					// c
 					case 3:
 					}
 				}`,

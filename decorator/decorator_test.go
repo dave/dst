@@ -21,6 +21,33 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
+			skip: true,
+			name: "hanging-indent",
+			code: `package a
+
+const a = 1 +
+	1
+	// a1
+
+	// a2
+const b = 1
+
+const c = 1 +
+	1
+
+// d1
+
+// d2
+const d = 1
+`,
+			expect: `GenDecl [Empty line space] [End "\n" "// a1" "\n" "// a2"] [New line after]
+BasicLit [New line space]
+GenDecl [Empty line space] [Empty line after]
+GenDecl [Empty line space] [Empty line after]
+BasicLit [New line space]
+GenDecl [Empty line space] [Start "// d1" "\n" "// d2"]`,
+		},
+		{
 			name: "net-hook",
 			code: `package a
 
@@ -54,16 +81,17 @@ KeyValueExpr [New line space] [New line after]`,
 					switch a {
 					case 1:
 						// a
-					case 2:
 					// b
+					case 2:
+					// c
 					case 3:
 					}
 				}`,
 			expect: `FuncDecl [Empty line space]
 SwitchStmt [New line space] [New line after]
 CaseClause [New line space] [Colon "\n" "// a"]
-CaseClause [New line space]
-CaseClause [New line space] [Start "// b"] [Colon "\n"]`,
+CaseClause [New line space] [Start "// b"]
+CaseClause [New line space] [Start "// c"] [Colon "\n"]`,
 		},
 		{
 			name: "block comment",
