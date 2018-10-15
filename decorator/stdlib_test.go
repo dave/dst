@@ -32,9 +32,7 @@ func TestStdLib(t *testing.T) {
 	ignore := map[string]bool{
 		"builtin": true,
 	}
-	skip := map[string]bool{
-		"archive/tar:format.go": true,
-	}
+	skip := map[string]bool{}
 
 	for _, pkgPath := range all {
 

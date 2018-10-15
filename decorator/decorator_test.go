@@ -21,6 +21,21 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "net-hook",
+			code: `package a
+
+				var a = func(
+					b int,
+					c int,
+				) int {
+					return 1
+				}`,
+			expect: `GenDecl [Empty line space]
+Field [New line space] [New line after]
+Field [New line space] [New line after]
+ReturnStmt [New line space] [New line after]`,
+		},
+		{
 			name: "multi-line-string",
 			code: `package a
 

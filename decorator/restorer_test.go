@@ -15,6 +15,17 @@ func TestRestorer(t *testing.T) {
 		code       string
 	}{
 		{
+			name: "net-hook",
+			code: `package a
+
+				var a = func(
+					b int,
+					c int,
+				) int {
+					return 1
+				}`,
+		},
+		{
 			name: "multi-line-string",
 			code: `package a
 

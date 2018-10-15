@@ -182,6 +182,11 @@ func (f *fileRestorer) applySpace(space dst.SpaceType) {
 		newlines--
 	}
 	for i := 0; i < newlines; i++ {
+
+		// Advance the cursor one more byte for all newlines, so we step over any required
+		// separator char - e.g. comma. See net-hook test
+		f.cursor++
+
 		lineOffset := int(f.cursor) - f.base // remember lines are relative to the file base
 		f.lines = append(f.lines, lineOffset)
 		f.cursor++
