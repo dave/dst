@@ -204,6 +204,7 @@ var Info = map[string][]Part{
 			Name:          "Value",
 			ValueField:    Field{"Value"},
 			PositionField: Field{"ValuePos"},
+			Literal:       true,
 		},
 		Decoration{
 			Name: "End",
@@ -2274,6 +2275,7 @@ type String struct {
 	Name          string
 	ValueField    FieldSpec
 	PositionField FieldSpec
+	Literal       bool
 }
 
 type List struct {

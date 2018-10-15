@@ -5,8 +5,6 @@ import (
 	"go/format"
 	"testing"
 
-	"os"
-
 	"github.com/andreyvit/diff"
 )
 
@@ -16,6 +14,15 @@ func TestRestorer(t *testing.T) {
 		name       string
 		code       string
 	}{
+		{
+			name: "multi-line-string",
+			code: `package a
+
+				var a = b{
+					c: ` + "`" + `
+` + "`" + `,
+				}`,
+		},
 		{
 			name: "case clause",
 			code: `package a
@@ -569,14 +576,15 @@ func TestRestorer(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			formatted, err := format.Source(buf.Bytes())
-			if err != nil {
-				t.Fatal(err)
-			}
+			//formatted, err := format.Source(buf.Bytes())
+			//if err != nil {
+			//	t.Fatal(err)
+			//}
 
-			if string(formatted) != test.code {
-				debug(os.Stdout, file)
-				t.Errorf("diff: %s", diff.LineDiff(test.code, string(formatted)))
+			if buf.String() != test.code {
+				//fmt.Println("expected:", test.code)
+				//fmt.Println("found:", buf.String())
+				t.Errorf("diff: %s", diff.LineDiff(test.code, buf.String()))
 			}
 		})
 	}

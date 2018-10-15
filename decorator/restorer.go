@@ -117,6 +117,19 @@ func (f *fileRestorer) fileSize() int {
 	return end - f.base
 }
 
+func (f *fileRestorer) applyLiteral(text string) {
+	isMultiLine := strings.HasPrefix(text, "`") && strings.Contains(text, "\n")
+	if !isMultiLine {
+		return
+	}
+	for charIndex, char := range text {
+		if char == '\n' {
+			lineOffset := int(f.cursor) - f.base + charIndex // remember lines are relative to the file base
+			f.lines = append(f.lines, lineOffset)
+		}
+	}
+}
+
 func (f *fileRestorer) applyDecorations(decorations dst.Decorations, indent bool) {
 	for _, d := range decorations {
 

@@ -65,12 +65,13 @@ func generateRestorer(names []string) error {
 							}
 						case fragment.String:
 							g.Line().Commentf("String: %s", frag.Name)
+							if frag.Literal {
+								g.Id("r").Dot("applyLiteral").Call(frag.ValueField.Get("n"))
+							}
 							if frag.PositionField != nil {
 								g.Add(frag.PositionField.Get("out")).Op("=").Id("r").Dot("cursor")
 							}
-							if frag.ValueField != nil {
-								g.Add(frag.ValueField.Get("out")).Op("=").Add(frag.ValueField.Get("n"))
-							}
+							g.Add(frag.ValueField.Get("out")).Op("=").Add(frag.ValueField.Get("n"))
 							g.Id("r").Dot("cursor").Op("+=").Qual("go/token", "Pos").Parens(
 								Len(frag.ValueField.Get("n")),
 							)

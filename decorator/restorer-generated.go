@@ -130,6 +130,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applyDecorations(n.Decs.Start, true)
 
 		// String: Value
+		r.applyLiteral(n.Value)
 		out.ValuePos = r.cursor
 		out.Value = n.Value
 		r.cursor += token.Pos(len(n.Value))

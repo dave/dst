@@ -102,11 +102,15 @@ func (d *Decorator) Decorate(fset *token.FileSet, n ast.Node) dst.Node {
 	fragger := NewFragger(fset)
 	fragger.Fragment(n)
 
+	//fmt.Println("\nFragger:")
 	//fragger.debug(fset, os.Stdout)
 
 	d.space, d.after, d.decorations = fragger.Link()
 
 	out := d.decorateNode(n)
+
+	//fmt.Println("\nDecorator:")
+	//debug(os.Stdout, out)
 
 	// Populate Info with filenames if we're decorating a File or Package.
 	switch n := n.(type) {

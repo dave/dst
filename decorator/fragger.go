@@ -85,6 +85,27 @@ func (f *Fragger) Fragment(node ast.Node) {
 					}
 				}
 			}
+
+			// avoid newlines inside multi-line (back-quoted) strings
+			for _, frag := range f.Fragments {
+				switch frag := frag.(type) {
+				case *StringFragment:
+					if !strings.HasPrefix(frag.String, "`") {
+						continue
+					}
+
+					startLine := f.fset.Position(frag.Pos).Line
+					endLine := f.fset.Position(frag.Pos + token.Pos(len(frag.String))).Line
+
+					// multi line string
+					if endLine > startLine {
+						for i := startLine; i < endLine; i++ {
+							avoid[i+1] = true // we avoid the lines that follow the lines in the string
+						}
+					}
+				}
+			}
+
 			line := 1
 			tokenf := f.fset.File(astf.Pos())
 			max := tokenf.Base() + tokenf.Size()

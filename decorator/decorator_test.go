@@ -21,6 +21,17 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "multi-line-string",
+			code: `package a
+
+				var a = b{
+					c: ` + "`" + `
+` + "`" + `,
+				}`,
+			expect: `GenDecl [Empty line space]
+KeyValueExpr [New line space] [New line after]`,
+		},
+		{
 			name: "case clause",
 			code: `package a
 			
