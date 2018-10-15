@@ -99,8 +99,8 @@ type Info struct {
 
 func (d *Decorator) Decorate(fset *token.FileSet, n ast.Node) dst.Node {
 
-	fragger := &Fragger{}
-	fragger.Fragment(fset, n)
+	fragger := NewFragger(fset)
+	fragger.Fragment(n)
 
 	//fragger.debug(fset, os.Stdout)
 

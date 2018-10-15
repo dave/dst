@@ -117,7 +117,7 @@ func (f *fileRestorer) fileSize() int {
 	return end - f.base
 }
 
-func (f *fileRestorer) applyDecorations(decorations dst.Decorations) {
+func (f *fileRestorer) applyDecorations(decorations dst.Decorations, indent bool) {
 	for _, d := range decorations {
 
 		isNewline := d == "\n"
@@ -125,6 +125,10 @@ func (f *fileRestorer) applyDecorations(decorations dst.Decorations) {
 		isInlineComment := strings.HasPrefix(d, "/*")
 		isComment := isLineComment || isInlineComment
 		isMultiLineComment := isInlineComment && strings.Contains(d, "\n")
+
+		if indent && f.cursorAtNewLine == f.cursor {
+			f.cursor++ // indent all comments
+		}
 
 		// for multi-line comments, add a newline for each \n
 		if isMultiLineComment {

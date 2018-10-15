@@ -21,6 +21,25 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "case clause",
+			code: `package a
+			
+				func main() {
+					switch a {
+					case 1:
+						// a
+					case 2:
+					// b
+					case 3:
+					}
+				}`,
+			expect: `FuncDecl [Empty line space]
+SwitchStmt [New line space] [New line after]
+CaseClause [New line space] [Colon "\n" "// a"]
+CaseClause [New line space]
+CaseClause [New line space] [Start "// b"] [Colon "\n"]`,
+		},
+		{
 			name: "block comment",
 			code: `package a
 				
