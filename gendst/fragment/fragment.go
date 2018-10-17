@@ -1530,9 +1530,6 @@ var Info = map[string][]Part{
 		},
 		Decoration{
 			Name: "End",
-			// Never want to attach decorations to the end of a list of statements - always better to
-			// attach to the last statement.
-			Use: Basic{jen.False()},
 		},
 	},
 	/*
@@ -1678,9 +1675,6 @@ var Info = map[string][]Part{
 		},
 		Decoration{
 			Name: "End",
-			// Never want to attach decorations to the end of a list of statements - always better to
-			// attach to the last statement:
-			Use: Basic{jen.False()},
 		},
 	},
 	/*
