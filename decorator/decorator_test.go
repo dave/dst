@@ -21,6 +21,18 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "comment-alignment",
+			code: `package a
+
+const (
+	a = 1 // a
+	b     // b
+)`,
+			expect: `GenDecl [Empty line space]
+ValueSpec [New line space] [End "// a"] [New line after]
+ValueSpec [New line space] [End "// b"] [New line after]`,
+		},
+		{
 			name: "labelled-statement-hanging-indent",
 			code: `package a
 

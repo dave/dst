@@ -15,6 +15,36 @@ func TestRestorer(t *testing.T) {
 		code       string
 	}{
 		{
+			name: "comment-alignment",
+			code: `package a
+
+const (
+	a = 1 // a
+	b     // b
+)`,
+		},
+		{
+			name: "import-comment-alignment",
+			code: `package a
+            
+import (
+	"bytes"     // a
+	"go/format" // b
+)`,
+		},
+		{
+			name: "comment-alignment-1",
+			code: `package a
+
+func main() {
+	switch {
+	case true:
+		a := 1 // a
+		a++    // b
+	}
+}`,
+		},
+		{
 			name: "labelled-statement",
 			code: `package a
 

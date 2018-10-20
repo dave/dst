@@ -130,7 +130,46 @@ func (f *fileRestorer) applyLiteral(text string) {
 	}
 }
 
-func (f *fileRestorer) applyDecorations(name string, decorations dst.Decorations) {
+func (f *fileRestorer) hasCommentField(n ast.Node) bool {
+	switch n.(type) {
+	case *ast.Field, *ast.ValueSpec, *ast.TypeSpec, *ast.ImportSpec:
+		return true
+	}
+	return false
+}
+
+func (f *fileRestorer) addCommentField(n ast.Node, slash token.Pos, text string) {
+	c := &ast.Comment{Slash: slash, Text: text}
+	switch n := n.(type) {
+	case *ast.Field:
+		if n.Comment == nil {
+			n.Comment = &ast.CommentGroup{}
+			f.comments = append(f.comments, n.Comment)
+		}
+		n.Comment.List = append(n.Comment.List, c)
+	case *ast.ImportSpec:
+		if n.Comment == nil {
+			n.Comment = &ast.CommentGroup{}
+			f.comments = append(f.comments, n.Comment)
+		}
+		n.Comment.List = append(n.Comment.List, c)
+	case *ast.ValueSpec:
+		if n.Comment == nil {
+			n.Comment = &ast.CommentGroup{}
+			f.comments = append(f.comments, n.Comment)
+		}
+		n.Comment.List = append(n.Comment.List, c)
+	case *ast.TypeSpec:
+		if n.Comment == nil {
+			n.Comment = &ast.CommentGroup{}
+			f.comments = append(f.comments, n.Comment)
+		}
+		n.Comment.List = append(n.Comment.List, c)
+	}
+}
+
+func (f *fileRestorer) applyDecorations(node ast.Node, name string, decorations dst.Decorations) {
+	firstLine := true
 	for _, d := range decorations {
 
 		isNewline := d == "\n"
@@ -155,7 +194,13 @@ func (f *fileRestorer) applyDecorations(name string, decorations dst.Decorations
 
 		// if the decoration is a comment, add it and advance the cursor
 		if isComment {
-			f.comments = append(f.comments, &ast.CommentGroup{List: []*ast.Comment{{Slash: f.cursor, Text: d}}})
+			if firstLine && name == "End" && f.hasCommentField(node) {
+				// for comments on the same line as the end of a node that has a Comment field, we
+				// add the comment to the node instead of the file.
+				f.addCommentField(node, f.cursor, d)
+			} else {
+				f.comments = append(f.comments, &ast.CommentGroup{List: []*ast.Comment{{Slash: f.cursor, Text: d}}})
+			}
 			f.cursor += token.Pos(len(d))
 		}
 
@@ -166,6 +211,10 @@ func (f *fileRestorer) applyDecorations(name string, decorations dst.Decorations
 			f.cursor++
 
 			f.cursorAtNewLine = f.cursor
+		}
+
+		if isNewline || isLineComment {
+			firstLine = false
 		}
 	}
 }
