@@ -254,9 +254,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		if false {
-			f.AddDecoration(n, "End", n.End())
-		}
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.ChanType:
 
@@ -337,9 +335,7 @@ func (f *Fragger) ProcessNode(n ast.Node) {
 		}
 
 		// Decoration: End
-		if false {
-			f.AddDecoration(n, "End", n.End())
-		}
+		f.AddDecoration(n, "End", n.End())
 
 	case *ast.CompositeLit:
 

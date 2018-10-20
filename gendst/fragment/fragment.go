@@ -1530,9 +1530,6 @@ var Info = map[string][]Part{
 		},
 		Decoration{
 			Name: "End",
-			// Never want to attach decorations to the end of a list of statements - always better to
-			// attach to the last statement.
-			Use: Basic{jen.False()},
 		},
 	},
 	/*
@@ -1678,9 +1675,6 @@ var Info = map[string][]Part{
 		},
 		Decoration{
 			Name: "End",
-			// Never want to attach decorations to the end of a list of statements - always better to
-			// attach to the last statement:
-			Use: Basic{jen.False()},
 		},
 	},
 	/*
@@ -2258,6 +2252,67 @@ var Info = map[string][]Part{
 			Elem:  Type{"File", true},
 		},
 	},
+}
+
+var Exprs = map[string]bool{
+	"BadExpr":        true,
+	"Ident":          true,
+	"Ellipsis":       true,
+	"BasicLit":       true,
+	"FuncLit":        true,
+	"CompositeLit":   true,
+	"ParenExpr":      true,
+	"SelectorExpr":   true,
+	"IndexExpr":      true,
+	"SliceExpr":      true,
+	"TypeAssertExpr": true,
+	"CallExpr":       true,
+	"StarExpr":       true,
+	"UnaryExpr":      true,
+	"BinaryExpr":     true,
+	"KeyValueExpr":   true,
+	"ArrayType":      true,
+	"StructType":     true,
+	"FuncType":       true,
+	"InterfaceType":  true,
+	"MapType":        true,
+	"ChanType":       true,
+}
+
+var Stmts = map[string]bool{
+	"BadStmt":        true,
+	"DeclStmt":       true,
+	"EmptyStmt":      true,
+	"LabeledStmt":    true,
+	"ExprStmt":       true,
+	"SendStmt":       true,
+	"IncDecStmt":     true,
+	"AssignStmt":     true,
+	"GoStmt":         true,
+	"DeferStmt":      true,
+	"ReturnStmt":     true,
+	"BranchStmt":     true,
+	"BlockStmt":      true,
+	"IfStmt":         true,
+	"CaseClause":     true,
+	"SwitchStmt":     true,
+	"TypeSwitchStmt": true,
+	"CommClause":     true,
+	"SelectStmt":     true,
+	"ForStmt":        true,
+	"RangeStmt":      true,
+}
+
+var Decls = map[string]bool{
+	"BadDecl":  true,
+	"GenDecl":  true,
+	"FuncDecl": true,
+}
+
+var Specs = map[string]bool{
+	"ImportSpec": true,
+	"ValueSpec":  true,
+	"TypeSpec":   true,
 }
 
 type Init struct {

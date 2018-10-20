@@ -119,6 +119,7 @@ func TestFragger(t *testing.T) {
             ValueSpec End 9:12
             GenDecl End 9:12
             DeclStmt End 9:12
+			CaseClause End 9:12
             New line 9:12
             BlockStmt "}" 10:2
             BlockStmt End 10:3

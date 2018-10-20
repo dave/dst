@@ -15,7 +15,29 @@ func TestRestorer(t *testing.T) {
 		code       string
 	}{
 		{
-			skip: true,
+			name: "labelled-statement",
+			code: `package a
+
+func main() {
+		/*Start*/
+A /*Label*/ : /*Colon*/
+	print("Stmt") /*End*/
+}`,
+		},
+		{
+			name: "hanging-indent-same-line",
+			code: `package a
+
+func a() {
+	switch {
+	case true: // a
+		// b
+	// c
+	case false:
+	}
+}`,
+		},
+		{
 			name: "hanging-indent",
 			code: `package a
 

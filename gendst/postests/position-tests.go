@@ -166,7 +166,7 @@ A /*Label*/ : /*Colon*/
 	// CaseClause
 	switch i {
 	/*Start*/ case /*Case*/ 1 /*List*/ : /*Colon*/
-		i++
+		i++ /*End*/
 	}
 
 	// SwitchStmt(0)
@@ -201,7 +201,7 @@ A /*Label*/ : /*Colon*/
 	// CommClause
 	select {
 	/*Start*/ case /*Case*/ a := <-c /*Comm*/ : /*Colon*/
-		print(a)
+		print(a) /*End*/
 	}
 
 	// SelectStmt

@@ -38,11 +38,7 @@ func generateRestorer(names []string) error {
 							g.Add(frag.Field.Get("out")).Op("=").Op("&").Qual("go/ast", frag.Type.Name).Values()
 						case fragment.Decoration:
 							g.Line().Commentf("Decoration: %s", frag.Name)
-							indent := true
-							if frag.Name == "Start" && (nodeName == "CommClause" || nodeName == "CaseClause") {
-								indent = false
-							}
-							g.Id("r").Dot("applyDecorations").Call(Id("n").Dot("Decs").Dot(frag.Name), Lit(indent))
+							g.Id("r").Dot("applyDecorations").Call(Lit(frag.Name), Id("n").Dot("Decs").Dot(frag.Name))
 						case fragment.Token:
 							g.Line().Commentf("Token: %s", frag.Name)
 							position := Null()
