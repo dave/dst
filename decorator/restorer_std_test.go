@@ -19,6 +19,10 @@ import (
 
 func TestStdLibAll(t *testing.T) {
 
+	if testing.Short() {
+		t.Skip("skipping standard library test in short mode.")
+	}
+
 	cmd := exec.Command("go", "list", "./...")
 	cmd.Env = []string{
 		fmt.Sprintf("GOPATH=%s", build.Default.GOPATH),

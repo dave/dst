@@ -9,6 +9,7 @@ install:
   - go get -u github.com/dave/courtney
   - go get -t -v ./...
 script:
+  - go test -short ./...
   - courtney
 after_success:
   - bash <(curl -s https://codecov.io/bash)
