@@ -82,9 +82,9 @@ if err := decorator.Print(f); err != nil {
 Comments are added at decoration attachment points. See [generated-decorations.go](https://github.com/dave/dst/blob/master/generated-decorations.go) 
 for a full list of these points, along with demonstration code of where they are rendered in the output.
 
-The the decoration points have convenience functions `Add`, `Replace`, `Clear` and `All` to accomplish 
-common tasks. Use the full text of your comment including the `//` or `/**/` markers. When adding a 
-line comment, a newline is automatically rendered.
+The decoration attachment points have convenience functions `Add`, `Replace`, `Clear` and `All` to 
+accomplish common tasks. Use the full text of your comment including the `//` or `/**/` markers. When 
+adding a line comment, a newline is automatically rendered.
 
 ```go
 code := `package main
@@ -291,8 +291,8 @@ if err := decorator.Print(f); err != nil {
 //}
 ```
 
-If you would like to help creating a version of `go/types`, feel free to continue my work in the 
-[types branch](https://github.com/dave/dst/tree/types).
+If you would like to help create a fully `dst` compatible version of `go/types`, feel free to 
+continue my work in the [types branch](https://github.com/dave/dst/tree/types).
 
 ### Status
 
