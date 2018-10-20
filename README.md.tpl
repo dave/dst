@@ -20,14 +20,6 @@ Here's the same example using `dst`:
 
 ### Examples
 
-#### Line spacing
-
-The `Space` property marks the node as having a line space (new line or empty line) before the node. 
-These spaces are rendered before any decorations attached to the `Start` decoration point. The `After`
-property is similar but rendered after the node (and after any `End` decorations).
-
-{{ "ExampleSpace" | example }}
-
 #### Comments
 
 Comments are added at decoration attachment points. See [generated-decorations.go](https://github.com/dave/dst/blob/master/generated-decorations.go) 
@@ -39,6 +31,14 @@ line comment, a newline is automatically rendered.
 
 {{ "ExampleComment" | example }}
 
+#### Line spacing
+
+The `Space` property marks the node as having a line space (new line or empty line) before the node. 
+These spaces are rendered before any decorations attached to the `Start` decoration point. The `After`
+property is similar but rendered after the node (and after any `End` decorations).
+
+{{ "ExampleSpace" | example }}
+
 #### Common properties
 
 The common decoration properties (`Start`, `End`, `Space` and `After`) occur on all `Expr`, `Stmt` 
@@ -48,8 +48,8 @@ and `Decl` nodes, so are available on those interfaces:
 
 #### Newlines as decorations
 
-The `Space` and `After` properties cover the vast majority of cases, but occasionally a newline needs 
-to be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
+The `Space` and `After` properties cover the majority of cases, but occasionally a newline needs to 
+be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
 
 #### Apply function from astutil
 
@@ -66,10 +66,13 @@ way the `go/types` package can be used:
 
 {{ "ExampleTypes" | example }}
 
+If you would like to help creating a version of `go/types`, feel free to continue my work in the 
+[types branch](https://github.com/dave/dst/tree/types).
+
 ### Status
 
-This is an experimental package under development, so the API and behaviour is expected to change 
-frequently. However I'm now inviting people to try it out and give feedback. 
+This is an experimental package under development, but the API is not expected to change much going 
+forward. Please try it out and give feedback. 
 
 ### Chat?
 

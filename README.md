@@ -77,6 +77,45 @@ if err := decorator.Print(f); err != nil {
 
 ### Examples
 
+#### Comments
+
+Comments are added at decoration attachment points. See [generated-decorations.go](https://github.com/dave/dst/blob/master/generated-decorations.go) 
+for a full list of these points, along with demonstration code of where they are rendered in the output.
+
+The the decoration points have convenience functions `Add`, `Replace`, `Clear` and `All` to accomplish 
+common tasks. Use the full text of your comment including the `//` or `/**/` markers. When adding a 
+line comment, a newline is automatically rendered.
+
+```go
+code := `package main
+
+func main() {
+	println("Hello World!")
+}`
+f, err := decorator.Parse(code)
+if err != nil {
+	panic(err)
+}
+
+call := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
+
+call.Decs.Start.Add("// you can add comments at the start...")
+call.Decs.Fun.Add("/* ...in the middle... */")
+call.Decs.End.Add("// or at the end.")
+
+if err := decorator.Print(f); err != nil {
+	panic(err)
+}
+
+//Output:
+//package main
+//
+//func main() {
+//	// you can add comments at the start...
+//	println /* ...in the middle... */ ("Hello World!") // or at the end.
+//}
+```
+
 #### Line spacing
 
 The `Space` property marks the node as having a line space (new line or empty line) before the node. 
@@ -120,45 +159,6 @@ if err := decorator.Print(f); err != nil {
 //		c,
 //	)
 //
-//}
-```
-
-#### Comments
-
-Comments are added at decoration attachment points. See [generated-decorations.go](https://github.com/dave/dst/blob/master/generated-decorations.go) 
-for a full list of these points, along with demonstration code of where they are rendered in the output.
-
-The the decoration points have convenience functions `Add`, `Replace`, `Clear` and `All` to accomplish 
-common tasks. Use the full text of your comment including the `//` or `/**/` markers. When adding a 
-line comment, a newline is automatically rendered.
-
-```go
-code := `package main
-
-func main() {
-	println("Hello World!")
-}`
-f, err := decorator.Parse(code)
-if err != nil {
-	panic(err)
-}
-
-call := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
-
-call.Decs.Start.Add("// you can add comments at the start...")
-call.Decs.Fun.Add("/* ...in the middle... */")
-call.Decs.End.Add("// or at the end.")
-
-if err := decorator.Print(f); err != nil {
-	panic(err)
-}
-
-//Output:
-//package main
-//
-//func main() {
-//	// you can add comments at the start...
-//	println /* ...in the middle... */ ("Hello World!") // or at the end.
 //}
 ```
 
@@ -206,8 +206,8 @@ if err := decorator.Print(f); err != nil {
 
 #### Newlines as decorations
 
-The `Space` and `After` properties cover the vast majority of cases, but occasionally a newline needs 
-to be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
+The `Space` and `After` properties cover the majority of cases, but occasionally a newline needs to 
+be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
 
 #### Apply function from astutil
 
@@ -291,10 +291,13 @@ if err := decorator.Print(f); err != nil {
 //}
 ```
 
+If you would like to help creating a version of `go/types`, feel free to continue my work in the 
+[types branch](https://github.com/dave/dst/tree/types).
+
 ### Status
 
-This is an experimental package under development, so the API and behaviour is expected to change 
-frequently. However I'm now inviting people to try it out and give feedback. 
+This is an experimental package under development, but the API is not expected to change much going 
+forward. Please try it out and give feedback. 
 
 ### Chat?
 
