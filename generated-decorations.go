@@ -124,7 +124,7 @@ type CallExprDecorations struct {
 //
 // 	switch i {
 // 	/*Start*/ case /*Case*/ 1 /*List*/ : /*Colon*/
-// 		i++
+// 		i++ /*End*/
 // 	}
 //
 type CaseClauseDecorations struct {
@@ -158,7 +158,7 @@ type ChanTypeDecorations struct {
 //
 // 	select {
 // 	/*Start*/ case /*Case*/ a := <-c /*Comm*/ : /*Colon*/
-// 		print(a)
+// 		print(a) /*End*/
 // 	}
 //
 type CommClauseDecorations struct {

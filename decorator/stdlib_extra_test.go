@@ -9,8 +9,6 @@ import (
 
 	"path/filepath"
 
-	"fmt"
-
 	"github.com/andreyvit/diff"
 	"golang.org/x/tools/go/loader"
 )
@@ -19,7 +17,14 @@ func TestStdLibExtra(t *testing.T) {
 
 	t.Skip()
 
-	broken := `cmd/compile/internal/syntax:parser.go`
+	broken := `cmd/compile/internal/ssa:loopbce.go
+cmd/compile/internal/syntax:tokens.go
+cmd/internal/obj/arm64:a.out.go
+cmd/internal/obj/ppc64:a.out.go
+encoding/json:scanner.go
+text/template:option.go
+time:format.go
+unicode:graphic.go`
 	fields := strings.Fields(broken)
 	packages := map[string]map[string]bool{}
 	for _, v := range fields {
@@ -70,24 +75,27 @@ func TestStdLibExtra(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				//if expected.String() != output.String() {
-				//	t.Errorf("diff: %s", diff.LineDiff(expected.String(), output.String()))
-				//}
-
-				expected1, err := format.Source(expected.Bytes())
-				if err != nil {
-					t.Fatal(err)
+				if expected.String() != output.String() {
+					t.Errorf("diff: %s", diff.LineDiff(expected.String(), output.String()))
 				}
 
-				output1, err := format.Source(output.Bytes())
-				if err != nil {
-					t.Fatal(err)
-				}
-				if string(expected1) != string(output1) {
-					fmt.Println("expected:", string(expected1))
-					fmt.Println("found:", string(output1))
-					t.Errorf("diff: %s", diff.LineDiff(string(expected1), string(output1)))
-				}
+				/*
+					expected1, err := format.Source(expected.Bytes())
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					output1, err := format.Source(output.Bytes())
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					if string(expected1) != string(output1) {
+						fmt.Println("expected:", string(expected1))
+						fmt.Println("found:", string(output1))
+						t.Errorf("diff: %s", diff.LineDiff(string(expected1), string(output1)))
+					}
+				*/
 
 			})
 		}

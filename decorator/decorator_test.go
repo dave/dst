@@ -21,7 +21,40 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
-			skip: true,
+			name: "labelled-statement-hanging-indent",
+			code: `package a
+
+func main() {
+A:
+	var a int
+	// a
+
+	// b
+	var b int
+}`,
+			expect: `FuncDecl [Empty line space]
+LabeledStmt [New line space] [End "\n" "// a"] [Empty line after]
+DeclStmt [New line space]
+DeclStmt [Empty line space] [Start "// b"] [New line after]`,
+		},
+		{
+			name: "hanging-indent-same-line",
+			code: `package a
+
+func a() {
+	switch {
+	case true: // a
+		// b
+	// c
+	case false:
+	}
+}`,
+			expect: `FuncDecl [Empty line space]
+SwitchStmt [New line space] [New line after]
+CaseClause [New line space] [End "// a" "// b"] [New line after]
+CaseClause [New line space] [Start "// c"] [New line after]`,
+		},
+		{
 			name: "hanging-indent",
 			code: `package a
 
@@ -42,7 +75,7 @@ const d = 1
 `,
 			expect: `GenDecl [Empty line space] [End "\n" "// a1" "\n" "// a2"] [New line after]
 BasicLit [New line space]
-GenDecl [Empty line space] [Empty line after]
+GenDecl [New line space] [Empty line after]
 GenDecl [Empty line space] [Empty line after]
 BasicLit [New line space]
 GenDecl [Empty line space] [Start "// d1" "\n" "// d2"]`,
@@ -89,9 +122,9 @@ KeyValueExpr [New line space] [New line after]`,
 				}`,
 			expect: `FuncDecl [Empty line space]
 SwitchStmt [New line space] [New line after]
-CaseClause [New line space] [Colon "\n" "// a"]
-CaseClause [New line space] [Start "// b"]
-CaseClause [New line space] [Start "// c"] [Colon "\n"]`,
+CaseClause [New line space] [End "\n" "// a"] [New line after]
+CaseClause [New line space] [Start "// b"] [New line after]
+CaseClause [New line space] [Start "// c"] [New line after]`,
 		},
 		{
 			name: "block comment",
@@ -118,8 +151,8 @@ CaseClause [New line space] [Start "// c"] [Colon "\n"]`,
 				}`,
 			expect: `FuncDecl [Empty line space]
 SwitchStmt [New line space] [New line after]
-CaseClause [New line space] [Colon "\n" "// b" "// c"]
-DeclStmt [Empty line space] [New line after]`,
+CaseClause [New line space] [Colon "\n" "// b" "// c"] [New line after]
+DeclStmt [Empty line space]`,
 		},
 		{
 			name: "file",

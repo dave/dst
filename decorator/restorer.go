@@ -130,7 +130,7 @@ func (f *fileRestorer) applyLiteral(text string) {
 	}
 }
 
-func (f *fileRestorer) applyDecorations(decorations dst.Decorations, indent bool) {
+func (f *fileRestorer) applyDecorations(name string, decorations dst.Decorations) {
 	for _, d := range decorations {
 
 		isNewline := d == "\n"
@@ -139,8 +139,8 @@ func (f *fileRestorer) applyDecorations(decorations dst.Decorations, indent bool
 		isComment := isLineComment || isInlineComment
 		isMultiLineComment := isInlineComment && strings.Contains(d, "\n")
 
-		if indent && f.cursorAtNewLine == f.cursor {
-			f.cursor++ // indent all comments
+		if name == "End" && f.cursorAtNewLine == f.cursor {
+			f.cursor++ // indent all comments in "End" decorations
 		}
 
 		// for multi-line comments, add a newline for each \n

@@ -18,14 +18,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Lbrack
 		out.Lbrack = r.cursor
 		r.cursor += token.Pos(len(token.LBRACK.String()))
 
 		// Decoration: Lbrack
-		r.applyDecorations(n.Decs.Lbrack, true)
+		r.applyDecorations("Lbrack", n.Decs.Lbrack)
 
 		// Node: Len
 		if n.Len != nil {
@@ -36,7 +36,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(token.RBRACK.String()))
 
 		// Decoration: Len
-		r.applyDecorations(n.Decs.Len, true)
+		r.applyDecorations("Len", n.Decs.Len)
 
 		// Node: Elt
 		if n.Elt != nil {
@@ -44,7 +44,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -54,7 +54,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// List: Lhs
 		for _, v := range n.Lhs {
@@ -62,7 +62,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Lhs
-		r.applyDecorations(n.Decs.Lhs, true)
+		r.applyDecorations("Lhs", n.Decs.Lhs)
 
 		// Token: Tok
 		out.Tok = n.Tok
@@ -70,7 +70,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(n.Tok.String()))
 
 		// Decoration: Tok
-		r.applyDecorations(n.Decs.Tok, true)
+		r.applyDecorations("Tok", n.Decs.Tok)
 
 		// List: Rhs
 		for _, v := range n.Rhs {
@@ -78,7 +78,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -88,10 +88,10 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -101,10 +101,10 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -114,10 +114,10 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -127,7 +127,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// String: Value
 		r.applyLiteral(n.Value)
@@ -136,7 +136,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(n.Value))
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 
 		// Value: Kind
 		out.Kind = n.Kind
@@ -149,7 +149,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: X
 		if n.X != nil {
@@ -157,7 +157,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: X
-		r.applyDecorations(n.Decs.X, true)
+		r.applyDecorations("X", n.Decs.X)
 
 		// Token: Op
 		out.Op = n.Op
@@ -165,7 +165,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(n.Op.String()))
 
 		// Decoration: Op
-		r.applyDecorations(n.Decs.Op, true)
+		r.applyDecorations("Op", n.Decs.Op)
 
 		// Node: Y
 		if n.Y != nil {
@@ -173,7 +173,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -183,14 +183,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Lbrace
 		out.Lbrace = r.cursor
 		r.cursor += token.Pos(len(token.LBRACE.String()))
 
 		// Decoration: Lbrace
-		r.applyDecorations(n.Decs.Lbrace, true)
+		r.applyDecorations("Lbrace", n.Decs.Lbrace)
 
 		// List: List
 		for _, v := range n.List {
@@ -202,7 +202,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(token.RBRACE.String()))
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -212,7 +212,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Tok
 		out.Tok = n.Tok
@@ -220,7 +220,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(n.Tok.String()))
 
 		// Decoration: Tok
-		r.applyDecorations(n.Decs.Tok, true)
+		r.applyDecorations("Tok", n.Decs.Tok)
 
 		// Node: Label
 		if n.Label != nil {
@@ -228,7 +228,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -238,7 +238,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: Fun
 		if n.Fun != nil {
@@ -246,14 +246,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Fun
-		r.applyDecorations(n.Decs.Fun, true)
+		r.applyDecorations("Fun", n.Decs.Fun)
 
 		// Token: Lparen
 		out.Lparen = r.cursor
 		r.cursor += token.Pos(len(token.LPAREN.String()))
 
 		// Decoration: Lparen
-		r.applyDecorations(n.Decs.Lparen, true)
+		r.applyDecorations("Lparen", n.Decs.Lparen)
 
 		// List: Args
 		for _, v := range n.Args {
@@ -261,7 +261,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Args
-		r.applyDecorations(n.Decs.Args, true)
+		r.applyDecorations("Args", n.Decs.Args)
 
 		// Token: Ellipsis
 		if n.Ellipsis {
@@ -270,14 +270,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Ellipsis
-		r.applyDecorations(n.Decs.Ellipsis, true)
+		r.applyDecorations("Ellipsis", n.Decs.Ellipsis)
 
 		// Token: Rparen
 		out.Rparen = r.cursor
 		r.cursor += token.Pos(len(token.RPAREN.String()))
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -287,7 +287,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, false)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Case
 		out.Case = r.cursor
@@ -300,7 +300,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}().String()))
 
 		// Decoration: Case
-		r.applyDecorations(n.Decs.Case, true)
+		r.applyDecorations("Case", n.Decs.Case)
 
 		// List: List
 		for _, v := range n.List {
@@ -308,14 +308,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: List
-		r.applyDecorations(n.Decs.List, true)
+		r.applyDecorations("List", n.Decs.List)
 
 		// Token: Colon
 		out.Colon = r.cursor
 		r.cursor += token.Pos(len(token.COLON.String()))
 
 		// Decoration: Colon
-		r.applyDecorations(n.Decs.Colon, true)
+		r.applyDecorations("Colon", n.Decs.Colon)
 
 		// List: Body
 		for _, v := range n.Body {
@@ -323,7 +323,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -333,7 +333,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Begin
 		out.Begin = r.cursor
@@ -351,7 +351,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Begin
-		r.applyDecorations(n.Decs.Begin, true)
+		r.applyDecorations("Begin", n.Decs.Begin)
 
 		// Token: Arrow
 		if n.Dir == dst.SEND {
@@ -360,7 +360,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Arrow
-		r.applyDecorations(n.Decs.Arrow, true)
+		r.applyDecorations("Arrow", n.Decs.Arrow)
 
 		// Node: Value
 		if n.Value != nil {
@@ -368,7 +368,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 
 		// Value: Dir
 		out.Dir = ast.ChanDir(n.Dir)
@@ -381,7 +381,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, false)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Case
 		out.Case = r.cursor
@@ -394,7 +394,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}().String()))
 
 		// Decoration: Case
-		r.applyDecorations(n.Decs.Case, true)
+		r.applyDecorations("Case", n.Decs.Case)
 
 		// Node: Comm
 		if n.Comm != nil {
@@ -402,14 +402,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Comm
-		r.applyDecorations(n.Decs.Comm, true)
+		r.applyDecorations("Comm", n.Decs.Comm)
 
 		// Token: Colon
 		out.Colon = r.cursor
 		r.cursor += token.Pos(len(token.COLON.String()))
 
 		// Decoration: Colon
-		r.applyDecorations(n.Decs.Colon, true)
+		r.applyDecorations("Colon", n.Decs.Colon)
 
 		// List: Body
 		for _, v := range n.Body {
@@ -417,7 +417,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -427,7 +427,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: Type
 		if n.Type != nil {
@@ -435,14 +435,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Type
-		r.applyDecorations(n.Decs.Type, true)
+		r.applyDecorations("Type", n.Decs.Type)
 
 		// Token: Lbrace
 		out.Lbrace = r.cursor
 		r.cursor += token.Pos(len(token.LBRACE.String()))
 
 		// Decoration: Lbrace
-		r.applyDecorations(n.Decs.Lbrace, true)
+		r.applyDecorations("Lbrace", n.Decs.Lbrace)
 
 		// List: Elts
 		for _, v := range n.Elts {
@@ -454,7 +454,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(token.RBRACE.String()))
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 
 		// Value: Incomplete
 		out.Incomplete = n.Incomplete
@@ -467,7 +467,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: Decl
 		if n.Decl != nil {
@@ -475,7 +475,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -485,14 +485,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Defer
 		out.Defer = r.cursor
 		r.cursor += token.Pos(len(token.DEFER.String()))
 
 		// Decoration: Defer
-		r.applyDecorations(n.Decs.Defer, true)
+		r.applyDecorations("Defer", n.Decs.Defer)
 
 		// Node: Call
 		if n.Call != nil {
@@ -500,7 +500,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -510,14 +510,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Ellipsis
 		out.Ellipsis = r.cursor
 		r.cursor += token.Pos(len(token.ELLIPSIS.String()))
 
 		// Decoration: Ellipsis
-		r.applyDecorations(n.Decs.Ellipsis, true)
+		r.applyDecorations("Ellipsis", n.Decs.Ellipsis)
 
 		// Node: Elt
 		if n.Elt != nil {
@@ -525,7 +525,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -535,7 +535,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Semicolon
 		if !n.Implicit {
@@ -544,7 +544,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 
 		// Value: Implicit
 		out.Implicit = n.Implicit
@@ -557,7 +557,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: X
 		if n.X != nil {
@@ -565,7 +565,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -575,7 +575,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// List: Names
 		for _, v := range n.Names {
@@ -583,7 +583,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Names
-		r.applyDecorations(n.Decs.Names, true)
+		r.applyDecorations("Names", n.Decs.Names)
 
 		// Node: Type
 		if n.Type != nil {
@@ -591,7 +591,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Type
-		r.applyDecorations(n.Decs.Type, true)
+		r.applyDecorations("Type", n.Decs.Type)
 
 		// Node: Tag
 		if n.Tag != nil {
@@ -599,7 +599,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -609,7 +609,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Opening
 		if n.Opening {
@@ -618,7 +618,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Opening
-		r.applyDecorations(n.Decs.Opening, true)
+		r.applyDecorations("Opening", n.Decs.Opening)
 
 		// List: List
 		for _, v := range n.List {
@@ -632,7 +632,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -642,14 +642,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Package
 		out.Package = r.cursor
 		r.cursor += token.Pos(len(token.PACKAGE.String()))
 
 		// Decoration: Package
-		r.applyDecorations(n.Decs.Package, true)
+		r.applyDecorations("Package", n.Decs.Package)
 
 		// Node: Name
 		if n.Name != nil {
@@ -657,7 +657,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Name
-		r.applyDecorations(n.Decs.Name, true)
+		r.applyDecorations("Name", n.Decs.Name)
 
 		// List: Decls
 		for _, v := range n.Decls {
@@ -675,14 +675,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: For
 		out.For = r.cursor
 		r.cursor += token.Pos(len(token.FOR.String()))
 
 		// Decoration: For
-		r.applyDecorations(n.Decs.For, true)
+		r.applyDecorations("For", n.Decs.For)
 
 		// Node: Init
 		if n.Init != nil {
@@ -695,7 +695,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Init
-		r.applyDecorations(n.Decs.Init, true)
+		r.applyDecorations("Init", n.Decs.Init)
 
 		// Node: Cond
 		if n.Cond != nil {
@@ -708,7 +708,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Cond
-		r.applyDecorations(n.Decs.Cond, true)
+		r.applyDecorations("Cond", n.Decs.Cond)
 
 		// Node: Post
 		if n.Post != nil {
@@ -716,7 +716,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Post
-		r.applyDecorations(n.Decs.Post, true)
+		r.applyDecorations("Post", n.Decs.Post)
 
 		// Node: Body
 		if n.Body != nil {
@@ -724,7 +724,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -737,7 +737,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		out.Type = &ast.FuncType{}
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Func
 		if true {
@@ -746,7 +746,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Func
-		r.applyDecorations(n.Decs.Func, true)
+		r.applyDecorations("Func", n.Decs.Func)
 
 		// Node: Recv
 		if n.Recv != nil {
@@ -754,7 +754,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Recv
-		r.applyDecorations(n.Decs.Recv, true)
+		r.applyDecorations("Recv", n.Decs.Recv)
 
 		// Node: Name
 		if n.Name != nil {
@@ -762,7 +762,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Name
-		r.applyDecorations(n.Decs.Name, true)
+		r.applyDecorations("Name", n.Decs.Name)
 
 		// Node: Params
 		if n.Type.Params != nil {
@@ -770,7 +770,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Params
-		r.applyDecorations(n.Decs.Params, true)
+		r.applyDecorations("Params", n.Decs.Params)
 
 		// Node: Results
 		if n.Type.Results != nil {
@@ -778,7 +778,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Results
-		r.applyDecorations(n.Decs.Results, true)
+		r.applyDecorations("Results", n.Decs.Results)
 
 		// Node: Body
 		if n.Body != nil {
@@ -786,7 +786,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -796,7 +796,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: Type
 		if n.Type != nil {
@@ -804,7 +804,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Type
-		r.applyDecorations(n.Decs.Type, true)
+		r.applyDecorations("Type", n.Decs.Type)
 
 		// Node: Body
 		if n.Body != nil {
@@ -812,7 +812,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -822,7 +822,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Func
 		if n.Func {
@@ -831,7 +831,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Func
-		r.applyDecorations(n.Decs.Func, true)
+		r.applyDecorations("Func", n.Decs.Func)
 
 		// Node: Params
 		if n.Params != nil {
@@ -839,7 +839,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Params
-		r.applyDecorations(n.Decs.Params, true)
+		r.applyDecorations("Params", n.Decs.Params)
 
 		// Node: Results
 		if n.Results != nil {
@@ -847,7 +847,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -857,7 +857,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Tok
 		out.Tok = n.Tok
@@ -865,7 +865,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(n.Tok.String()))
 
 		// Decoration: Tok
-		r.applyDecorations(n.Decs.Tok, true)
+		r.applyDecorations("Tok", n.Decs.Tok)
 
 		// Token: Lparen
 		if n.Lparen {
@@ -874,7 +874,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Lparen
-		r.applyDecorations(n.Decs.Lparen, true)
+		r.applyDecorations("Lparen", n.Decs.Lparen)
 
 		// List: Specs
 		for _, v := range n.Specs {
@@ -888,7 +888,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -898,14 +898,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Go
 		out.Go = r.cursor
 		r.cursor += token.Pos(len(token.GO.String()))
 
 		// Decoration: Go
-		r.applyDecorations(n.Decs.Go, true)
+		r.applyDecorations("Go", n.Decs.Go)
 
 		// Node: Call
 		if n.Call != nil {
@@ -913,7 +913,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -923,7 +923,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// String: Name
 		out.NamePos = r.cursor
@@ -931,7 +931,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(n.Name))
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 
 		// Object: Obj
 		out.Obj = r.restoreObject(n.Obj)
@@ -944,14 +944,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: If
 		out.If = r.cursor
 		r.cursor += token.Pos(len(token.IF.String()))
 
 		// Decoration: If
-		r.applyDecorations(n.Decs.If, true)
+		r.applyDecorations("If", n.Decs.If)
 
 		// Node: Init
 		if n.Init != nil {
@@ -959,7 +959,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Init
-		r.applyDecorations(n.Decs.Init, true)
+		r.applyDecorations("Init", n.Decs.Init)
 
 		// Node: Cond
 		if n.Cond != nil {
@@ -967,7 +967,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Cond
-		r.applyDecorations(n.Decs.Cond, true)
+		r.applyDecorations("Cond", n.Decs.Cond)
 
 		// Node: Body
 		if n.Body != nil {
@@ -980,7 +980,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Else
-		r.applyDecorations(n.Decs.Else, true)
+		r.applyDecorations("Else", n.Decs.Else)
 
 		// Node: Else
 		if n.Else != nil {
@@ -988,7 +988,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -998,7 +998,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: Name
 		if n.Name != nil {
@@ -1006,7 +1006,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Name
-		r.applyDecorations(n.Decs.Name, true)
+		r.applyDecorations("Name", n.Decs.Name)
 
 		// Node: Path
 		if n.Path != nil {
@@ -1014,7 +1014,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1024,7 +1024,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: X
 		if n.X != nil {
@@ -1032,7 +1032,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: X
-		r.applyDecorations(n.Decs.X, true)
+		r.applyDecorations("X", n.Decs.X)
 
 		// Token: Tok
 		out.Tok = n.Tok
@@ -1040,7 +1040,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(n.Tok.String()))
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1050,7 +1050,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: X
 		if n.X != nil {
@@ -1058,14 +1058,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: X
-		r.applyDecorations(n.Decs.X, true)
+		r.applyDecorations("X", n.Decs.X)
 
 		// Token: Lbrack
 		out.Lbrack = r.cursor
 		r.cursor += token.Pos(len(token.LBRACK.String()))
 
 		// Decoration: Lbrack
-		r.applyDecorations(n.Decs.Lbrack, true)
+		r.applyDecorations("Lbrack", n.Decs.Lbrack)
 
 		// Node: Index
 		if n.Index != nil {
@@ -1073,14 +1073,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Index
-		r.applyDecorations(n.Decs.Index, true)
+		r.applyDecorations("Index", n.Decs.Index)
 
 		// Token: Rbrack
 		out.Rbrack = r.cursor
 		r.cursor += token.Pos(len(token.RBRACK.String()))
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1090,14 +1090,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Interface
 		out.Interface = r.cursor
 		r.cursor += token.Pos(len(token.INTERFACE.String()))
 
 		// Decoration: Interface
-		r.applyDecorations(n.Decs.Interface, true)
+		r.applyDecorations("Interface", n.Decs.Interface)
 
 		// Node: Methods
 		if n.Methods != nil {
@@ -1105,7 +1105,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 
 		// Value: Incomplete
 		out.Incomplete = n.Incomplete
@@ -1118,7 +1118,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: Key
 		if n.Key != nil {
@@ -1126,14 +1126,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Key
-		r.applyDecorations(n.Decs.Key, true)
+		r.applyDecorations("Key", n.Decs.Key)
 
 		// Token: Colon
 		out.Colon = r.cursor
 		r.cursor += token.Pos(len(token.COLON.String()))
 
 		// Decoration: Colon
-		r.applyDecorations(n.Decs.Colon, true)
+		r.applyDecorations("Colon", n.Decs.Colon)
 
 		// Node: Value
 		if n.Value != nil {
@@ -1141,7 +1141,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1151,7 +1151,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: Label
 		if n.Label != nil {
@@ -1159,14 +1159,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Label
-		r.applyDecorations(n.Decs.Label, true)
+		r.applyDecorations("Label", n.Decs.Label)
 
 		// Token: Colon
 		out.Colon = r.cursor
 		r.cursor += token.Pos(len(token.COLON.String()))
 
 		// Decoration: Colon
-		r.applyDecorations(n.Decs.Colon, true)
+		r.applyDecorations("Colon", n.Decs.Colon)
 
 		// Node: Stmt
 		if n.Stmt != nil {
@@ -1174,7 +1174,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1184,7 +1184,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Map
 		out.Map = r.cursor
@@ -1194,7 +1194,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(token.LBRACK.String()))
 
 		// Decoration: Map
-		r.applyDecorations(n.Decs.Map, true)
+		r.applyDecorations("Map", n.Decs.Map)
 
 		// Node: Key
 		if n.Key != nil {
@@ -1205,7 +1205,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(token.RBRACK.String()))
 
 		// Decoration: Key
-		r.applyDecorations(n.Decs.Key, true)
+		r.applyDecorations("Key", n.Decs.Key)
 
 		// Node: Value
 		if n.Value != nil {
@@ -1213,7 +1213,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1246,14 +1246,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Lparen
 		out.Lparen = r.cursor
 		r.cursor += token.Pos(len(token.LPAREN.String()))
 
 		// Decoration: Lparen
-		r.applyDecorations(n.Decs.Lparen, true)
+		r.applyDecorations("Lparen", n.Decs.Lparen)
 
 		// Node: X
 		if n.X != nil {
@@ -1261,14 +1261,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: X
-		r.applyDecorations(n.Decs.X, true)
+		r.applyDecorations("X", n.Decs.X)
 
 		// Token: Rparen
 		out.Rparen = r.cursor
 		r.cursor += token.Pos(len(token.RPAREN.String()))
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1278,14 +1278,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: For
 		out.For = r.cursor
 		r.cursor += token.Pos(len(token.FOR.String()))
 
 		// Decoration: For
-		r.applyDecorations(n.Decs.For, true)
+		r.applyDecorations("For", n.Decs.For)
 
 		// Node: Key
 		if n.Key != nil {
@@ -1298,7 +1298,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Key
-		r.applyDecorations(n.Decs.Key, true)
+		r.applyDecorations("Key", n.Decs.Key)
 
 		// Node: Value
 		if n.Value != nil {
@@ -1306,7 +1306,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Value
-		r.applyDecorations(n.Decs.Value, true)
+		r.applyDecorations("Value", n.Decs.Value)
 
 		// Token: Tok
 		if n.Tok != token.ILLEGAL {
@@ -1319,7 +1319,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(token.RANGE.String()))
 
 		// Decoration: Range
-		r.applyDecorations(n.Decs.Range, true)
+		r.applyDecorations("Range", n.Decs.Range)
 
 		// Node: X
 		if n.X != nil {
@@ -1327,7 +1327,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: X
-		r.applyDecorations(n.Decs.X, true)
+		r.applyDecorations("X", n.Decs.X)
 
 		// Node: Body
 		if n.Body != nil {
@@ -1335,7 +1335,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1345,14 +1345,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Return
 		out.Return = r.cursor
 		r.cursor += token.Pos(len(token.RETURN.String()))
 
 		// Decoration: Return
-		r.applyDecorations(n.Decs.Return, true)
+		r.applyDecorations("Return", n.Decs.Return)
 
 		// List: Results
 		for _, v := range n.Results {
@@ -1360,7 +1360,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1370,14 +1370,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Select
 		out.Select = r.cursor
 		r.cursor += token.Pos(len(token.SELECT.String()))
 
 		// Decoration: Select
-		r.applyDecorations(n.Decs.Select, true)
+		r.applyDecorations("Select", n.Decs.Select)
 
 		// Node: Body
 		if n.Body != nil {
@@ -1385,7 +1385,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1395,7 +1395,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: X
 		if n.X != nil {
@@ -1406,7 +1406,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(token.PERIOD.String()))
 
 		// Decoration: X
-		r.applyDecorations(n.Decs.X, true)
+		r.applyDecorations("X", n.Decs.X)
 
 		// Node: Sel
 		if n.Sel != nil {
@@ -1414,7 +1414,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1424,7 +1424,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: Chan
 		if n.Chan != nil {
@@ -1432,14 +1432,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Chan
-		r.applyDecorations(n.Decs.Chan, true)
+		r.applyDecorations("Chan", n.Decs.Chan)
 
 		// Token: Arrow
 		out.Arrow = r.cursor
 		r.cursor += token.Pos(len(token.ARROW.String()))
 
 		// Decoration: Arrow
-		r.applyDecorations(n.Decs.Arrow, true)
+		r.applyDecorations("Arrow", n.Decs.Arrow)
 
 		// Node: Value
 		if n.Value != nil {
@@ -1447,7 +1447,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1457,7 +1457,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: X
 		if n.X != nil {
@@ -1465,14 +1465,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: X
-		r.applyDecorations(n.Decs.X, true)
+		r.applyDecorations("X", n.Decs.X)
 
 		// Token: Lbrack
 		out.Lbrack = r.cursor
 		r.cursor += token.Pos(len(token.LBRACK.String()))
 
 		// Decoration: Lbrack
-		r.applyDecorations(n.Decs.Lbrack, true)
+		r.applyDecorations("Lbrack", n.Decs.Lbrack)
 
 		// Node: Low
 		if n.Low != nil {
@@ -1483,7 +1483,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(token.COLON.String()))
 
 		// Decoration: Low
-		r.applyDecorations(n.Decs.Low, true)
+		r.applyDecorations("Low", n.Decs.Low)
 
 		// Node: High
 		if n.High != nil {
@@ -1496,7 +1496,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: High
-		r.applyDecorations(n.Decs.High, true)
+		r.applyDecorations("High", n.Decs.High)
 
 		// Node: Max
 		if n.Max != nil {
@@ -1504,14 +1504,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Max
-		r.applyDecorations(n.Decs.Max, true)
+		r.applyDecorations("Max", n.Decs.Max)
 
 		// Token: Rbrack
 		out.Rbrack = r.cursor
 		r.cursor += token.Pos(len(token.RBRACK.String()))
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 
 		// Value: Slice3
 		out.Slice3 = n.Slice3
@@ -1524,14 +1524,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Star
 		out.Star = r.cursor
 		r.cursor += token.Pos(len(token.MUL.String()))
 
 		// Decoration: Star
-		r.applyDecorations(n.Decs.Star, true)
+		r.applyDecorations("Star", n.Decs.Star)
 
 		// Node: X
 		if n.X != nil {
@@ -1539,7 +1539,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1549,14 +1549,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Struct
 		out.Struct = r.cursor
 		r.cursor += token.Pos(len(token.STRUCT.String()))
 
 		// Decoration: Struct
-		r.applyDecorations(n.Decs.Struct, true)
+		r.applyDecorations("Struct", n.Decs.Struct)
 
 		// Node: Fields
 		if n.Fields != nil {
@@ -1564,7 +1564,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 
 		// Value: Incomplete
 		out.Incomplete = n.Incomplete
@@ -1577,14 +1577,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Switch
 		out.Switch = r.cursor
 		r.cursor += token.Pos(len(token.SWITCH.String()))
 
 		// Decoration: Switch
-		r.applyDecorations(n.Decs.Switch, true)
+		r.applyDecorations("Switch", n.Decs.Switch)
 
 		// Node: Init
 		if n.Init != nil {
@@ -1592,7 +1592,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Init
-		r.applyDecorations(n.Decs.Init, true)
+		r.applyDecorations("Init", n.Decs.Init)
 
 		// Node: Tag
 		if n.Tag != nil {
@@ -1600,7 +1600,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Tag
-		r.applyDecorations(n.Decs.Tag, true)
+		r.applyDecorations("Tag", n.Decs.Tag)
 
 		// Node: Body
 		if n.Body != nil {
@@ -1608,7 +1608,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1618,7 +1618,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: X
 		if n.X != nil {
@@ -1629,14 +1629,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(token.PERIOD.String()))
 
 		// Decoration: X
-		r.applyDecorations(n.Decs.X, true)
+		r.applyDecorations("X", n.Decs.X)
 
 		// Token: Lparen
 		out.Lparen = r.cursor
 		r.cursor += token.Pos(len(token.LPAREN.String()))
 
 		// Decoration: Lparen
-		r.applyDecorations(n.Decs.Lparen, true)
+		r.applyDecorations("Lparen", n.Decs.Lparen)
 
 		// Node: Type
 		if n.Type != nil {
@@ -1649,14 +1649,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Type
-		r.applyDecorations(n.Decs.Type, true)
+		r.applyDecorations("Type", n.Decs.Type)
 
 		// Token: Rparen
 		out.Rparen = r.cursor
 		r.cursor += token.Pos(len(token.RPAREN.String()))
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1666,7 +1666,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Node: Name
 		if n.Name != nil {
@@ -1680,7 +1680,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Name
-		r.applyDecorations(n.Decs.Name, true)
+		r.applyDecorations("Name", n.Decs.Name)
 
 		// Node: Type
 		if n.Type != nil {
@@ -1688,7 +1688,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1698,14 +1698,14 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Switch
 		out.Switch = r.cursor
 		r.cursor += token.Pos(len(token.SWITCH.String()))
 
 		// Decoration: Switch
-		r.applyDecorations(n.Decs.Switch, true)
+		r.applyDecorations("Switch", n.Decs.Switch)
 
 		// Node: Init
 		if n.Init != nil {
@@ -1713,7 +1713,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Init
-		r.applyDecorations(n.Decs.Init, true)
+		r.applyDecorations("Init", n.Decs.Init)
 
 		// Node: Assign
 		if n.Assign != nil {
@@ -1721,7 +1721,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Assign
-		r.applyDecorations(n.Decs.Assign, true)
+		r.applyDecorations("Assign", n.Decs.Assign)
 
 		// Node: Body
 		if n.Body != nil {
@@ -1729,7 +1729,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1739,7 +1739,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// Token: Op
 		out.Op = n.Op
@@ -1747,7 +1747,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.cursor += token.Pos(len(n.Op.String()))
 
 		// Decoration: Op
-		r.applyDecorations(n.Decs.Op, true)
+		r.applyDecorations("Op", n.Decs.Op)
 
 		// Node: X
 		if n.X != nil {
@@ -1755,7 +1755,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out
@@ -1765,7 +1765,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		r.applySpace(n.Decs.Space)
 
 		// Decoration: Start
-		r.applyDecorations(n.Decs.Start, true)
+		r.applyDecorations("Start", n.Decs.Start)
 
 		// List: Names
 		for _, v := range n.Names {
@@ -1773,7 +1773,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Names
-		r.applyDecorations(n.Decs.Names, true)
+		r.applyDecorations("Names", n.Decs.Names)
 
 		// Node: Type
 		if n.Type != nil {
@@ -1786,7 +1786,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: Assign
-		r.applyDecorations(n.Decs.Assign, true)
+		r.applyDecorations("Assign", n.Decs.Assign)
 
 		// List: Values
 		for _, v := range n.Values {
@@ -1794,7 +1794,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		}
 
 		// Decoration: End
-		r.applyDecorations(n.Decs.End, true)
+		r.applyDecorations("End", n.Decs.End)
 		r.applySpace(n.Decs.After)
 
 		return out

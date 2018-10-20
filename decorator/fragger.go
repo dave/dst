@@ -13,16 +13,18 @@ import (
 
 func NewFragger(fset *token.FileSet) *Fragger {
 	return &Fragger{
-		fset:    fset,
-		Indents: map[ast.Node]int{},
+		fset:         fset,
+		IndentsStart: map[ast.Node]int{},
+		IndentsEnd:   map[ast.Node]int{},
 	}
 }
 
 type Fragger struct {
-	cursor    int
-	Fragments []Fragment
-	Indents   map[ast.Node]int
-	fset      *token.FileSet
+	cursor       int
+	Fragments    []Fragment
+	IndentsStart map[ast.Node]int
+	IndentsEnd   map[ast.Node]int
+	fset         *token.FileSet
 }
 
 func (f *Fragger) AddDecoration(n ast.Node, name string, pos token.Pos) {
@@ -155,21 +157,21 @@ func (f *Fragger) Fragment(node ast.Node) {
 	})
 
 	// Search for nodes and comments that start directly after newlines. We note their indent.
+	currentIndent := 0
 	for i, frag := range f.Fragments {
-		if i == 0 {
-			continue
-		}
-		if !f.Fragments[i-1].HasNewline() {
-			continue
+		if i == 0 || f.Fragments[i-1].HasNewline() {
+			currentIndent = f.fset.Position(frag.Position()).Column
 		}
 		switch frag := frag.(type) {
 		case *DecorationFragment:
-			if frag.Name != "Start" {
-				continue
+			switch frag.Name {
+			case "Start":
+				f.IndentsStart[frag.Node] = currentIndent
+			case "End":
+				f.IndentsEnd[frag.Node] = currentIndent
 			}
-			f.Indents[frag.Node] = f.fset.Position(frag.Node.Pos()).Column
 		case *CommentFragment:
-			frag.Indent = f.fset.Position(frag.Pos).Column
+			frag.Indent = currentIndent
 		}
 	}
 }
@@ -208,6 +210,72 @@ func (f *Fragger) Link() (space, after map[ast.Node]dst.SpaceType, decorations m
 	// empty-lines and associate with the same decoration.
 	for i, frag := range f.Fragments {
 		switch frag := frag.(type) {
+		case *DecorationFragment:
+
+			// Special case for hanging indent (See https://github.com/dave/dst/issues/18)
+			// If we're on the End decoration of a Stmt or Decl, and the start / end indents
+			// are not the same (OR it's a case / comm clause), then search forward over empty lines
+			// for all comments with the same indent as the End decoration.
+			//
+			// These should be attached to the end node. We also search for subsequent comments that
+			// have the same indent as the Start. If the next decoration node is the start of a Stmt
+			// or Decl with the same indent as the original node, these are attached there.
+
+			if frag.Name != "End" {
+				continue
+			}
+			_, stmt := frag.Node.(ast.Stmt)
+			_, decl := frag.Node.(ast.Decl)
+			if !stmt && !decl {
+				continue
+			}
+
+			start := f.IndentsStart[frag.Node]
+			end := f.IndentsEnd[frag.Node]
+
+			_, labeledStmt := frag.Node.(*ast.LabeledStmt)
+
+			if labeledStmt {
+				// Special case: labeled statements shouldn't be treated in the same way.
+				continue
+			}
+
+			_, caseClause := frag.Node.(*ast.CaseClause)
+			_, commClause := frag.Node.(*ast.CommClause)
+			if start == end && (caseClause || commClause) {
+				// special case for case / comm clause with no items... the clause node starts and
+				// ends on the same line, but comments can still be hanging. We spoof an indented
+				// end position:
+				end++
+			}
+
+			if start == end {
+				continue
+			}
+
+			frags, next := f.findIndentedComments(i+1, [2]int{end, start})
+			endFrags := frags[0]
+			nextFrags := frags[1]
+			if len(endFrags) > 0 {
+				// if endFrags ends with a newline, don't attach it because it was in between the
+				// two groups, so should be left unattached so we can attach it as spacing in the
+				// second pass
+				_, nl := endFrags[len(endFrags)-1].(*NewlineFragment)
+				if nl {
+					f.attachToDecoration(endFrags[0:len(endFrags)-1], decorations, frag)
+				} else {
+					f.attachToDecoration(endFrags, decorations, frag)
+				}
+			}
+			if len(nextFrags) > 0 && next != nil {
+				_, nextStmt := next.Node.(ast.Stmt)
+				_, nextDecl := next.Node.(ast.Decl)
+				nextStart := f.IndentsStart[next.Node]
+				if (nextStmt || nextDecl) && nextStart == start {
+					f.attachToDecoration(nextFrags, decorations, next)
+				}
+			}
+
 		case *CommentFragment:
 
 			if frag.Attached != nil {
@@ -229,7 +297,6 @@ func (f *Fragger) Link() (space, after map[ast.Node]dst.SpaceType, decorations m
 			var dec *DecorationFragment
 			var found bool
 			var try int
-			var onlySearchBackwards = false
 			for !found {
 				try++
 				switch try {
@@ -237,62 +304,23 @@ func (f *Fragger) Link() (space, after map[ast.Node]dst.SpaceType, decorations m
 					// Before the comment on the same line (search backwards and stop at any newline)
 					frags, dec, found = f.findDecoration(true, true, i, -1, false)
 				case 2:
-					// Special case for CommClause / CaseClause
-					// After the comment on line+2 (search forwards), but ONLY looking for "Start" of
-					// CommClause / CaseClause:
-					frags1, dec1, found1 := f.findDecoration(false, false, i, 1, true)
-					if !found1 {
-						continue
-					}
-					nodeIndent, ok := f.Indents[dec1.Node]
-					if !ok {
-						// if the node isn't found in Indents, it wasn't at the start of the line. This
-						// shouldn't happen for CommClause or CaseClause?
-						continue
-					}
-					if frag.Indent != nodeIndent {
-						// The comment is at a different indent to the case clause, so continue but
-						// skip all subsequent forward searching steps (we only want to search backwards).
-						onlySearchBackwards = true
-						continue
-					}
-					// The comment is at the same indent level as the
-					frags = frags1
-					dec = dec1
-					found = true
-				case 3:
-					if onlySearchBackwards {
-						continue
-					}
 					// After the comment on the same line
 					// After the comment on line+1 (search forwards and stop at any empty line)
 					frags, dec, found = f.findDecoration(false, true, i, 1, false)
-				case 4:
+				case 3:
 					// Before the comment on line-1 (search backwards and stop at any empty line)
 					frags, dec, found = f.findDecoration(false, true, i, -1, false)
-				case 5:
-					if onlySearchBackwards {
-						continue
-					}
+				case 4:
 					// After the comment on line+2 (search forwards)
 					frags, dec, found = f.findDecoration(false, false, i, 1, false)
-				case 6:
+				case 5:
 					// After the comment on line-2 (search backwards)
 					frags, dec, found = f.findDecoration(false, false, i, -1, false)
 				default:
 					panic("no decoration found for " + frag.Text)
 				}
 			}
-			for _, fr := range frags {
-				switch fr := fr.(type) {
-				case *CommentFragment:
-					appendDecoration(decorations, dec.Node, dec.Name, fr.Text)
-					fr.Attached = dec
-				case *NewlineFragment:
-					appendNewLine(decorations, dec.Node, dec.Name, fr.Empty)
-					fr.Attached = dec
-				}
-			}
+			f.attachToDecoration(frags, decorations, dec)
 		}
 	}
 
@@ -347,6 +375,19 @@ func (f *Fragger) Link() (space, after map[ast.Node]dst.SpaceType, decorations m
 	}
 
 	return
+}
+
+func (f *Fragger) attachToDecoration(frags []Fragment, decorations map[ast.Node]map[string][]string, dec *DecorationFragment) {
+	for _, fr := range frags {
+		switch fr := fr.(type) {
+		case *CommentFragment:
+			appendDecoration(decorations, dec.Node, dec.Name, fr.Text)
+			fr.Attached = dec
+		case *NewlineFragment:
+			appendNewLine(decorations, dec.Node, dec.Name, fr.Empty)
+			fr.Attached = dec
+		}
+	}
 }
 
 func (f *Fragger) findDecoration(stopAtNewline, stopAtEmptyLine bool, from int, direction int, onlyClause bool) (swept []Fragment, dec *DecorationFragment, found bool) {
@@ -422,6 +463,43 @@ func (f *Fragger) findNode(from int, direction int) (node ast.Node, dec *Decorat
 			if frag.Attached != nil && frag.Attached.Name == name {
 				return frag.Attached.Node, frag.Attached, true
 			}
+		case *TokenFragment, *StringFragment:
+			return
+		}
+	}
+	return
+}
+
+func (f *Fragger) findIndentedComments(from int, indents [2]int) (frags [2][]Fragment, nextDecoration *DecorationFragment) {
+	var stage int
+	var pastNewline bool // while this is false, we're on the same line that the stmt ended, so we accept all comments regardless of the indent (e.g. empty clauses) - see "hanging-indent-same-line" test case.
+	for i := from; i < len(f.Fragments); i++ {
+		switch current := f.Fragments[i].(type) {
+		case *DecorationFragment:
+			return frags, current
+		case *NewlineFragment:
+			pastNewline = true
+			frags[stage] = append(frags[stage], current)
+		case *CommentFragment:
+			if !pastNewline {
+				frags[stage] = append(frags[stage], current)
+				continue
+			}
+			if stage == 0 {
+				// Check indent matches. If not, move to second stage or exit if that doesn't match.
+				if current.Indent != indents[0] {
+					if current.Indent == indents[1] {
+						stage = 1
+					} else {
+						return
+					}
+				}
+			} else if stage == 1 {
+				if current.Indent != indents[1] {
+					return
+				}
+			}
+			frags[stage] = append(frags[stage], current)
 		case *TokenFragment, *StringFragment:
 			return
 		}
