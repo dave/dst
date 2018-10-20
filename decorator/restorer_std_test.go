@@ -2,14 +2,14 @@ package decorator
 
 import (
 	"bytes"
-	"go/format"
-	"go/parser"
 	"testing"
 
 	"path/filepath"
 
 	"fmt"
 	"go/build"
+	"go/format"
+	"go/parser"
 	"os/exec"
 	"strings"
 
@@ -18,8 +18,6 @@ import (
 )
 
 func TestStdLibAll(t *testing.T) {
-
-	t.Skip()
 
 	cmd := exec.Command("go", "list", "./...")
 	cmd.Env = []string{
@@ -43,22 +41,28 @@ func TestStdLibAll(t *testing.T) {
 			continue
 		}
 
-		fmt.Println(pkgPath)
+		testPackageRestoresCorrectly(t, pkgPath)
 
-		conf := loader.Config{
-			ParserMode: parser.ParseComments,
-		}
-		conf.Import(pkgPath)
-		prog, err := conf.Load()
-		if err != nil {
-			panic(err)
-		}
-		pi := prog.Package(pkgPath)
-		for _, astFile := range pi.Files {
+	}
+}
 
-			_, filename := filepath.Split(prog.Fset.File(astFile.Pos()).Name())
-			name := pkgPath + ":" + filename
+func testPackageRestoresCorrectly(t *testing.T, path string) {
+	t.Helper()
+	conf := loader.Config{
+		ParserMode: parser.ParseComments,
+	}
+	conf.Import(path)
+	prog, err := conf.Load()
+	if err != nil {
+		panic(err)
+	}
+	pi := prog.Package(path)
+	for _, astFile := range pi.Files {
 
+		_, filename := filepath.Split(prog.Fset.File(astFile.Pos()).Name())
+		name := path + ":" + filename
+
+		t.Run(name, func(t *testing.T) {
 			expected := &bytes.Buffer{}
 			if err := format.Node(expected, prog.Fset, astFile); err != nil {
 				t.Fatal(err)
@@ -74,8 +78,9 @@ func TestStdLibAll(t *testing.T) {
 			}
 
 			if expected.String() != output.String() {
-				t.Errorf("%s: diff: %s", name, diff.LineDiff(expected.String(), output.String()))
+				t.Errorf("%s: %s", name, diff.LineDiff(expected.String(), output.String()))
 			}
-		}
+		})
+
 	}
 }

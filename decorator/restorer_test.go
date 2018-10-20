@@ -661,11 +661,6 @@ const d = 1
 				t.Fatal(err)
 			}
 
-			//formatted, err := format.Source(buf.Bytes())
-			//if err != nil {
-			//	t.Fatal(err)
-			//}
-
 			if buf.String() != test.code {
 				//fmt.Println("expected:", test.code)
 				//fmt.Println("found:", buf.String())

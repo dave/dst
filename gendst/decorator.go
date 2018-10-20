@@ -173,5 +173,5 @@ func generateDecoratorTestHelper(names []string) error {
 		})
 		g.Return()
 	})
-	return f.Save("./decorator/decorator-generated-all.go")
+	return f.Save("./decorator/decorator-info-generated.go")
 }
