@@ -7,7 +7,9 @@ comments and line spacing) remain attached to the correct nodes as the tree is m
 
 ### Where does `go/ast` break?
 
-See [this golang issue](https://github.com/golang/go/issues/20744) for more information.
+The `go/ast` package wasn't created with source manipulation as an intended use-case. Comments are 
+stored by their byte offset instead of attached to nodes. Because of this, re-arranging nodes breaks 
+the output. See [this golang issue](https://github.com/golang/go/issues/20744) for more information.
 
 Consider this example where we want to reverse the order of the two statements. As you can see the 
 comments don't remain attached to the correct nodes:
