@@ -626,17 +626,17 @@ type SendStmtDecorations struct {
 
 // SliceExprDecorations holds decorations for SliceExpr:
 //
-// 	var H = /*Start*/ []int{0} /*X*/ [ /*Lbrack*/ 1: /*Low*/ 2: /*High*/ 3 /*Max*/] /*End*/
+// 	var H = /*Start*/ []int{0, 1, 2} /*X*/ [ /*Lbrack*/ 1: /*Low*/ 2: /*High*/ 3 /*Max*/] /*End*/
 //
-// 	var H1 = /*Start*/ []int{0} /*X*/ [ /*Lbrack*/ 1: /*Low*/ 2 /*High*/] /*End*/
+// 	var H1 = /*Start*/ []int{0, 1, 2} /*X*/ [ /*Lbrack*/ 1: /*Low*/ 2 /*High*/] /*End*/
 //
 // 	var H2 = /*Start*/ []int{0} /*X*/ [: /*Low*/] /*End*/
 //
 // 	var H3 = /*Start*/ []int{0} /*X*/ [ /*Lbrack*/ 1: /*Low*/] /*End*/
 //
-// 	var H4 = /*Start*/ []int{0} /*X*/ [: /*Low*/ 2 /*High*/] /*End*/
+// 	var H4 = /*Start*/ []int{0, 1, 2} /*X*/ [: /*Low*/ 2 /*High*/] /*End*/
 //
-// 	var H5 = /*Start*/ []int{0} /*X*/ [: /*Low*/ 2: /*High*/ 3 /*Max*/] /*End*/
+// 	var H5 = /*Start*/ []int{0, 1, 2} /*X*/ [: /*Low*/ 2: /*High*/ 3 /*Max*/] /*End*/
 //
 type SliceExprDecorations struct {
 	Space  SpaceType

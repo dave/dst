@@ -9,7 +9,7 @@ import (
 
 func generateFragger(names []string) error {
 	f := NewFile("decorator")
-	f.Func().Params(Id("f").Op("*").Id("Fragger")).Id("ProcessNode").Params(Id("n").Qual("go/ast", "Node")).Block(
+	f.Func().Params(Id("f").Op("*").Id("fragger")).Id("processNode").Params(Id("n").Qual("go/ast", "Node")).Block(
 		If(Id("n").Dot("Pos").Call().Dot("IsValid").Call()).Block(
 			Id("f").Dot("cursor").Op("=").Int().Parens(Id("n").Dot("Pos").Call()),
 		),
@@ -29,7 +29,7 @@ func generateFragger(names []string) error {
 								pos = Id("n").Dot("End").Call()
 							}
 
-							process := Id("f").Dot("AddDecoration").Call(Id("n"), Lit(frag.Name), pos)
+							process := Id("f").Dot("addDecoration").Call(Id("n"), Lit(frag.Name), pos)
 
 							if frag.Use != nil {
 								g.If(frag.Use.Get("n", true)).Block(process)
@@ -39,18 +39,18 @@ func generateFragger(names []string) error {
 						case fragment.Node:
 							g.Line().Commentf("Node: %s", frag.Name)
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
-								Id("f").Dot("ProcessNode").Call(frag.Field.Get("n")),
+								Id("f").Dot("processNode").Call(frag.Field.Get("n")),
 							)
 						case fragment.List:
 							g.Line().Commentf("List: %s", frag.Name)
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
-								Id("f").Dot("ProcessNode").Call(Id("v")),
+								Id("f").Dot("processNode").Call(Id("v")),
 							)
 						case fragment.Map:
 							g.Line().Commentf("Map: %s", frag.Name)
 							if frag.Elem.Name != "Object" {
 								g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
-									Id("f").Dot("ProcessNode").Call(Id("v")),
+									Id("f").Dot("processNode").Call(Id("v")),
 								)
 							}
 						case fragment.Token:
@@ -59,7 +59,7 @@ func generateFragger(names []string) error {
 							if frag.PositionField != nil {
 								pos = frag.PositionField.Get("n")
 							}
-							process := Id("f").Dot("AddToken").Call(Id("n"), frag.Token.Get("n", true), pos)
+							process := Id("f").Dot("addToken").Call(Id("n"), frag.Token.Get("n", true), pos)
 							if frag.Exists != nil {
 								g.If(frag.Exists.Get("n", true)).Block(process)
 							} else {
@@ -71,7 +71,7 @@ func generateFragger(names []string) error {
 							if frag.PositionField != nil {
 								pos = frag.PositionField.Get("n")
 							}
-							g.Id("f").Dot("AddString").Call(Id("n"), frag.ValueField.Get("n"), pos)
+							g.Id("f").Dot("addString").Call(Id("n"), frag.ValueField.Get("n"), pos)
 						case fragment.Ignored, fragment.Init, fragment.Value, fragment.Scope, fragment.Object:
 							// do nothing
 						default:

@@ -237,8 +237,8 @@ func TestFragger(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			p := NewFragger(fset)
-			p.Fragment(f)
+			p := newFragger(fset)
+			p.fragment(f)
 
 			buf := &bytes.Buffer{}
 			p.debug(fset, buf)

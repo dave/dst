@@ -12,20 +12,24 @@ import (
 	"github.com/dave/dst"
 )
 
+// Print uses format.Node to print a *dst.File to stdout
 func Print(f *dst.File) error {
 	return Fprint(os.Stdout, f)
 }
 
+// Fprint uses format.Node to print a *dst.File to a writer
 func Fprint(w io.Writer, f *dst.File) error {
 	fset, af := Restore(f)
 	return format.Node(w, fset, af)
 }
 
+// Restore restores a *dst.File to a *token.FileSet and a *ast.File
 func Restore(file *dst.File) (*token.FileSet, *ast.File) {
 	r := NewRestorer()
 	return r.Fset, r.RestoreFile("", file)
 }
 
+// NewRestorer creates a new Restorer
 func NewRestorer() *Restorer {
 	return &Restorer{
 		Fset:    token.NewFileSet(),
@@ -36,10 +40,10 @@ func NewRestorer() *Restorer {
 }
 
 type Restorer struct {
-	Fset    *token.FileSet
-	Nodes   map[dst.Node]ast.Node
-	Objects map[*dst.Object]*ast.Object
-	Scopes  map[*dst.Scope]*ast.Scope
+	Fset    *token.FileSet              // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
+	Nodes   map[dst.Node]ast.Node       // Mapping from dst to ast Nodes
+	Objects map[*dst.Object]*ast.Object // Mapping from dst to ast Objects
+	Scopes  map[*dst.Scope]*ast.Scope   // Mapping from dst to ast Scopes
 }
 
 type fileRestorer struct {
@@ -53,6 +57,7 @@ type fileRestorer struct {
 	cursorAtNewLine token.Pos                // The cursor position directly after adding a newline decoration (or a line comment which ends in a "\n"). If we're still at this cursor position when we add a line space, reduce the "\n" by one.
 }
 
+// RestoreFile restores a *dst.File to an *ast.File
 func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
 
 	// Base is the pos that the file will start at in the fset

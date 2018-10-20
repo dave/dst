@@ -12,6 +12,8 @@ import (
 	"github.com/dave/dst"
 )
 
+// Parse uses parser.ParseFile to parse and decorate a Go source file. The src parameter should
+// be string, []byte, or io.Reader.
 func Parse(src interface{}) (*dst.File, error) {
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, "", src, parser.ParseComments)
@@ -21,6 +23,7 @@ func Parse(src interface{}) (*dst.File, error) {
 	return Decorate(fset, f).(*dst.File), nil
 }
 
+// ParseFile uses parser.ParseFile to parse and decorate a Go source file.
 func ParseFile(fset *token.FileSet, filename string, src interface{}, mode parser.Mode) (*dst.File, error) {
 	f, err := parser.ParseFile(fset, filename, src, mode)
 	if err != nil {
@@ -29,6 +32,8 @@ func ParseFile(fset *token.FileSet, filename string, src interface{}, mode parse
 	return Decorate(fset, f).(*dst.File), nil
 }
 
+// ParseExpr uses parser.ParseExpr to parse and decorate a Go expression. It should be noted that
+// this is of limited use because comments are not parsed by parser.ParseExpr.
 func ParseExpr(x string) (dst.Expr, error) {
 	expr, err := parser.ParseExpr(x)
 	if err != nil {
@@ -37,6 +42,7 @@ func ParseExpr(x string) (dst.Expr, error) {
 	return Decorate(nil, expr).(dst.Expr), nil
 }
 
+// ParseDir uses parser.ParseDir to parse and decorate a directory containing Go source.
 func ParseDir(fset *token.FileSet, path string, filter func(os.FileInfo) bool, mode parser.Mode) (map[string]*dst.Package, error) {
 	pkgs, err := parser.ParseDir(fset, path, filter, mode)
 	if err != nil {
@@ -50,6 +56,8 @@ func ParseDir(fset *token.FileSet, path string, filter func(os.FileInfo) bool, m
 	return out, nil
 }
 
+// ParseExprFrom uses parser.ParseExprFrom to parse and decorate a Go expression. It should be noted
+// that this is of limited use because comments are not parsed by parser.ParseExprFrom.
 func ParseExprFrom(fset *token.FileSet, filename string, src interface{}, mode parser.Mode) (dst.Expr, error) {
 	expr, err := parser.ParseExprFrom(fset, filename, src, mode)
 	if err != nil {
@@ -58,14 +66,17 @@ func ParseExprFrom(fset *token.FileSet, filename string, src interface{}, mode p
 	return Decorate(fset, expr).(dst.Expr), nil
 }
 
+// Decorate decorates an ast.Node and returns a dst.Node.
 func Decorate(fset *token.FileSet, n ast.Node) dst.Node {
 	return New().Decorate(fset, n)
 }
 
+// Decorate decorates a *ast.File and returns a *dst.File.
 func DecorateFile(fset *token.FileSet, f *ast.File) *dst.File {
 	return New().Decorate(fset, f).(*dst.File)
 }
 
+// New returns a new decorator.
 func New() *Decorator {
 	return &Decorator{
 		DstNodes:    map[ast.Node]dst.Node{},
@@ -82,30 +93,31 @@ func New() *Decorator {
 }
 
 type Decorator struct {
-	DstNodes     map[ast.Node]dst.Node
-	DstScopes    map[*ast.Scope]*dst.Scope
-	DstObjects   map[*ast.Object]*dst.Object
-	AstNodes     map[dst.Node]ast.Node
-	AstScopes    map[*dst.Scope]*ast.Scope
-	AstObjects   map[*dst.Object]*ast.Object
-	Info         *Info
+	DstNodes     map[ast.Node]dst.Node       // Mapping from ast to dst Nodes
+	DstScopes    map[*ast.Scope]*dst.Scope   // Mapping from ast to dst Scopes
+	DstObjects   map[*ast.Object]*dst.Object // Mapping from ast to dst Objects
+	AstNodes     map[dst.Node]ast.Node       // Mapping from dst to ast Nodes
+	AstScopes    map[*dst.Scope]*ast.Scope   // Mapping from dst to ast Scopes
+	AstObjects   map[*dst.Object]*ast.Object // Mapping from dst to ast Objects
+	Info         *Info                       // Info object containing source file names
 	decorations  map[ast.Node]map[string][]string
 	space, after map[ast.Node]dst.SpaceType
 }
 
 type Info struct {
-	Filenames map[*dst.File]string
+	Filenames map[*dst.File]string // Source file names
 }
 
+// Decorate decorates an ast.Node and returns a dst.Node
 func (d *Decorator) Decorate(fset *token.FileSet, n ast.Node) dst.Node {
 
-	fragger := NewFragger(fset)
-	fragger.Fragment(n)
+	fragger := newFragger(fset)
+	fragger.fragment(n)
 
 	//fmt.Println("\nFragger:")
 	//fragger.debug(fset, os.Stdout)
 
-	d.space, d.after, d.decorations = fragger.Link()
+	d.space, d.after, d.decorations = fragger.link()
 
 	out := d.decorateNode(n)
 
