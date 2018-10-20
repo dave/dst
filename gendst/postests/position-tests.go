@@ -9,10 +9,10 @@ import (
 // --
 
 var a []int
-var i int
+var i = 1
 var b bool
-var f interface{}
-var p *int
+var f interface{} = 1
+var p = &i
 var c chan int
 
 // Field
@@ -45,10 +45,10 @@ var F = /*Start*/ fmt. /*X*/ Sprint /*End*/ (0)
 var G = /*Start*/ []int{0} /*X*/ [ /*Lbrack*/ 0 /*Index*/] /*End*/
 
 // SliceExpr(0)
-var H = /*Start*/ []int{0} /*X*/ [ /*Lbrack*/ 1: /*Low*/ 2: /*High*/ 3 /*Max*/] /*End*/
+var H = /*Start*/ []int{0, 1, 2} /*X*/ [ /*Lbrack*/ 1: /*Low*/ 2: /*High*/ 3 /*Max*/] /*End*/
 
 // SliceExpr(1)
-var H1 = /*Start*/ []int{0} /*X*/ [ /*Lbrack*/ 1: /*Low*/ 2 /*High*/] /*End*/
+var H1 = /*Start*/ []int{0, 1, 2} /*X*/ [ /*Lbrack*/ 1: /*Low*/ 2 /*High*/] /*End*/
 
 // SliceExpr(2)
 var H2 = /*Start*/ []int{0} /*X*/ [: /*Low*/] /*End*/
@@ -57,10 +57,10 @@ var H2 = /*Start*/ []int{0} /*X*/ [: /*Low*/] /*End*/
 var H3 = /*Start*/ []int{0} /*X*/ [ /*Lbrack*/ 1: /*Low*/] /*End*/
 
 // SliceExpr(4)
-var H4 = /*Start*/ []int{0} /*X*/ [: /*Low*/ 2 /*High*/] /*End*/
+var H4 = /*Start*/ []int{0, 1, 2} /*X*/ [: /*Low*/ 2 /*High*/] /*End*/
 
 // SliceExpr(5)
-var H5 = /*Start*/ []int{0} /*X*/ [: /*Low*/ 2: /*High*/ 3 /*Max*/] /*End*/
+var H5 = /*Start*/ []int{0, 1, 2} /*X*/ [: /*Low*/ 2: /*High*/ 3 /*Max*/] /*End*/
 
 // TypeAssertExpr
 var J = /*Start*/ f. /*X*/ ( /*Lparen*/ int /*Type*/) /*End*/
