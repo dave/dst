@@ -46,3 +46,15 @@ const (
 	NewLine   SpaceType = 1 // NewLine is a single "\n"
 	EmptyLine SpaceType = 2 // EmptyLine is a double "\n"
 )
+
+func (s SpaceType) String() string {
+	switch s {
+	case None:
+		return "None"
+	case NewLine:
+		return "NewLine"
+	case EmptyLine:
+		return "EmpryLine"
+	}
+	return ""
+}

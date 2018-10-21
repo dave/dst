@@ -5,12 +5,11 @@
 package dst_test
 
 import (
-	"bytes"
 	"fmt"
-	"go/ast"
-	"go/format"
-	"go/parser"
 	"go/token"
+
+	"github.com/dave/dst"
+	"github.com/dave/dst/decorator"
 )
 
 // This example demonstrates how to inspect the AST of a Go program.
@@ -24,35 +23,35 @@ var X = f(3.14)*2 + c
 
 	// Create the AST by parsing src.
 	fset := token.NewFileSet() // positions are relative to fset
-	f, err := parser.ParseFile(fset, "src.go", src, 0)
+	f, err := decorator.ParseFile(fset, "src.go", src, 0)
 	if err != nil {
 		panic(err)
 	}
 
 	// Inspect the AST and print all identifiers and literals.
-	ast.Inspect(f, func(n ast.Node) bool {
+	dst.Inspect(f, func(n dst.Node) bool {
 		var s string
 		switch x := n.(type) {
-		case *ast.BasicLit:
+		case *dst.BasicLit:
 			s = x.Value
-		case *ast.Ident:
+		case *dst.Ident:
 			s = x.Name
 		}
 		if s != "" {
-			fmt.Printf("%s:\t%s\n", fset.Position(n.Pos()), s)
+			fmt.Println(s)
 		}
 		return true
 	})
 
 	// Output:
-	// src.go:2:9:	p
-	// src.go:3:7:	c
-	// src.go:3:11:	1.0
-	// src.go:4:5:	X
-	// src.go:4:9:	f
-	// src.go:4:11:	3.14
-	// src.go:4:17:	2
-	// src.go:4:21:	c
+	// p
+	// c
+	// 1.0
+	// X
+	// f
+	// 3.14
+	// 2
+	// c
 }
 
 // This example shows what an AST looks like when printed for debugging.
@@ -67,139 +66,126 @@ func main() {
 
 	// Create the AST by parsing src.
 	fset := token.NewFileSet() // positions are relative to fset
-	f, err := parser.ParseFile(fset, "", src, 0)
+	f, err := decorator.ParseFile(fset, "", src, 0)
 	if err != nil {
 		panic(err)
 	}
 
 	// Print the AST.
-	ast.Print(fset, f)
+	dst.Print(f)
 
-	// Output:
-	//      0  *ast.File {
-	//      1  .  Package: 2:1
-	//      2  .  Name: *ast.Ident {
-	//      3  .  .  NamePos: 2:9
-	//      4  .  .  Name: "main"
-	//      5  .  }
-	//      6  .  Decls: []ast.Decl (len = 1) {
-	//      7  .  .  0: *ast.FuncDecl {
-	//      8  .  .  .  Name: *ast.Ident {
-	//      9  .  .  .  .  NamePos: 3:6
-	//     10  .  .  .  .  Name: "main"
-	//     11  .  .  .  .  Obj: *ast.Object {
-	//     12  .  .  .  .  .  Kind: func
-	//     13  .  .  .  .  .  Name: "main"
-	//     14  .  .  .  .  .  Decl: *(obj @ 7)
-	//     15  .  .  .  .  }
-	//     16  .  .  .  }
-	//     17  .  .  .  Type: *ast.FuncType {
-	//     18  .  .  .  .  Func: 3:1
-	//     19  .  .  .  .  Params: *ast.FieldList {
-	//     20  .  .  .  .  .  Opening: 3:10
-	//     21  .  .  .  .  .  Closing: 3:11
-	//     22  .  .  .  .  }
-	//     23  .  .  .  }
-	//     24  .  .  .  Body: *ast.BlockStmt {
-	//     25  .  .  .  .  Lbrace: 3:13
-	//     26  .  .  .  .  List: []ast.Stmt (len = 1) {
-	//     27  .  .  .  .  .  0: *ast.ExprStmt {
-	//     28  .  .  .  .  .  .  X: *ast.CallExpr {
-	//     29  .  .  .  .  .  .  .  Fun: *ast.Ident {
-	//     30  .  .  .  .  .  .  .  .  NamePos: 4:2
-	//     31  .  .  .  .  .  .  .  .  Name: "println"
-	//     32  .  .  .  .  .  .  .  }
-	//     33  .  .  .  .  .  .  .  Lparen: 4:9
-	//     34  .  .  .  .  .  .  .  Args: []ast.Expr (len = 1) {
-	//     35  .  .  .  .  .  .  .  .  0: *ast.BasicLit {
-	//     36  .  .  .  .  .  .  .  .  .  ValuePos: 4:10
-	//     37  .  .  .  .  .  .  .  .  .  Kind: STRING
-	//     38  .  .  .  .  .  .  .  .  .  Value: "\"Hello, World!\""
-	//     39  .  .  .  .  .  .  .  .  }
-	//     40  .  .  .  .  .  .  .  }
-	//     41  .  .  .  .  .  .  .  Ellipsis: -
-	//     42  .  .  .  .  .  .  .  Rparen: 4:25
-	//     43  .  .  .  .  .  .  }
-	//     44  .  .  .  .  .  }
-	//     45  .  .  .  .  }
-	//     46  .  .  .  .  Rbrace: 5:1
-	//     47  .  .  .  }
-	//     48  .  .  }
-	//     49  .  }
-	//     50  .  Scope: *ast.Scope {
-	//     51  .  .  Objects: map[string]*ast.Object (len = 1) {
-	//     52  .  .  .  "main": *(obj @ 11)
-	//     53  .  .  }
-	//     54  .  }
-	//     55  .  Unresolved: []*ast.Ident (len = 1) {
-	//     56  .  .  0: *(obj @ 29)
-	//     57  .  }
-	//     58  }
-}
-
-// This example illustrates how to remove a variable declaration
-// in a Go program while maintaining correct comment association
-// using an ast.CommentMap.
-func ExampleCommentMap() {
-	// src is the input for which we create the AST that we
-	// are going to manipulate.
-	src := `
-// This is the package comment.
-package main
-
-// This comment is associated with the hello constant.
-const hello = "Hello, World!" // line comment 1
-
-// This comment is associated with the foo variable.
-var foo = hello // line comment 2 
-
-// This comment is associated with the main function.
-func main() {
-	fmt.Println(hello) // line comment 3
-}
-`
-
-	// Create the AST by parsing src.
-	fset := token.NewFileSet() // positions are relative to fset
-	f, err := parser.ParseFile(fset, "src.go", src, parser.ParseComments)
-	if err != nil {
-		panic(err)
-	}
-
-	// Create an ast.CommentMap from the ast.File's comments.
-	// This helps keeping the association between comments
-	// and AST nodes.
-	cmap := ast.NewCommentMap(fset, f, f.Comments)
-
-	// Remove the first variable declaration from the list of declarations.
-	for i, decl := range f.Decls {
-		if gen, ok := decl.(*ast.GenDecl); ok && gen.Tok == token.VAR {
-			copy(f.Decls[i:], f.Decls[i+1:])
-			f.Decls = f.Decls[:len(f.Decls)-1]
-		}
-	}
-
-	// Use the comment map to filter comments that don't belong anymore
-	// (the comments associated with the variable declaration), and create
-	// the new comments list.
-	f.Comments = cmap.Filter(f).Comments()
-
-	// Print the modified AST.
-	var buf bytes.Buffer
-	if err := format.Node(&buf, fset, f); err != nil {
-		panic(err)
-	}
-	fmt.Printf("%s", buf.Bytes())
-
-	// Output:
-	// // This is the package comment.
-	// package main
-	//
-	// // This comment is associated with the hello constant.
-	// const hello = "Hello, World!" // line comment 1
-	//
-	// // This comment is associated with the main function.
-	// func main() {
-	// 	fmt.Println(hello) // line comment 3
-	// }
+	//Output:
+	//      0  *dst.File {
+	//      1  .  Name: *dst.Ident {
+	//      2  .  .  Name: "main"
+	//      3  .  .  Decs: dst.IdentDecorations {
+	//      4  .  .  .  NodeDecs: dst.NodeDecs {
+	//      5  .  .  .  .  Space: None
+	//      6  .  .  .  .  After: None
+	//      7  .  .  .  }
+	//      8  .  .  }
+	//      9  .  }
+	//     10  .  Decls: []dst.Decl (len = 1) {
+	//     11  .  .  0: *dst.FuncDecl {
+	//     12  .  .  .  Name: *dst.Ident {
+	//     13  .  .  .  .  Name: "main"
+	//     14  .  .  .  .  Obj: *dst.Object {
+	//     15  .  .  .  .  .  Kind: func
+	//     16  .  .  .  .  .  Name: "main"
+	//     17  .  .  .  .  .  Decl: *(obj @ 11)
+	//     18  .  .  .  .  }
+	//     19  .  .  .  .  Decs: dst.IdentDecorations {
+	//     20  .  .  .  .  .  NodeDecs: dst.NodeDecs {
+	//     21  .  .  .  .  .  .  Space: None
+	//     22  .  .  .  .  .  .  After: None
+	//     23  .  .  .  .  .  }
+	//     24  .  .  .  .  }
+	//     25  .  .  .  }
+	//     26  .  .  .  Type: *dst.FuncType {
+	//     27  .  .  .  .  Func: true
+	//     28  .  .  .  .  Params: *dst.FieldList {
+	//     29  .  .  .  .  .  Opening: true
+	//     30  .  .  .  .  .  Closing: true
+	//     31  .  .  .  .  .  Decs: dst.FieldListDecorations {
+	//     32  .  .  .  .  .  .  NodeDecs: dst.NodeDecs {
+	//     33  .  .  .  .  .  .  .  Space: None
+	//     34  .  .  .  .  .  .  .  After: None
+	//     35  .  .  .  .  .  .  }
+	//     36  .  .  .  .  .  }
+	//     37  .  .  .  .  }
+	//     38  .  .  .  .  Decs: dst.FuncTypeDecorations {
+	//     39  .  .  .  .  .  NodeDecs: dst.NodeDecs {
+	//     40  .  .  .  .  .  .  Space: None
+	//     41  .  .  .  .  .  .  After: None
+	//     42  .  .  .  .  .  }
+	//     43  .  .  .  .  }
+	//     44  .  .  .  }
+	//     45  .  .  .  Body: *dst.BlockStmt {
+	//     46  .  .  .  .  List: []dst.Stmt (len = 1) {
+	//     47  .  .  .  .  .  0: *dst.ExprStmt {
+	//     48  .  .  .  .  .  .  X: *dst.CallExpr {
+	//     49  .  .  .  .  .  .  .  Fun: *dst.Ident {
+	//     50  .  .  .  .  .  .  .  .  Name: "println"
+	//     51  .  .  .  .  .  .  .  .  Decs: dst.IdentDecorations {
+	//     52  .  .  .  .  .  .  .  .  .  NodeDecs: dst.NodeDecs {
+	//     53  .  .  .  .  .  .  .  .  .  .  Space: None
+	//     54  .  .  .  .  .  .  .  .  .  .  After: None
+	//     55  .  .  .  .  .  .  .  .  .  }
+	//     56  .  .  .  .  .  .  .  .  }
+	//     57  .  .  .  .  .  .  .  }
+	//     58  .  .  .  .  .  .  .  Args: []dst.Expr (len = 1) {
+	//     59  .  .  .  .  .  .  .  .  0: *dst.BasicLit {
+	//     60  .  .  .  .  .  .  .  .  .  Kind: STRING
+	//     61  .  .  .  .  .  .  .  .  .  Value: "\"Hello, World!\""
+	//     62  .  .  .  .  .  .  .  .  .  Decs: dst.BasicLitDecorations {
+	//     63  .  .  .  .  .  .  .  .  .  .  NodeDecs: dst.NodeDecs {
+	//     64  .  .  .  .  .  .  .  .  .  .  .  Space: None
+	//     65  .  .  .  .  .  .  .  .  .  .  .  After: None
+	//     66  .  .  .  .  .  .  .  .  .  .  }
+	//     67  .  .  .  .  .  .  .  .  .  }
+	//     68  .  .  .  .  .  .  .  .  }
+	//     69  .  .  .  .  .  .  .  }
+	//     70  .  .  .  .  .  .  .  Ellipsis: false
+	//     71  .  .  .  .  .  .  .  Decs: dst.CallExprDecorations {
+	//     72  .  .  .  .  .  .  .  .  NodeDecs: dst.NodeDecs {
+	//     73  .  .  .  .  .  .  .  .  .  Space: None
+	//     74  .  .  .  .  .  .  .  .  .  After: None
+	//     75  .  .  .  .  .  .  .  .  }
+	//     76  .  .  .  .  .  .  .  }
+	//     77  .  .  .  .  .  .  }
+	//     78  .  .  .  .  .  .  Decs: dst.ExprStmtDecorations {
+	//     79  .  .  .  .  .  .  .  NodeDecs: dst.NodeDecs {
+	//     80  .  .  .  .  .  .  .  .  Space: NewLine
+	//     81  .  .  .  .  .  .  .  .  After: NewLine
+	//     82  .  .  .  .  .  .  .  }
+	//     83  .  .  .  .  .  .  }
+	//     84  .  .  .  .  .  }
+	//     85  .  .  .  .  }
+	//     86  .  .  .  .  Decs: dst.BlockStmtDecorations {
+	//     87  .  .  .  .  .  NodeDecs: dst.NodeDecs {
+	//     88  .  .  .  .  .  .  Space: None
+	//     89  .  .  .  .  .  .  After: None
+	//     90  .  .  .  .  .  }
+	//     91  .  .  .  .  }
+	//     92  .  .  .  }
+	//     93  .  .  .  Decs: dst.FuncDeclDecorations {
+	//     94  .  .  .  .  NodeDecs: dst.NodeDecs {
+	//     95  .  .  .  .  .  Space: NewLine
+	//     96  .  .  .  .  .  After: None
+	//     97  .  .  .  .  }
+	//     98  .  .  .  }
+	//     99  .  .  }
+	//    100  .  }
+	//    101  .  Scope: *dst.Scope {
+	//    102  .  .  Objects: map[string]*dst.Object (len = 1) {
+	//    103  .  .  .  "main": *(obj @ 14)
+	//    104  .  .  }
+	//    105  .  }
+	//    106  .  Decs: dst.FileDecorations {
+	//    107  .  .  NodeDecs: dst.NodeDecs {
+	//    108  .  .  .  Space: NewLine
+	//    109  .  .  .  After: None
+	//    110  .  .  }
+	//    111  .  }
+	//    112  }
 }
