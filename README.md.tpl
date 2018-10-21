@@ -20,16 +20,24 @@ Here's the same example using `dst`:
 
 {{ "ExampleDstFixed" | example }}
 
-### Examples
+### Usage
+
+Parsing a source file to `dst` and printing the results after modification can be accomplished with 
+several `Parse` and `Print` convenience functions in the [decorator](https://godoc.org/github.com/dave/dst/decorator) 
+package. 
+
+For more fine-grained control you can use [Decorator](https://godoc.org/github.com/dave/dst/decorator#Decorator) 
+to convert from `ast` to `dst`, and [Restorer](https://godoc.org/github.com/dave/dst/decorator#Restorer) 
+to convert back again. See the `go/types` section below for a demonstration.  
 
 #### Comments
 
-Comments are added at decoration attachment points. See [generated-decorations.go](https://github.com/dave/dst/blob/master/generated-decorations.go) 
+Comments are added at decoration attachment points. See [decorations-types-generated.go](https://github.com/dave/dst/blob/master/decorations-types-generated.go) 
 for a full list of these points, along with demonstration code of where they are rendered in the output.
 
-The decoration attachment points have convenience functions `Add`, `Replace`, `Clear` and `All` to 
-accomplish common tasks. Use the full text of your comment including the `//` or `/**/` markers. When 
-adding a line comment, a newline is automatically rendered.
+The decoration attachment points have convenience functions `Append`, `Prepend`, `Replace`, `Clear` 
+and `All` to accomplish common tasks. Use the full text of your comment including the `//` or `/**/` 
+markers. When adding a line comment, a newline is automatically rendered.
 
 {{ "ExampleComment" | example }}
 
@@ -43,8 +51,8 @@ property is similar but rendered after the node (and after any `End` decorations
 
 #### Common properties
 
-The common decoration properties (`Start`, `End`, `Space` and `After`) occur on all `Expr`, `Stmt` 
-and `Decl` nodes, so are available on those interfaces:
+The common decoration properties (`Start`, `End`, `Space` and `After`) occur on all nodes, so can be 
+accessed with the `Decorations()` method on the `Node` interface:
 
 {{ "ExampleDecorated" | example }}
 

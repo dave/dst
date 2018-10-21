@@ -77,16 +77,24 @@ if err := decorator.Print(f); err != nil {
 //}
 ```
 
-### Examples
+### Usage
+
+Parsing a source file to `dst` and printing the results after modification can be accomplished with 
+several `Parse` and `Print` convenience functions in the [decorator](https://godoc.org/github.com/dave/dst/decorator) 
+package. 
+
+For more fine-grained control you can use [Decorator](https://godoc.org/github.com/dave/dst/decorator#Decorator) 
+to convert from `ast` to `dst`, and [Restorer](https://godoc.org/github.com/dave/dst/decorator#Restorer) 
+to convert back again. See the `go/types` section below for a demonstration.  
 
 #### Comments
 
-Comments are added at decoration attachment points. See [generated-decorations.go](https://github.com/dave/dst/blob/master/generated-decorations.go) 
+Comments are added at decoration attachment points. See [decorations-types-generated.go](https://github.com/dave/dst/blob/master/decorations-types-generated.go) 
 for a full list of these points, along with demonstration code of where they are rendered in the output.
 
-The decoration attachment points have convenience functions `Add`, `Replace`, `Clear` and `All` to 
-accomplish common tasks. Use the full text of your comment including the `//` or `/**/` markers. When 
-adding a line comment, a newline is automatically rendered.
+The decoration attachment points have convenience functions `Append`, `Prepend`, `Replace`, `Clear` 
+and `All` to accomplish common tasks. Use the full text of your comment including the `//` or `/**/` 
+markers. When adding a line comment, a newline is automatically rendered.
 
 ```go
 code := `package main
@@ -101,9 +109,9 @@ if err != nil {
 
 call := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
 
-call.Decs.Start.Add("// you can add comments at the start...")
-call.Decs.Fun.Add("/* ...in the middle... */")
-call.Decs.End.Add("// or at the end.")
+call.Decs.Start.Append("// you can add comments at the start...")
+call.Decs.Fun.Append("/* ...in the middle... */")
+call.Decs.End.Append("// or at the end.")
 
 if err := decorator.Print(f); err != nil {
 	panic(err)
@@ -166,8 +174,8 @@ if err := decorator.Print(f); err != nil {
 
 #### Common properties
 
-The common decoration properties (`Start`, `End`, `Space` and `After`) occur on all `Expr`, `Stmt` 
-and `Decl` nodes, so are available on those interfaces:
+The common decoration properties (`Start`, `End`, `Space` and `After`) occur on all nodes, so can be 
+accessed with the `Decorations()` method on the `Node` interface:
 
 ```go
 code := `package main
@@ -184,11 +192,11 @@ if err != nil {
 
 list := f.Decls[0].(*dst.FuncDecl).Body.List
 
-list[0].SetSpace(dst.EmptyLine)
-list[0].End().Add("// the Decorated interface allows access to the common")
-list[1].End().Add("// decoration properties (Space, Start, End and After)")
-list[2].End().Add("// for all Expr, Stmt and Decl nodes.")
-list[2].SetAfter(dst.EmptyLine)
+list[0].Decorations().Space = dst.EmptyLine
+list[0].Decorations().End.Append("// the Decorated interface allows access to the common")
+list[1].Decorations().End.Append("// decoration properties (Space, Start, End and After)")
+list[2].Decorations().End.Append("// for all Expr, Stmt and Decl nodes.")
+list[2].Decorations().After = dst.EmptyLine
 
 if err := decorator.Print(f); err != nil {
 	panic(err)

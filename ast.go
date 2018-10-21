@@ -30,38 +30,27 @@ import (
 // That position information is needed to properly position comments
 // when printing the construct.
 
-// All node types implement the Node interface.
+// Node is satisfied by all nodes types.
 type Node interface {
-	isNode()
-}
-
-type Decorated interface {
-	Space() SpaceType
-	SetSpace(SpaceType)
-	Start() *Decorations
-	End() *Decorations
-	After() SpaceType
-	SetAfter(SpaceType)
+	// Decorations returns the common Node decorations (Space, After, Start, End). This returns nil for Package nodes.
+	Decorations() *NodeDecs
 }
 
 // All expression nodes implement the Expr interface.
 type Expr interface {
 	Node
-	Decorated
 	exprNode()
 }
 
 // All statement nodes implement the Stmt interface.
 type Stmt interface {
 	Node
-	Decorated
 	stmtNode()
 }
 
 // All declaration nodes implement the Decl interface.
 type Decl interface {
 	Node
-	Decorated
 	declNode()
 }
 
