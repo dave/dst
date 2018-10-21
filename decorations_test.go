@@ -102,9 +102,9 @@ func ExampleDecorated() {
 	list := f.Decls[0].(*dst.FuncDecl).Body.List
 
 	list[0].Decorations().Space = dst.EmptyLine
-	list[0].Decorations().End.Add("// the Decorated interface allows access to the common")
-	list[1].Decorations().End.Add("// decoration properties (Space, Start, End and After)")
-	list[2].Decorations().End.Add("// for all Expr, Stmt and Decl nodes.")
+	list[0].Decorations().End.Append("// the Decorated interface allows access to the common")
+	list[1].Decorations().End.Append("// decoration properties (Space, Start, End and After)")
+	list[2].Decorations().End.Append("// for all Expr, Stmt and Decl nodes.")
 	list[2].Decorations().After = dst.EmptyLine
 
 	if err := decorator.Print(f); err != nil {
@@ -176,9 +176,9 @@ func ExampleComment() {
 
 	call := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
 
-	call.Decs.Start.Add("// you can add comments at the start...")
-	call.Decs.Fun.Add("/* ...in the middle... */")
-	call.Decs.End.Add("// or at the end.")
+	call.Decs.Start.Append("// you can add comments at the start...")
+	call.Decs.Fun.Append("/* ...in the middle... */")
+	call.Decs.End.Append("// or at the end.")
 
 	if err := decorator.Print(f); err != nil {
 		panic(err)
@@ -209,7 +209,7 @@ func ExampleDecorations() {
 	body := f.Decls[0].(*dst.FuncDecl).Body
 	for i, stmt := range body.List {
 		stmt.Decorations().Space = dst.EmptyLine
-		stmt.Decorations().Start.Add(fmt.Sprintf("// foo %d", i))
+		stmt.Decorations().Start.Append(fmt.Sprintf("// foo %d", i))
 	}
 
 	call := body.List[2].(*dst.ExprStmt).X.(*dst.CallExpr)
@@ -217,8 +217,8 @@ func ExampleDecorations() {
 	for i, expr := range call.Args {
 		expr.Decorations().Space = dst.NewLine
 		expr.Decorations().After = dst.NewLine
-		expr.Decorations().Start.Add(fmt.Sprintf("/* bar %d */", i))
-		expr.Decorations().End.Add(fmt.Sprintf("// baz %d", i))
+		expr.Decorations().Start.Append(fmt.Sprintf("/* bar %d */", i))
+		expr.Decorations().End.Append(fmt.Sprintf("// baz %d", i))
 	}
 
 	if err := decorator.Print(f); err != nil {

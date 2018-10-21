@@ -64,7 +64,7 @@ var x int
 `,
 		post: func(c *dstutil.Cursor) bool {
 			if gd, ok := c.Node().(*dst.GenDecl); ok {
-				gd.Decs.Start.Add("// a foo is a foo")
+				gd.Decs.Start.Append("// a foo is a foo")
 			}
 			return true
 		},
@@ -115,7 +115,7 @@ var after1 int
 `,
 		pre: func(c *dstutil.Cursor) bool {
 			if gd, ok := c.Node().(*dst.GenDecl); ok {
-				gd.SetSpace(dst.NewLine)
+				gd.Decs.Space = dst.NewLine
 				c.InsertBefore(vardecl("before1", "int"))
 				c.InsertAfter(vardecl("after1", "int"))
 				c.InsertAfter(vardecl("after2", "int"))
