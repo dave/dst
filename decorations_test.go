@@ -56,17 +56,23 @@ func ExampleTypes() {
 	obj := typesInfo.Defs[astDef]
 
 	// Find all the uses of that object
-	var uses []*dst.Ident
+	var astUses []*ast.Ident
 	for id, ob := range typesInfo.Uses {
 		if ob != obj {
 			continue
 		}
-		uses = append(uses, dec.DstNodes[id].(*dst.Ident))
+		astUses = append(astUses, id)
 	}
 
-	// Change the name of all uses
+	// Find each *dst.Ident in the DstNodes mapping
+	var dstUses []*dst.Ident
+	for _, id := range astUses {
+		dstUses = append(dstUses, dec.DstNodes[id].(*dst.Ident))
+	}
+
+	// Change the name of the original definition and all uses
 	dstDef.Name = "foo"
-	for _, id := range uses {
+	for _, id := range dstUses {
 		id.Name = "foo"
 	}
 

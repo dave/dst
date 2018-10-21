@@ -226,11 +226,11 @@ and provides the `Apply` function with similar semantics.
 
 #### Integrating with go/types
 
-Forking the `go/types` package to use a `dst` tree as input is non-trivial because `go/types` uses 
-position information in several places. A work-around is to convert `ast` to `dst` using a 
-[Decorator](https://github.com/dave/dst/blob/master/decorator/decorator.go). After conversion, this 
-exposes the `DstNodes` and `AstNodes` properties which map between `ast.Node` and `dst.Node`. This 
-way the `go/types` package can be used:
+Adapting the `go/types` package to use `dst` as input is non-trivial because `go/types` uses 
+position information in several places. A work-around is to convert from `ast` to `dst` using
+[Decorator](https://godoc.org/github.com/dave/dst/decorator#Decorator). After conversion, this 
+exposes `DstNodes` and `AstNodes` which map between `ast.Node` and `dst.Node`. This way, the 
+`go/types` package can be used:
 
 ```go
 code := `package main
@@ -272,17 +272,23 @@ astDef := dec.AstNodes[dstDef].(*ast.Ident)
 obj := typesInfo.Defs[astDef]
 
 // Find all the uses of that object
-var uses []*dst.Ident
+var astUses []*ast.Ident
 for id, ob := range typesInfo.Uses {
 	if ob != obj {
 		continue
 	}
-	uses = append(uses, dec.DstNodes[id].(*dst.Ident))
+	astUses = append(astUses, id)
 }
 
-// Change the name of all uses
+// Find each *dst.Ident in the DstNodes mapping
+var dstUses []*dst.Ident
+for _, id := range astUses {
+	dstUses = append(dstUses, dec.DstNodes[id].(*dst.Ident))
+}
+
+// Change the name of the original definition and all uses
 dstDef.Name = "foo"
-for _, id := range uses {
+for _, id := range dstUses {
 	id.Name = "foo"
 }
 
