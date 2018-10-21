@@ -101,11 +101,11 @@ func ExampleDecorated() {
 
 	list := f.Decls[0].(*dst.FuncDecl).Body.List
 
-	list[0].SetSpace(dst.EmptyLine)
-	list[0].End().Add("// the Decorated interface allows access to the common")
-	list[1].End().Add("// decoration properties (Space, Start, End and After)")
-	list[2].End().Add("// for all Expr, Stmt and Decl nodes.")
-	list[2].SetAfter(dst.EmptyLine)
+	list[0].Decorations().Space = dst.EmptyLine
+	list[0].Decorations().End.Add("// the Decorated interface allows access to the common")
+	list[1].Decorations().End.Add("// decoration properties (Space, Start, End and After)")
+	list[2].Decorations().End.Add("// for all Expr, Stmt and Decl nodes.")
+	list[2].Decorations().After = dst.EmptyLine
 
 	if err := decorator.Print(f); err != nil {
 		panic(err)
@@ -208,17 +208,17 @@ func ExampleDecorations() {
 
 	body := f.Decls[0].(*dst.FuncDecl).Body
 	for i, stmt := range body.List {
-		stmt.SetSpace(dst.EmptyLine)
-		stmt.Start().Add(fmt.Sprintf("// foo %d", i))
+		stmt.Decorations().Space = dst.EmptyLine
+		stmt.Decorations().Start.Add(fmt.Sprintf("// foo %d", i))
 	}
 
 	call := body.List[2].(*dst.ExprStmt).X.(*dst.CallExpr)
 	call.Args = append(call.Args, dst.NewIdent("b"), dst.NewIdent("c"))
 	for i, expr := range call.Args {
-		expr.SetSpace(dst.NewLine)
-		expr.SetAfter(dst.NewLine)
-		expr.Start().Add(fmt.Sprintf("/* bar %d */", i))
-		expr.End().Add(fmt.Sprintf("// baz %d", i))
+		expr.Decorations().Space = dst.NewLine
+		expr.Decorations().After = dst.NewLine
+		expr.Decorations().Start.Add(fmt.Sprintf("/* bar %d */", i))
+		expr.Decorations().End.Add(fmt.Sprintf("// baz %d", i))
 	}
 
 	if err := decorator.Print(f); err != nil {
