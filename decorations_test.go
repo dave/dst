@@ -102,9 +102,9 @@ func ExampleDecorated() {
 	list := f.Decls[0].(*dst.FuncDecl).Body.List
 
 	list[0].Decorations().Space = dst.EmptyLine
-	list[0].Decorations().End.Append("// the Decorated interface allows access to the common")
+	list[0].Decorations().End.Append("// the Decorations method allows access to the common")
 	list[1].Decorations().End.Append("// decoration properties (Space, Start, End and After)")
-	list[2].Decorations().End.Append("// for all Expr, Stmt and Decl nodes.")
+	list[2].Decorations().End.Append("// for all nodes.")
 	list[2].Decorations().After = dst.EmptyLine
 
 	if err := decorator.Print(f); err != nil {
@@ -116,9 +116,9 @@ func ExampleDecorated() {
 	//
 	//func main() {
 	//
-	//	var i int  // the Decorated interface allows access to the common
+	//	var i int  // the Decorations method allows access to the common
 	//	i++        // decoration properties (Space, Start, End and After)
-	//	println(i) // for all Expr, Stmt and Decl nodes.
+	//	println(i) // for all nodes.
 	//
 	//}
 }
