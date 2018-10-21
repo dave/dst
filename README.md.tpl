@@ -51,7 +51,7 @@ property is similar but rendered after the node (and after any `End` decorations
 
 #### Common properties
 
-The common decoration properties (`Start`, `End`, `Space` and `After`) occur on all nodes, so can be 
+The common decoration properties (`Start`, `End`, `Space` and `After`) occur on all nodes, and can be 
 accessed with the `Decorations()` method on the `Node` interface:
 
 {{ "ExampleDecorated" | example }}
