@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dave/dst/gendst/fragment"
+	"github.com/dave/dst/gendst/data"
 	. "github.com/dave/jennifer/jen"
 )
 
@@ -36,19 +36,19 @@ func generateDecorator(names []string) error {
 						g.Id("out").Dot("Decs").Dot("Space").Op("=").Id("d").Dot("space").Index(Id("n"))
 						g.Id("out").Dot("Decs").Dot("After").Op("=").Id("d").Dot("after").Index(Id("n"))
 					}
-					for _, frag := range fragment.Info[nodeName] {
+					for _, frag := range data.Info[nodeName] {
 						switch frag := frag.(type) {
-						case fragment.Init:
+						case data.Init:
 							g.Line().Commentf("Init: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Op("&").Qual(DSTPATH, frag.Type.Name).Values()
-						case fragment.Decoration:
+						case data.Decoration:
 							// nothing here
-						case fragment.String:
+						case data.String:
 							g.Line().Commentf("String: %s", frag.Name)
 							if frag.ValueField != nil {
 								g.Add(frag.ValueField.Get("out")).Op("=").Add(frag.ValueField.Get("n"))
 							}
-						case fragment.Token:
+						case data.Token:
 							g.Line().Commentf("Token: %s", frag.Name)
 							if frag.TokenField != nil {
 								g.Add(frag.TokenField.Get("out")).Op("=").Add(frag.TokenField.Get("n"))
@@ -56,7 +56,7 @@ func generateDecorator(names []string) error {
 							if frag.ExistsField != nil {
 								g.Add(frag.ExistsField.Get("out")).Op("=").Add(frag.Exists.Get("n", true))
 							}
-						case fragment.List:
+						case data.List:
 							g.Line().Commentf("List: %s", frag.Name)
 							/*
 								for _, v := range n.<name> {
@@ -69,7 +69,7 @@ func generateDecorator(names []string) error {
 									Id("d").Dot("decorateNode").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH)),
 								),
 							)
-						case fragment.Map:
+						case data.Map:
 							g.Line().Commentf("Map: %s", frag.Name)
 							/*
 								out.<name> = map[string]<type>{}
@@ -93,7 +93,7 @@ func generateDecorator(names []string) error {
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("d").Dot("decorateNode").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH))
 								}
 							})
-						case fragment.Node:
+						case data.Node:
 							g.Line().Commentf("Node: %s", frag.Name)
 							/*
 								if n.<name> != nil {
@@ -103,19 +103,19 @@ func generateDecorator(names []string) error {
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
 								frag.Field.Get("out").Op("=").Id("d").Dot("decorateNode").Call(frag.Field.Get("n")).Assert(frag.Type.Literal(DSTPATH)),
 							)
-						case fragment.Ignored:
+						case data.Ignored:
 							// TODO
-						case fragment.Value:
+						case data.Value:
 							g.Line().Commentf("Value: %s", frag.Name)
 							if frag.Value != nil {
 								g.Add(frag.Field.Get("out")).Op("=").Add(frag.Value.Get("n", true))
 							} else {
 								g.Add(frag.Field.Get("out")).Op("=").Add(frag.Field.Get("n"))
 							}
-						case fragment.Scope:
+						case data.Scope:
 							g.Line().Commentf("Scope: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Id("d").Dot("decorateScope").Call(frag.Field.Get("n"))
-						case fragment.Object:
+						case data.Object:
 							g.Line().Commentf("Object: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Id("d").Dot("decorateObject").Call(frag.Field.Get("n"))
 						}
@@ -124,9 +124,9 @@ func generateDecorator(names []string) error {
 					g.Line()
 					var found bool
 					decs := If(List(Id("nd"), Id("ok")).Op(":=").Id("d").Dot("decorations").Index(Id("n")), Id("ok")).BlockFunc(func(g *Group) {
-						for _, frag := range fragment.Info[nodeName] {
+						for _, frag := range data.Info[nodeName] {
 							switch frag := frag.(type) {
-							case fragment.Decoration:
+							case data.Decoration:
 								found = true
 								g.If(List(Id("decs"), Id("ok")).Op(":=").Id("nd").Index(Lit(frag.Name)), Id("ok")).Block(
 									Id("out").Dot("Decs").Dot(frag.Name).Op("=").Id("decs"),
@@ -162,9 +162,9 @@ func generateDecoratorTestHelper(names []string) error {
 						g.Id("space").Op("=").Id("n").Dot("Decs").Dot("Space")
 						g.Id("after").Op("=").Id("n").Dot("Decs").Dot("After")
 					}
-					for _, frag := range fragment.Info[nodeName] {
+					for _, frag := range data.Info[nodeName] {
 						switch frag := frag.(type) {
-						case fragment.Decoration:
+						case data.Decoration:
 							g.Id("info").Op("=").Append(Id("info"), Id("decorationInfo").Values(Lit(frag.Name), Id("n").Dot("Decs").Dot(frag.Name)))
 						}
 					}

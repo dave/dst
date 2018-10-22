@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dave/dst/gendst/fragment"
+	"github.com/dave/dst/gendst/data"
 	. "github.com/dave/jennifer/jen"
 )
 
@@ -31,15 +31,15 @@ func generateRestorer(names []string) error {
 						g.Id("r").Dot("applySpace").Call(Id("n").Dot("Decs").Dot("Space"))
 					}
 
-					for _, frag := range fragment.Info[nodeName] {
+					for _, frag := range data.Info[nodeName] {
 						switch frag := frag.(type) {
-						case fragment.Init:
+						case data.Init:
 							g.Line().Commentf("Init: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Op("&").Qual("go/ast", frag.Type.Name).Values()
-						case fragment.Decoration:
+						case data.Decoration:
 							g.Line().Commentf("Decoration: %s", frag.Name)
 							g.Id("r").Dot("applyDecorations").Call(Id("out"), Lit(frag.Name), Id("n").Dot("Decs").Dot(frag.Name))
-						case fragment.Token:
+						case data.Token:
 							g.Line().Commentf("Token: %s", frag.Name)
 							position := Null()
 							value := Null()
@@ -59,7 +59,7 @@ func generateRestorer(names []string) error {
 								g.Add(position)
 								g.Add(action)
 							}
-						case fragment.String:
+						case data.String:
 							g.Line().Commentf("String: %s", frag.Name)
 							if frag.Literal {
 								g.Id("r").Dot("applyLiteral").Call(frag.ValueField.Get("n"))
@@ -71,7 +71,7 @@ func generateRestorer(names []string) error {
 							g.Id("r").Dot("cursor").Op("+=").Qual("go/token", "Pos").Parens(
 								Len(frag.ValueField.Get("n")),
 							)
-						case fragment.Node:
+						case data.Node:
 							g.Line().Commentf("Node: %s", frag.Name)
 							/*
 								if n.Elt != nil {
@@ -81,7 +81,7 @@ func generateRestorer(names []string) error {
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
 								frag.Field.Get("out").Op("=").Id("r").Dot("restoreNode").Call(frag.Field.Get("n")).Assert(frag.Type.Literal("go/ast")),
 							)
-						case fragment.List:
+						case data.List:
 							g.Line().Commentf("List: %s", frag.Name)
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 								frag.Field.Get("out").Op("=").Append(
@@ -89,7 +89,7 @@ func generateRestorer(names []string) error {
 									Id("r").Dot("restoreNode").Call(Id("v")).Assert(frag.Elem.Literal("go/ast")),
 								),
 							)
-						case fragment.Map:
+						case data.Map:
 							g.Line().Commentf("Map: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Map(String()).Add(frag.Elem.Literal("go/ast")).Values()
 							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).BlockFunc(func(g *Group) {
@@ -99,19 +99,19 @@ func generateRestorer(names []string) error {
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v")).Assert(frag.Elem.Literal("go/ast"))
 								}
 							})
-						case fragment.Ignored:
+						case data.Ignored:
 							// TODO
-						case fragment.Value:
+						case data.Value:
 							g.Line().Commentf("Value: %s", frag.Name)
 							if frag.Value != nil {
 								g.Add(frag.Field.Get("out")).Op("=").Add(frag.Value.Get("n", false))
 							} else {
 								g.Add(frag.Field.Get("out")).Op("=").Add(frag.Field.Get("n"))
 							}
-						case fragment.Scope:
+						case data.Scope:
 							g.Line().Commentf("Scope: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Id("r").Dot("restoreScope").Call(frag.Field.Get("n"))
-						case fragment.Object:
+						case data.Object:
 							g.Line().Commentf("Object: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Id("r").Dot("restoreObject").Call(frag.Field.Get("n"))
 						}

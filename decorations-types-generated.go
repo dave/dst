@@ -205,7 +205,7 @@ type FieldListDecorations struct {
 
 // FileDecorations holds decorations for File:
 //
-// 	/*Start*/ package /*Package*/ postests /*Name*/
+// 	/*Start*/ package /*Package*/ data /*Name*/
 //
 type FileDecorations struct {
 	NodeDecs

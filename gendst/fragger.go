@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/dave/dst/gendst/fragment"
+	"github.com/dave/dst/gendst/data"
 	. "github.com/dave/jennifer/jen"
 )
 
@@ -16,9 +16,9 @@ func generateFragger(names []string) error {
 		Switch(Id("n").Op(":=").Id("n").Assert(Type())).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
 				g.Case(Op("*").Qual("go/ast", nodeName)).BlockFunc(func(g *Group) {
-					for _, frag := range fragment.Info[nodeName] {
+					for _, frag := range data.Info[nodeName] {
 						switch frag := frag.(type) {
-						case fragment.Decoration:
+						case data.Decoration:
 							g.Line().Commentf("Decoration: %s", frag.Name)
 
 							pos := Qual("go/token", "NoPos")
@@ -36,24 +36,24 @@ func generateFragger(names []string) error {
 							} else {
 								g.Add(process)
 							}
-						case fragment.Node:
+						case data.Node:
 							g.Line().Commentf("Node: %s", frag.Name)
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
 								Id("f").Dot("processNode").Call(frag.Field.Get("n")),
 							)
-						case fragment.List:
+						case data.List:
 							g.Line().Commentf("List: %s", frag.Name)
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 								Id("f").Dot("processNode").Call(Id("v")),
 							)
-						case fragment.Map:
+						case data.Map:
 							g.Line().Commentf("Map: %s", frag.Name)
 							if frag.Elem.Name != "Object" {
 								g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 									Id("f").Dot("processNode").Call(Id("v")),
 								)
 							}
-						case fragment.Token:
+						case data.Token:
 							g.Line().Commentf("Token: %s", frag.Name)
 							pos := Qual("go/token", "NoPos")
 							if frag.PositionField != nil {
@@ -65,14 +65,14 @@ func generateFragger(names []string) error {
 							} else {
 								g.Add(process)
 							}
-						case fragment.String:
+						case data.String:
 							g.Line().Commentf("String: %s", frag.Name)
 							pos := Qual("go/token", "NoPos")
 							if frag.PositionField != nil {
 								pos = frag.PositionField.Get("n")
 							}
 							g.Id("f").Dot("addString").Call(Id("n"), frag.ValueField.Get("n"), pos)
-						case fragment.Ignored, fragment.Init, fragment.Value, fragment.Scope, fragment.Object:
+						case data.Ignored, data.Init, data.Value, data.Scope, data.Object:
 							// do nothing
 						default:
 							panic(fmt.Sprintf("unknown fragment type %T", frag))

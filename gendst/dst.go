@@ -2,12 +2,14 @@ package main
 
 import (
 	"bytes"
+	"go/ast"
 	"go/format"
 	"go/parser"
+	"path/filepath"
 	"regexp"
 	"strings"
 
-	"github.com/dave/dst/gendst/fragment"
+	"github.com/dave/dst/gendst/data"
 	. "github.com/dave/jennifer/jen"
 	"golang.org/x/tools/go/loader"
 )
@@ -29,53 +31,27 @@ func generateDst(names []string) error {
 				g.Return(Op("&").Id("n").Dot("Decs").Dot("NodeDecs"))
 			}
 		})
-
-		/*
-			for _, frag := range fragment.Info[name] {
-				switch frag := frag.(type) {
-				case fragment.Decoration:
-					if frag.Name == "Start" {
-						f.Func().Params(Id("v").Op("*").Id(name)).Id("Start").Params().Op("*").Id("Decorations").Block(
-							Return(Op("&").Id("v").Dot("Decs").Dot("Start")),
-						)
-					}
-					if frag.Name == "End" {
-						f.Func().Params(Id("v").Op("*").Id(name)).Id("End").Params().Op("*").Id("Decorations").Block(
-							Return(Op("&").Id("v").Dot("Decs").Dot("End")),
-						)
-					}
-				}
-			}
-
-			if name != "Package" {
-				f.Func().Params(Id("v").Op("*").Id(name)).Id("Space").Params().Id("SpaceType").Block(
-					Return(Id("v").Dot("Decs").Dot("Space")),
-				)
-				f.Func().Params(Id("v").Op("*").Id(name)).Id("SetSpace").Params(Id("s").Id("SpaceType")).Block(
-					Id("v").Dot("Decs").Dot("Space").Op("=").Id("s"),
-				)
-				f.Func().Params(Id("v").Op("*").Id(name)).Id("After").Params().Id("SpaceType").Block(
-					Return(Id("v").Dot("Decs").Dot("After")),
-				)
-				f.Func().Params(Id("v").Op("*").Id(name)).Id("SetAfter").Params(Id("s").Id("SpaceType")).Block(
-					Id("v").Dot("Decs").Dot("After").Op("=").Id("s"),
-				)
-			}
-		*/
 	}
 	return f.Save("./decorations-node-generated.go")
 }
 
 func generateDstDecs(names []string) error {
 
-	path := "github.com/dave/dst/gendst/postests"
+	path := "github.com/dave/dst/gendst/data"
 	conf := loader.Config{ParserMode: parser.ParseComments}
 	conf.Import(path)
 	prog, err := conf.Load()
 	if err != nil {
 		panic(err)
 	}
-	astFile := prog.Package(path).Files[0]
+	var astFile *ast.File
+	for _, v := range prog.Package(path).Files {
+		_, name := filepath.Split(prog.Fset.File(v.Pos()).Name())
+		if name == "positions.go" {
+			astFile = v
+			break
+		}
+	}
 	buf := &bytes.Buffer{}
 	if err := format.Node(buf, prog.Fset, astFile); err != nil {
 		panic(err)
@@ -135,9 +111,9 @@ func generateDstDecs(names []string) error {
 		}
 		f.Type().Id(name + "Decorations").StructFunc(func(g *Group) {
 			g.Id("NodeDecs")
-			for _, frag := range fragment.Info[name] {
+			for _, frag := range data.Info[name] {
 				switch frag := frag.(type) {
-				case fragment.Decoration:
+				case data.Decoration:
 					if frag.Name == "Start" || frag.Name == "End" {
 						continue
 					}

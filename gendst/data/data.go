@@ -1,4 +1,4 @@
-package fragment
+package data
 
 import (
 	"go/token"

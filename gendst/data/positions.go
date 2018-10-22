@@ -1,5 +1,5 @@
 // File
-/*Start*/ package /*Package*/ postests /*Name*/
+/*Start*/ package /*Package*/ data /*Name*/
 
 // ImportSpec
 import (

@@ -2,7 +2,9 @@ package decorator
 
 import (
 	"fmt"
+	"go/ast"
 	"go/parser"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,14 +15,21 @@ import (
 )
 
 func TestPositions(t *testing.T) {
-	path := "github.com/dave/dst/gendst/postests"
+	path := "github.com/dave/dst/gendst/data"
 	conf := loader.Config{ParserMode: parser.ParseComments}
 	conf.Import(path)
 	prog, err := conf.Load()
 	if err != nil {
 		t.Fatal(err)
 	}
-	astFile := prog.Package(path).Files[0]
+	var astFile *ast.File
+	for _, v := range prog.Package(path).Files {
+		_, name := filepath.Split(prog.Fset.File(v.Pos()).Name())
+		if name == "positions.go" {
+			astFile = v
+			break
+		}
+	}
 
 	file := Decorate(prog.Fset, astFile)
 

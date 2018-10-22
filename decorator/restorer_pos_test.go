@@ -5,5 +5,5 @@ import (
 )
 
 func TestPosTests(t *testing.T) {
-	testPackageRestoresCorrectly(t, "github.com/dave/dst/gendst/postests")
+	testPackageRestoresCorrectly(t, "github.com/dave/dst/gendst/data")
 }

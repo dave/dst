@@ -1,4 +1,4 @@
-package postests
+package data
 
 import "testing"
 

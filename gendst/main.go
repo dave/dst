@@ -3,7 +3,7 @@ package main
 import (
 	"sort"
 
-	"github.com/dave/dst/gendst/fragment"
+	"github.com/dave/dst/gendst/data"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 
 func run() error {
 	var names []string
-	for name := range fragment.Info {
+	for name := range data.Info {
 		names = append(names, name)
 	}
 	sort.Strings(names)
