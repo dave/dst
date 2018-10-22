@@ -253,7 +253,7 @@ type ForStmtDecorations struct {
 // 	/*Start*/
 // 	func /*Func*/ (a *A) /*Recv*/ f /*Name*/ (d, e int) /*Params*/ (f, g int) /*Results*/ {
 // 		return
-// 	}
+// 	} /*End*/
 //
 type FuncDeclDecorations struct {
 	NodeDecs
@@ -293,8 +293,6 @@ type FuncTypeDecorations struct {
 //
 // 	/*Start*/
 // 	const /*Tok*/ d = 1 /*End*/
-//
-// }
 //
 type GenDeclDecorations struct {
 	NodeDecs

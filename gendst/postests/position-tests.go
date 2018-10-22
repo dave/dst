@@ -284,6 +284,8 @@ A /*Label*/ : /*Colon*/
 	/*Start*/
 	const /*Tok*/ d = 1 /*End*/
 
+	// --
+
 }
 
 // FuncDecl(0)
@@ -303,3 +305,5 @@ func /*Func*/ (a *A) /*Recv*/ e /*Name*/ (d, e int) /*Params*/ {
 func /*Func*/ (a *A) /*Recv*/ f /*Name*/ (d, e int) /*Params*/ (f, g int) /*Results*/ {
 	return
 } /*End*/
+
+// --

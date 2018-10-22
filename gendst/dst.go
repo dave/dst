@@ -1,12 +1,10 @@
 package main
 
 import (
-	"go/parser"
-	"regexp"
-
 	"bytes"
 	"go/format"
-
+	"go/parser"
+	"regexp"
 	"strings"
 
 	"github.com/dave/dst/gendst/fragment"
@@ -108,7 +106,7 @@ func generateDstDecs(names []string) error {
 			}
 		}
 	}
-	if len(parts) > 0 {
+	if len(parts) > 0 && parts[len(parts)-1].end == -1 {
 		parts[len(parts)-1].end = int(astFile.End())
 	}
 
