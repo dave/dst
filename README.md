@@ -219,6 +219,40 @@ if err := decorator.Print(f); err != nil {
 The `Space` and `After` properties cover the majority of cases, but occasionally a newline needs to 
 be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
 
+#### Clone
+
+Re-using an existing node elsewhere in the tree will panic when the tree is restored to `ast`. Instead,
+use the `Clone` function to make a deep copy of the node before re-use:
+
+```go
+code := `package main
+
+var i /* a */ int`
+
+f, err := decorator.Parse(code)
+if err != nil {
+	panic(err)
+}
+
+cloned := dst.Clone(f.Decls[0]).(*dst.GenDecl)
+
+cloned.Decs.Space = dst.NewLine
+cloned.Specs[0].(*dst.ValueSpec).Names[0].Name = "j"
+cloned.Specs[0].(*dst.ValueSpec).Decs.Names.Replace("/* b */")
+
+f.Decls = append(f.Decls, cloned)
+
+if err := decorator.Print(f); err != nil {
+	panic(err)
+}
+
+//Output:
+//package main
+//
+//var i /* a */ int
+//var j /* b */ int
+```
+
 #### Apply function from astutil
 
 The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package is a fork of `golang.org/x/tools/go/ast/astutil`, 

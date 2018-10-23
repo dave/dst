@@ -9,7 +9,7 @@ func generateRestorer(names []string) error {
 
 	f := NewFile("decorator")
 	f.ImportName(DSTPATH, "dst")
-	// func (r *restorer) restoreNode(n dst.Node) ast.Node {
+	// func (r *restorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 	// 	switch n := n.(type) {
 	// 	case <type>:
 	// 		...
@@ -17,9 +17,16 @@ func generateRestorer(names []string) error {
 	// 		panic(...)
 	// 	}
 	// }
-	f.Func().Params(Id("r").Op("*").Id("fileRestorer")).Id("restoreNode").Params(Id("n").Qual(DSTPATH, "Node")).Qual("go/ast", "Node").BlockFunc(func(g *Group) {
+	f.Func().Params(Id("r").Op("*").Id("fileRestorer")).Id("restoreNode").Params(
+		Id("n").Qual(DSTPATH, "Node"),
+		Id("allowDuplicate").Bool(),
+	).Qual("go/ast", "Node").BlockFunc(func(g *Group) {
 		g.If(List(Id("an"), Id("ok")).Op(":=").Id("r").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
-			Return(Id("an")),
+			If(Id("allowDuplicate")).Block(
+				Return(Id("an")),
+			).Else().Block(
+				Panic(Qual("fmt", "Sprintf").Call(Lit("duplicate node: %#v"), Id("n"))),
+			),
 		)
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
@@ -79,14 +86,14 @@ func generateRestorer(names []string) error {
 								}
 							*/
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
-								frag.Field.Get("out").Op("=").Id("r").Dot("restoreNode").Call(frag.Field.Get("n")).Assert(frag.Type.Literal("go/ast")),
+								frag.Field.Get("out").Op("=").Id("r").Dot("restoreNode").Call(frag.Field.Get("n"), Id("allowDuplicate")).Assert(frag.Type.Literal("go/ast")),
 							)
 						case data.List:
 							g.Line().Commentf("List: %s", frag.Name)
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 								frag.Field.Get("out").Op("=").Append(
 									frag.Field.Get("out"),
-									Id("r").Dot("restoreNode").Call(Id("v")).Assert(frag.Elem.Literal("go/ast")),
+									Id("r").Dot("restoreNode").Call(Id("v"), Id("allowDuplicate")).Assert(frag.Elem.Literal("go/ast")),
 								),
 							)
 						case data.Map:
@@ -96,7 +103,7 @@ func generateRestorer(names []string) error {
 								if frag.Elem.Name == "Object" {
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreObject").Call(Id("v"))
 								} else {
-									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v")).Assert(frag.Elem.Literal("go/ast"))
+									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v"), Id("allowDuplicate")).Assert(frag.Elem.Literal("go/ast"))
 								}
 							})
 						case data.Ignored:

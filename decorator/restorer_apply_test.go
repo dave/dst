@@ -24,13 +24,16 @@ func TestRestorerApply(t *testing.T) {
 
 var i /*a*/ int`,
 			f: func(f *dst.File) {
-				gd := f.Decls[0].(*dst.GenDecl)
+				gd := dst.Clone(f.Decls[0]).(*dst.GenDecl)
+				gd.Decs.Space = dst.NewLine
+				gd.Specs[0].(*dst.ValueSpec).Names[0].Name = "j"
+				gd.Specs[0].(*dst.ValueSpec).Decs.Names.Replace("/*b*/")
 				f.Decls = append(f.Decls, gd)
 			},
 			expect: `package a
 
 var i /*a*/ int
-var i /*a*/ int`,
+var j /*b*/ int`,
 		},
 		{
 			name: "simple",

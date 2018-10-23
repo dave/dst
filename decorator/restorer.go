@@ -73,7 +73,7 @@ func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
 	}
 
 	// restore the file, populate comments and lines
-	f := fr.restoreNode(file).(*ast.File)
+	f := fr.restoreNode(file, false).(*ast.File)
 
 	for _, cg := range fr.comments {
 		f.Comments = append(f.Comments, cg)
@@ -91,10 +91,10 @@ func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
 	// doesn't matter?
 	// TODO: Disable all position information on these nodes?
 	for o, dn := range fr.nodeDecl {
-		o.Decl = fr.restoreNode(dn)
+		o.Decl = fr.restoreNode(dn, true)
 	}
 	for o, dn := range fr.nodeData {
-		o.Data = fr.restoreNode(dn)
+		o.Data = fr.restoreNode(dn, true)
 	}
 
 	return f

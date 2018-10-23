@@ -148,6 +148,7 @@ var Info = map[string][]Part{
 			Name:          "Name",
 			ValueField:    Field{"Name"},
 			PositionField: Field{"NamePos"},
+			Literal:       false,
 		},
 		Decoration{
 			Name: "End",
@@ -2330,7 +2331,7 @@ type String struct {
 	Name          string
 	ValueField    FieldSpec
 	PositionField FieldSpec
-	Literal       bool
+	Literal       bool // if Literal == true, we apply possible newlines inside the string if it's multi-line
 }
 
 type List struct {

@@ -61,6 +61,13 @@ accessed with the `Decorations()` method on the `Node` interface:
 The `Space` and `After` properties cover the majority of cases, but occasionally a newline needs to 
 be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
 
+#### Clone
+
+Re-using an existing node elsewhere in the tree will panic when the tree is restored to `ast`. Instead,
+use the `Clone` function to make a deep copy of the node before re-use:
+
+{{ "ExampleClone" | example }}
+
 #### Apply function from astutil
 
 The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package is a fork of `golang.org/x/tools/go/ast/astutil`, 

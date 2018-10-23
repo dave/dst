@@ -42,11 +42,12 @@ func (d *Decorations) All() []string {
 type SpaceType int
 
 const (
-	None      SpaceType = 0 // Node means no extra spacing.
+	None      SpaceType = 0 // None means no extra spacing.
 	NewLine   SpaceType = 1 // NewLine is a single "\n"
 	EmptyLine SpaceType = 2 // EmptyLine is a double "\n"
 )
 
+// String returns a human readable representation of the space type
 func (s SpaceType) String() string {
 	switch s {
 	case None:
