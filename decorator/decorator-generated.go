@@ -696,6 +696,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 			if decs, ok := nd["Name"]; ok {
 				out.Decs.Name = decs
 			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
 		}
 
 		return out

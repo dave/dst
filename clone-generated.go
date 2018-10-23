@@ -553,6 +553,9 @@ func Clone(n Node) Node {
 			out.Decls = append(out.Decls, Clone(v).(Decl))
 		}
 
+		// Decoration: End
+		out.Decs.End = append(out.Decs.End, n.Decs.End...)
+
 		// Scope: Scope
 		out.Scope = CloneScope(n.Scope)
 

@@ -668,6 +668,9 @@ func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 			out.Decls = append(out.Decls, r.restoreNode(v, allowDuplicate).(ast.Decl))
 		}
 
+		// Decoration: End
+		r.applyDecorations(out, "End", n.Decs.End, true)
+
 		// Scope: Scope
 		out.Scope = r.restoreScope(n.Scope)
 		r.applySpace(n.Decs.After)
