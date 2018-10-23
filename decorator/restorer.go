@@ -173,7 +173,7 @@ func (f *fileRestorer) addCommentField(n ast.Node, slash token.Pos, text string)
 	}
 }
 
-func (f *fileRestorer) applyDecorations(node ast.Node, name string, decorations dst.Decorations) {
+func (f *fileRestorer) applyDecorations(node ast.Node, name string, decorations dst.Decorations, end bool) {
 	firstLine := true
 	for _, d := range decorations {
 
@@ -183,7 +183,7 @@ func (f *fileRestorer) applyDecorations(node ast.Node, name string, decorations 
 		isComment := isLineComment || isInlineComment
 		isMultiLineComment := isInlineComment && strings.Contains(d, "\n")
 
-		if name == "End" && f.cursorAtNewLine == f.cursor {
+		if end && f.cursorAtNewLine == f.cursor {
 			f.cursor++ // indent all comments in "End" decorations
 		}
 
@@ -199,7 +199,7 @@ func (f *fileRestorer) applyDecorations(node ast.Node, name string, decorations 
 
 		// if the decoration is a comment, add it and advance the cursor
 		if isComment {
-			if firstLine && name == "End" && f.hasCommentField(node) {
+			if firstLine && end && f.hasCommentField(node) {
 				// for comments on the same line as the end of a node that has a Comment field, we
 				// add the comment to the node instead of the file.
 				f.addCommentField(node, f.cursor, d)

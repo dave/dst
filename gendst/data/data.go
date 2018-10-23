@@ -2100,6 +2100,11 @@ var Info = map[string][]Part{
 		Decoration{
 			Name: "Start",
 		},
+		SpecialDecoration{
+			// This renders any decorations from n.Type.Start (but never saves them there)
+			Name: "Start",
+			Decs: InnerField{"Type", "Decs"},
+		},
 		Token{
 			Name:          "Func",
 			Token:         Basic{jen.Qual("go/token", "FUNC")},
@@ -2110,7 +2115,11 @@ var Info = map[string][]Part{
 		Decoration{
 			Name: "Func",
 		},
-		// TODO: render any decorations from n.Type.Func (but never save them there)
+		SpecialDecoration{
+			// This renders any decorations from n.Type.Func (but never saves them there)
+			Name: "Func",
+			Decs: InnerField{"Type", "Decs"},
+		},
 		Node{
 			Name:  "Recv",
 			Field: Field{"Recv"},
@@ -2136,7 +2145,11 @@ var Info = map[string][]Part{
 		Decoration{
 			Name: "Params",
 		},
-		// TODO: render any decorations from n.Type.Params (but never save them there)
+		SpecialDecoration{
+			// This renders any decorations from n.Type.Params (but never saves them there)
+			Name: "Params",
+			Decs: InnerField{"Type", "Decs"},
+		},
 		Node{
 			Name:  "Results",
 			Field: InnerField{"Type", "Results"},
@@ -2146,7 +2159,12 @@ var Info = map[string][]Part{
 			Name: "Results",
 			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Dot("Results").Op("!=").Nil() }),
 		},
-		// TODO: render any decorations from n.Type.Results (but never save them there)
+		SpecialDecoration{
+			// This renders any decorations from n.Type.End (but never saves them there)
+			Name: "End",
+			Decs: InnerField{"Type", "Decs"},
+			End:  false, // Just to be explicit - this "End" decoration does not trigger the end-of-node line-spacing logic in applyDecorations
+		},
 		Node{
 			Name:  "Body",
 			Field: Field{"Body"},
@@ -2325,6 +2343,12 @@ type Init struct {
 type Decoration struct {
 	Name string
 	Use  Code
+}
+
+type SpecialDecoration struct {
+	Name string
+	Decs FieldSpec
+	End  bool // Is this an "End" decoration (e.g. triggers end-of-node logic in applyDecorations)?
 }
 
 type String struct {

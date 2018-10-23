@@ -18,6 +18,33 @@ func TestRestorerApply(t *testing.T) {
 		pre, post  func(*dstutil.Cursor) bool
 		expect     string
 	}{
+
+		{
+			name: "func-decl-edge-case",
+			code: `package a
+
+type T func(a int) (b int)
+`,
+			f: func(f *dst.File) {
+				ft := f.Decls[0].(*dst.GenDecl).Specs[0].(*dst.TypeSpec).Type.(*dst.FuncType)
+				ft.Decs.Start.Replace("/*Start*/")
+				ft.Decs.Func.Replace("/*Func*/")
+				ft.Decs.Params.Replace("/*Params*/")
+				ft.Decs.End.Replace("/*End*/")
+				fd := &dst.FuncDecl{
+					Name: dst.NewIdent("foo"),
+					Type: ft,
+					Body: &dst.BlockStmt{},
+					Decs: dst.FuncDeclDecorations{NodeDecs: dst.NodeDecs{Space: dst.EmptyLine}},
+				}
+				f.Decls = nil
+				f.Decls = append(f.Decls, fd)
+			},
+			expect: `package a
+
+/*Start*/
+func /*Func*/ foo(a int) /*Params*/ (b int)/*End*/ {}`,
+		},
 		{
 			name: "node-reuse",
 			code: `package a

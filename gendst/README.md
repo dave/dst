@@ -10,6 +10,7 @@ The following files are generated:
 ### dst
 * [decorations-node-generated.go](https://github.com/dave/dst/blob/master/decorations-node-generated.go)
 * [decorations-types-generated.go](https://github.com/dave/dst/blob/master/decorations-types-generated.go)
+* [clone-generated.go](https://github.com/dave/dst/blob/master/clone-generated.go)
 
 ### decorator
 * [fragger-generated.go](https://github.com/dave/dst/blob/master/decorator/fragger-generated.go)

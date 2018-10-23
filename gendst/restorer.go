@@ -45,7 +45,10 @@ func generateRestorer(names []string) error {
 							g.Add(frag.Field.Get("out")).Op("=").Op("&").Qual("go/ast", frag.Type.Name).Values()
 						case data.Decoration:
 							g.Line().Commentf("Decoration: %s", frag.Name)
-							g.Id("r").Dot("applyDecorations").Call(Id("out"), Lit(frag.Name), Id("n").Dot("Decs").Dot(frag.Name))
+							g.Id("r").Dot("applyDecorations").Call(Id("out"), Lit(frag.Name), Id("n").Dot("Decs").Dot(frag.Name), Do(func(s *Statement) { s.Lit(frag.Name == "End") }))
+						case data.SpecialDecoration:
+							g.Line().Commentf("Special decoration: %s", frag.Name)
+							g.Id("r").Dot("applyDecorations").Call(Id("out"), Lit(frag.Name), frag.Decs.Get("n").Dot(frag.Name), Lit(frag.End))
 						case data.Token:
 							g.Line().Commentf("Token: %s", frag.Name)
 							position := Null()
