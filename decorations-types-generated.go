@@ -13,11 +13,10 @@ type ArrayTypeDecorations struct {
 // AssignStmtDecorations holds decorations for AssignStmt:
 //
 // 	/*Start*/
-// 	i /*Lhs*/ = /*Tok*/ 1 /*End*/
+// 	i = /*Tok*/ 1 /*End*/
 //
 type AssignStmtDecorations struct {
 	NodeDecs
-	Lhs Decorations
 	Tok Decorations
 }
 
@@ -80,27 +79,25 @@ type BranchStmtDecorations struct {
 
 // CallExprDecorations holds decorations for CallExpr:
 //
-// 	var L = /*Start*/ C /*Fun*/ ( /*Lparen*/ 0, []int{} /*Args*/ ... /*Ellipsis*/) /*End*/
+// 	var L = /*Start*/ C /*Fun*/ ( /*Lparen*/ 0, []int{}... /*Ellipsis*/) /*End*/
 //
 type CallExprDecorations struct {
 	NodeDecs
 	Fun      Decorations
 	Lparen   Decorations
-	Args     Decorations
 	Ellipsis Decorations
 }
 
 // CaseClauseDecorations holds decorations for CaseClause:
 //
 // 	switch i {
-// 	/*Start*/ case /*Case*/ 1 /*List*/ : /*Colon*/
+// 	/*Start*/ case /*Case*/ 1: /*Colon*/
 // 		i++ /*End*/
 // 	}
 //
 type CaseClauseDecorations struct {
 	NodeDecs
 	Case  Decorations
-	List  Decorations
 	Colon Decorations
 }
 
@@ -182,13 +179,12 @@ type ExprStmtDecorations struct {
 // FieldDecorations holds decorations for Field:
 //
 // 	type A struct {
-// 		/*Start*/ A /*Names*/ int /*Type*/ `a:"a"` /*End*/
+// 		/*Start*/ A int /*Type*/ `a:"a"` /*End*/
 // 	}
 //
 type FieldDecorations struct {
 	NodeDecs
-	Names Decorations
-	Type  Decorations
+	Type Decorations
 }
 
 // FieldListDecorations holds decorations for FieldList:
@@ -624,11 +620,10 @@ type UnaryExprDecorations struct {
 // 	)
 //
 // 	var (
-// 		/*Start*/ m, n /*Names*/ int = /*Assign*/ 1, 2 /*End*/
+// 		/*Start*/ m, n int = /*Assign*/ 1, 2 /*End*/
 // 	)
 //
 type ValueSpecDecorations struct {
 	NodeDecs
-	Names  Decorations
 	Assign Decorations
 }

@@ -50,9 +50,6 @@ func (f *fragger) processNode(n ast.Node) {
 			f.processNode(v)
 		}
 
-		// Decoration: Lhs
-		f.addDecoration(n, "Lhs", token.NoPos)
-
 		// Token: Tok
 		f.addToken(n, n.Tok, n.TokPos)
 
@@ -196,9 +193,6 @@ func (f *fragger) processNode(n ast.Node) {
 			f.processNode(v)
 		}
 
-		// Decoration: Args
-		f.addDecoration(n, "Args", token.NoPos)
-
 		// Token: Ellipsis
 		if n.Ellipsis.IsValid() {
 			f.addToken(n, token.ELLIPSIS, n.Ellipsis)
@@ -235,11 +229,6 @@ func (f *fragger) processNode(n ast.Node) {
 		// List: List
 		for _, v := range n.List {
 			f.processNode(v)
-		}
-
-		// Decoration: List
-		if n.List != nil {
-			f.addDecoration(n, "List", token.NoPos)
 		}
 
 		// Token: Colon
@@ -457,9 +446,6 @@ func (f *fragger) processNode(n ast.Node) {
 		for _, v := range n.Names {
 			f.processNode(v)
 		}
-
-		// Decoration: Names
-		f.addDecoration(n, "Names", token.NoPos)
 
 		// Node: Type
 		if n.Type != nil {
@@ -1455,11 +1441,6 @@ func (f *fragger) processNode(n ast.Node) {
 		// List: Names
 		for _, v := range n.Names {
 			f.processNode(v)
-		}
-
-		// Decoration: Names
-		if n.Type != nil {
-			f.addDecoration(n, "Names", token.NoPos)
 		}
 
 		// Node: Type

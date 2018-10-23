@@ -73,9 +73,6 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 			if decs, ok := nd["Start"]; ok {
 				out.Decs.Start = decs
 			}
-			if decs, ok := nd["Lhs"]; ok {
-				out.Decs.Lhs = decs
-			}
 			if decs, ok := nd["Tok"]; ok {
 				out.Decs.Tok = decs
 			}
@@ -294,9 +291,6 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 			if decs, ok := nd["Lparen"]; ok {
 				out.Decs.Lparen = decs
 			}
-			if decs, ok := nd["Args"]; ok {
-				out.Decs.Args = decs
-			}
 			if decs, ok := nd["Ellipsis"]; ok {
 				out.Decs.Ellipsis = decs
 			}
@@ -334,9 +328,6 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 			}
 			if decs, ok := nd["Case"]; ok {
 				out.Decs.Case = decs
-			}
-			if decs, ok := nd["List"]; ok {
-				out.Decs.List = decs
 			}
 			if decs, ok := nd["Colon"]; ok {
 				out.Decs.Colon = decs
@@ -618,9 +609,6 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		if nd, ok := d.decorations[n]; ok {
 			if decs, ok := nd["Start"]; ok {
 				out.Decs.Start = decs
-			}
-			if decs, ok := nd["Names"]; ok {
-				out.Decs.Names = decs
 			}
 			if decs, ok := nd["Type"]; ok {
 				out.Decs.Type = decs
@@ -1869,9 +1857,6 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		if nd, ok := d.decorations[n]; ok {
 			if decs, ok := nd["Start"]; ok {
 				out.Decs.Start = decs
-			}
-			if decs, ok := nd["Names"]; ok {
-				out.Decs.Names = decs
 			}
 			if decs, ok := nd["Assign"]; ok {
 				out.Decs.Assign = decs

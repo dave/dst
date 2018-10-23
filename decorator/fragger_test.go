@@ -42,7 +42,6 @@ func TestFragger(t *testing.T) {
             Ident Start 6:5
             Ident "i" 6:5
             Ident End 6:6
-            ValueSpec Names 6:6
             Ident Start 6:7
             Ident "int" 6:7
             Ident End 6:10
@@ -112,7 +111,6 @@ func TestFragger(t *testing.T) {
             Ident Start 9:7
             Ident "i" 9:7
             Ident End 9:8
-            ValueSpec Names 9:8
             Ident Start 9:9
             Ident "int" 9:9
             Ident End 9:12
@@ -172,7 +170,6 @@ func TestFragger(t *testing.T) {
             Ident Start 4:6
             Ident "d" 4:6
             Ident End 4:7
-            ValueSpec Names 4:7
             Ident Start 4:8
             Ident "int" 4:8
             Ident End 4:11
@@ -190,7 +187,6 @@ func TestFragger(t *testing.T) {
             Ident Start 6:6
             Ident "e" 6:6
             Ident End 6:7
-            ValueSpec Names 6:7
             Ident Start 6:8
             Ident "int" 6:8
             Ident End 6:11

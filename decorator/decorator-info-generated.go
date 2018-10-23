@@ -15,7 +15,6 @@ func getDecorationInfo(n dst.Node) (space, after dst.SpaceType, info []decoratio
 		space = n.Decs.Space
 		after = n.Decs.After
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"Lhs", n.Decs.Lhs})
 		info = append(info, decorationInfo{"Tok", n.Decs.Tok})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.BadDecl:
@@ -63,7 +62,6 @@ func getDecorationInfo(n dst.Node) (space, after dst.SpaceType, info []decoratio
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
 		info = append(info, decorationInfo{"Fun", n.Decs.Fun})
 		info = append(info, decorationInfo{"Lparen", n.Decs.Lparen})
-		info = append(info, decorationInfo{"Args", n.Decs.Args})
 		info = append(info, decorationInfo{"Ellipsis", n.Decs.Ellipsis})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.CaseClause:
@@ -71,7 +69,6 @@ func getDecorationInfo(n dst.Node) (space, after dst.SpaceType, info []decoratio
 		after = n.Decs.After
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
 		info = append(info, decorationInfo{"Case", n.Decs.Case})
-		info = append(info, decorationInfo{"List", n.Decs.List})
 		info = append(info, decorationInfo{"Colon", n.Decs.Colon})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.ChanType:
@@ -127,7 +124,6 @@ func getDecorationInfo(n dst.Node) (space, after dst.SpaceType, info []decoratio
 		space = n.Decs.Space
 		after = n.Decs.After
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"Names", n.Decs.Names})
 		info = append(info, decorationInfo{"Type", n.Decs.Type})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.FieldList:
@@ -354,7 +350,6 @@ func getDecorationInfo(n dst.Node) (space, after dst.SpaceType, info []decoratio
 		space = n.Decs.Space
 		after = n.Decs.After
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"Names", n.Decs.Names})
 		info = append(info, decorationInfo{"Assign", n.Decs.Assign})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	}

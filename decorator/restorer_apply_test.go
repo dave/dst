@@ -54,7 +54,7 @@ var i /*a*/ int`,
 				gd := dst.Clone(f.Decls[0]).(*dst.GenDecl)
 				gd.Decs.Space = dst.NewLine
 				gd.Specs[0].(*dst.ValueSpec).Names[0].Name = "j"
-				gd.Specs[0].(*dst.ValueSpec).Decs.Names.Replace("/*b*/")
+				gd.Specs[0].(*dst.ValueSpec).Names[0].Decs.End.Replace("/*b*/")
 				f.Decls = append(f.Decls, gd)
 			},
 			expect: `package a

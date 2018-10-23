@@ -36,11 +36,6 @@ var Info = map[string][]Part{
 			Elem:      Type{"Ident", true},
 			Separator: token.COMMA,
 		},
-		// TODO: Remove this decoration?
-		Decoration{
-			Name: "Names",
-			// TODO: disable if Names == nil
-		},
 		Node{
 			Name:  "Type",
 			Field: Field{"Type"},
@@ -282,7 +277,6 @@ var Info = map[string][]Part{
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
-		// TODO: removed Elts decoration - should we remove all decorations after comma separated lists?
 		Token{
 			Name:          "Rbrace",
 			Token:         Basic{jen.Qual("go/token", "RBRACE")},
@@ -586,11 +580,6 @@ var Info = map[string][]Part{
 			Field:     Field{"Args"},
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
-		},
-		// TODO: Remove this?
-		Decoration{
-			Name: "Args",
-			// TODO: disable if Args == nil
 		},
 		Token{
 			Name:  "Ellipsis",
@@ -1249,10 +1238,6 @@ var Info = map[string][]Part{
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
-		// TODO: Remove this?
-		Decoration{
-			Name: "Lhs",
-		},
 		Token{
 			Name:          "Tok",
 			TokenField:    Field{"Tok"},
@@ -1515,11 +1500,6 @@ var Info = map[string][]Part{
 			Field:     Field{"List"},
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
-		},
-		// TODO: Remove this?
-		Decoration{
-			Name: "List",
-			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("List").Op("!=").Nil() }),
 		},
 		Token{
 			Name:          "Colon",
@@ -1912,11 +1892,6 @@ var Info = map[string][]Part{
 			Field:     Field{"Names"},
 			Elem:      Type{"Ident", true},
 			Separator: token.COMMA,
-		},
-		// TODO: Remove this?
-		Decoration{
-			Name: "Names",
-			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Op("!=").Nil() }),
 		},
 		Node{
 			Name:  "Type",
