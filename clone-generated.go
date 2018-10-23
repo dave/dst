@@ -48,9 +48,6 @@ func Clone(n Node) Node {
 			out.Lhs = append(out.Lhs, Clone(v).(Expr))
 		}
 
-		// Decoration: Lhs
-		out.Decs.Lhs = append(out.Decs.Lhs, n.Decs.Lhs...)
-
 		// Token: Tok
 		out.Tok = n.Tok
 
@@ -234,9 +231,6 @@ func Clone(n Node) Node {
 			out.Args = append(out.Args, Clone(v).(Expr))
 		}
 
-		// Decoration: Args
-		out.Decs.Args = append(out.Decs.Args, n.Decs.Args...)
-
 		// Decoration: Ellipsis
 		out.Decs.Ellipsis = append(out.Decs.Ellipsis, n.Decs.Ellipsis...)
 
@@ -261,9 +255,6 @@ func Clone(n Node) Node {
 		for _, v := range n.List {
 			out.List = append(out.List, Clone(v).(Expr))
 		}
-
-		// Decoration: List
-		out.Decs.List = append(out.Decs.List, n.Decs.List...)
 
 		// Decoration: Colon
 		out.Decs.Colon = append(out.Decs.Colon, n.Decs.Colon...)
@@ -485,9 +476,6 @@ func Clone(n Node) Node {
 			out.Names = append(out.Names, Clone(v).(*Ident))
 		}
 
-		// Decoration: Names
-		out.Decs.Names = append(out.Decs.Names, n.Decs.Names...)
-
 		// Node: Type
 		if n.Type != nil {
 			out.Type = Clone(n.Type).(Expr)
@@ -552,6 +540,9 @@ func Clone(n Node) Node {
 		for _, v := range n.Decls {
 			out.Decls = append(out.Decls, Clone(v).(Decl))
 		}
+
+		// Decoration: End
+		out.Decs.End = append(out.Decs.End, n.Decs.End...)
 
 		// Scope: Scope
 		out.Scope = CloneScope(n.Scope)
@@ -1507,9 +1498,6 @@ func Clone(n Node) Node {
 		for _, v := range n.Names {
 			out.Names = append(out.Names, Clone(v).(*Ident))
 		}
-
-		// Decoration: Names
-		out.Decs.Names = append(out.Decs.Names, n.Decs.Names...)
 
 		// Node: Type
 		if n.Type != nil {

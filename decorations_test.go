@@ -30,7 +30,7 @@ func ExampleClone() {
 
 	cloned.Decs.Space = dst.NewLine
 	cloned.Specs[0].(*dst.ValueSpec).Names[0].Name = "j"
-	cloned.Specs[0].(*dst.ValueSpec).Decs.Names.Replace("/* b */")
+	cloned.Specs[0].(*dst.ValueSpec).Names[0].Decs.End.Replace("/* b */")
 
 	f.Decls = append(f.Decls, cloned)
 

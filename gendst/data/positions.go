@@ -17,7 +17,7 @@ var c chan int
 
 // Field
 type A struct {
-	/*Start*/ A /*Names*/ int /*Type*/ `a:"a"` /*End*/
+	/*Start*/ A int /*Type*/ `a:"a"` /*End*/
 }
 
 // FieldList
@@ -66,7 +66,7 @@ var H5 = /*Start*/ []int{0, 1, 2} /*X*/ [: /*Low*/ 2: /*High*/ 3 /*Max*/] /*End*
 var J = /*Start*/ f. /*X*/ ( /*Lparen*/ int /*Type*/) /*End*/
 
 // CallExpr
-var L = /*Start*/ C /*Fun*/ ( /*Lparen*/ 0, []int{} /*Args*/ ... /*Ellipsis*/) /*End*/
+var L = /*Start*/ C /*Fun*/ ( /*Lparen*/ 0, []int{}... /*Ellipsis*/) /*End*/
 
 // StarExpr
 var N = /*Start*/ * /*Star*/ p /*End*/
@@ -132,7 +132,7 @@ A /*Label*/ : /*Colon*/
 
 	// AssignStmt
 	/*Start*/
-	i /*Lhs*/ = /*Tok*/ 1 /*End*/
+	i = /*Tok*/ 1 /*End*/
 
 	// GoStmt
 	/*Start*/
@@ -165,7 +165,7 @@ A /*Label*/ : /*Colon*/
 
 	// CaseClause
 	switch i {
-	/*Start*/ case /*Case*/ 1 /*List*/ : /*Colon*/
+	/*Start*/ case /*Case*/ 1: /*Colon*/
 		i++ /*End*/
 	}
 
@@ -256,7 +256,7 @@ A /*Label*/ : /*Colon*/
 
 	// ValueSpec(2)
 	var (
-		/*Start*/ m, n /*Names*/ int = /*Assign*/ 1, 2 /*End*/
+		/*Start*/ m, n int = /*Assign*/ 1, 2 /*End*/
 	)
 
 	// --

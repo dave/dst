@@ -65,9 +65,6 @@ func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 			out.Lhs = append(out.Lhs, r.restoreNode(v, allowDuplicate).(ast.Expr))
 		}
 
-		// Decoration: Lhs
-		r.applyDecorations(out, "Lhs", n.Decs.Lhs, false)
-
 		// Token: Tok
 		out.Tok = n.Tok
 		out.TokPos = r.cursor
@@ -264,9 +261,6 @@ func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 			out.Args = append(out.Args, r.restoreNode(v, allowDuplicate).(ast.Expr))
 		}
 
-		// Decoration: Args
-		r.applyDecorations(out, "Args", n.Decs.Args, false)
-
 		// Token: Ellipsis
 		if n.Ellipsis {
 			out.Ellipsis = r.cursor
@@ -310,9 +304,6 @@ func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		for _, v := range n.List {
 			out.List = append(out.List, r.restoreNode(v, allowDuplicate).(ast.Expr))
 		}
-
-		// Decoration: List
-		r.applyDecorations(out, "List", n.Decs.List, false)
 
 		// Token: Colon
 		out.Colon = r.cursor
@@ -586,9 +577,6 @@ func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 			out.Names = append(out.Names, r.restoreNode(v, allowDuplicate).(*ast.Ident))
 		}
 
-		// Decoration: Names
-		r.applyDecorations(out, "Names", n.Decs.Names, false)
-
 		// Node: Type
 		if n.Type != nil {
 			out.Type = r.restoreNode(n.Type, allowDuplicate).(ast.Expr)
@@ -667,6 +655,9 @@ func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		for _, v := range n.Decls {
 			out.Decls = append(out.Decls, r.restoreNode(v, allowDuplicate).(ast.Decl))
 		}
+
+		// Decoration: End
+		r.applyDecorations(out, "End", n.Decs.End, true)
 
 		// Scope: Scope
 		out.Scope = r.restoreScope(n.Scope)
@@ -1787,9 +1778,6 @@ func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		for _, v := range n.Names {
 			out.Names = append(out.Names, r.restoreNode(v, allowDuplicate).(*ast.Ident))
 		}
-
-		// Decoration: Names
-		r.applyDecorations(out, "Names", n.Decs.Names, false)
 
 		// Node: Type
 		if n.Type != nil {

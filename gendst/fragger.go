@@ -19,6 +19,11 @@ func generateFragger(names []string) error {
 					for _, frag := range data.Info[nodeName] {
 						switch frag := frag.(type) {
 						case data.Decoration:
+
+							if frag.Disable {
+								continue
+							}
+
 							g.Line().Commentf("Decoration: %s", frag.Name)
 
 							pos := Qual("go/token", "NoPos")

@@ -302,10 +302,11 @@ ExprStmt [New line space] [New line after]`,
 			code: `package main
 
 			type A struct {
-				A /*FieldName*/ int /*FieldType*/ ` + "`" + `a:"a"` + "`" + `
+				A /*IdentEnd*/ int /*FieldType*/ ` + "`" + `a:"a"` + "`" + `
 			}`,
 			expect: `GenDecl [Empty line space]
-Field [New line space] [Names "/*FieldName*/"] [Type "/*FieldType*/"] [New line after]`,
+Field [New line space] [Type "/*FieldType*/"] [New line after]
+Ident [End "/*IdentEnd*/"]`,
 		},
 		{
 			name: "composite literal",

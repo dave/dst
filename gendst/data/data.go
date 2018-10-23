@@ -36,9 +36,6 @@ var Info = map[string][]Part{
 			Elem:      Type{"Ident", true},
 			Separator: token.COMMA,
 		},
-		Decoration{
-			Name: "Names",
-		},
 		Node{
 			Name:  "Type",
 			Field: Field{"Type"},
@@ -280,7 +277,6 @@ var Info = map[string][]Part{
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
-		// TODO: removed Elts decoration - should we remove all decorations after comma separated lists?
 		Token{
 			Name:          "Rbrace",
 			Token:         Basic{jen.Qual("go/token", "RBRACE")},
@@ -584,9 +580,6 @@ var Info = map[string][]Part{
 			Field:     Field{"Args"},
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
-		},
-		Decoration{
-			Name: "Args",
 		},
 		Token{
 			Name:  "Ellipsis",
@@ -1245,9 +1238,6 @@ var Info = map[string][]Part{
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
 		},
-		Decoration{
-			Name: "Lhs",
-		},
 		Token{
 			Name:          "Tok",
 			TokenField:    Field{"Tok"},
@@ -1510,10 +1500,6 @@ var Info = map[string][]Part{
 			Field:     Field{"List"},
 			Elem:      Type{"Expr", false},
 			Separator: token.COMMA,
-		},
-		Decoration{
-			Name: "List",
-			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("List").Op("!=").Nil() }),
 		},
 		Token{
 			Name:          "Colon",
@@ -1907,10 +1893,6 @@ var Info = map[string][]Part{
 			Elem:      Type{"Ident", true},
 			Separator: token.COMMA,
 		},
-		Decoration{
-			Name: "Names",
-			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Op("!=").Nil() }),
-		},
 		Node{
 			Name:  "Type",
 			Field: Field{"Type"},
@@ -2233,12 +2215,14 @@ var Info = map[string][]Part{
 			Elem:      Type{"Decl", false},
 			Separator: token.SEMICOLON,
 		},
+		Decoration{
+			Name:    "End",
+			Disable: true,
+		},
 		Scope{
 			Name:  "Scope",
 			Field: Field{"Scope"},
 		},
-		// Never want to attach decorations to the end of a list of declarations - always better to
-		// attach to the last statement.
 	},
 	/*
 		// A Package node represents a set of source files
@@ -2341,8 +2325,9 @@ type Init struct {
 }
 
 type Decoration struct {
-	Name string
-	Use  Code
+	Name    string
+	Use     Code
+	Disable bool // disable this in the fragger / decorator (equivalent to Use = false)
 }
 
 type SpecialDecoration struct {
