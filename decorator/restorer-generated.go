@@ -7,9 +7,13 @@ import (
 	"go/token"
 )
 
-func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
+func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 	if an, ok := r.Nodes[n]; ok {
-		return an
+		if allowDuplicate {
+			return an
+		} else {
+			panic(fmt.Sprintf("duplicate node: %#v", n))
+		}
 	}
 	switch n := n.(type) {
 	case *dst.ArrayType:
@@ -29,7 +33,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Len
 		if n.Len != nil {
-			out.Len = r.restoreNode(n.Len).(ast.Expr)
+			out.Len = r.restoreNode(n.Len, allowDuplicate).(ast.Expr)
 		}
 
 		// Token: Rbrack
@@ -40,7 +44,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Elt
 		if n.Elt != nil {
-			out.Elt = r.restoreNode(n.Elt).(ast.Expr)
+			out.Elt = r.restoreNode(n.Elt, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -58,7 +62,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Lhs
 		for _, v := range n.Lhs {
-			out.Lhs = append(out.Lhs, r.restoreNode(v).(ast.Expr))
+			out.Lhs = append(out.Lhs, r.restoreNode(v, allowDuplicate).(ast.Expr))
 		}
 
 		// Decoration: Lhs
@@ -74,7 +78,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Rhs
 		for _, v := range n.Rhs {
-			out.Rhs = append(out.Rhs, r.restoreNode(v).(ast.Expr))
+			out.Rhs = append(out.Rhs, r.restoreNode(v, allowDuplicate).(ast.Expr))
 		}
 
 		// Decoration: End
@@ -153,7 +157,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.restoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: X
@@ -169,7 +173,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Y
 		if n.Y != nil {
-			out.Y = r.restoreNode(n.Y).(ast.Expr)
+			out.Y = r.restoreNode(n.Y, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -194,7 +198,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: List
 		for _, v := range n.List {
-			out.List = append(out.List, r.restoreNode(v).(ast.Stmt))
+			out.List = append(out.List, r.restoreNode(v, allowDuplicate).(ast.Stmt))
 		}
 
 		// Token: Rbrace
@@ -224,7 +228,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Label
 		if n.Label != nil {
-			out.Label = r.restoreNode(n.Label).(*ast.Ident)
+			out.Label = r.restoreNode(n.Label, allowDuplicate).(*ast.Ident)
 		}
 
 		// Decoration: End
@@ -242,7 +246,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Fun
 		if n.Fun != nil {
-			out.Fun = r.restoreNode(n.Fun).(ast.Expr)
+			out.Fun = r.restoreNode(n.Fun, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: Fun
@@ -257,7 +261,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Args
 		for _, v := range n.Args {
-			out.Args = append(out.Args, r.restoreNode(v).(ast.Expr))
+			out.Args = append(out.Args, r.restoreNode(v, allowDuplicate).(ast.Expr))
 		}
 
 		// Decoration: Args
@@ -304,7 +308,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: List
 		for _, v := range n.List {
-			out.List = append(out.List, r.restoreNode(v).(ast.Expr))
+			out.List = append(out.List, r.restoreNode(v, allowDuplicate).(ast.Expr))
 		}
 
 		// Decoration: List
@@ -319,7 +323,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Body
 		for _, v := range n.Body {
-			out.Body = append(out.Body, r.restoreNode(v).(ast.Stmt))
+			out.Body = append(out.Body, r.restoreNode(v, allowDuplicate).(ast.Stmt))
 		}
 
 		// Decoration: End
@@ -364,7 +368,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = r.restoreNode(n.Value).(ast.Expr)
+			out.Value = r.restoreNode(n.Value, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -398,7 +402,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Comm
 		if n.Comm != nil {
-			out.Comm = r.restoreNode(n.Comm).(ast.Stmt)
+			out.Comm = r.restoreNode(n.Comm, allowDuplicate).(ast.Stmt)
 		}
 
 		// Decoration: Comm
@@ -413,7 +417,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Body
 		for _, v := range n.Body {
-			out.Body = append(out.Body, r.restoreNode(v).(ast.Stmt))
+			out.Body = append(out.Body, r.restoreNode(v, allowDuplicate).(ast.Stmt))
 		}
 
 		// Decoration: End
@@ -431,7 +435,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.restoreNode(n.Type).(ast.Expr)
+			out.Type = r.restoreNode(n.Type, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: Type
@@ -446,7 +450,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Elts
 		for _, v := range n.Elts {
-			out.Elts = append(out.Elts, r.restoreNode(v).(ast.Expr))
+			out.Elts = append(out.Elts, r.restoreNode(v, allowDuplicate).(ast.Expr))
 		}
 
 		// Token: Rbrace
@@ -471,7 +475,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Decl
 		if n.Decl != nil {
-			out.Decl = r.restoreNode(n.Decl).(ast.Decl)
+			out.Decl = r.restoreNode(n.Decl, allowDuplicate).(ast.Decl)
 		}
 
 		// Decoration: End
@@ -496,7 +500,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Call
 		if n.Call != nil {
-			out.Call = r.restoreNode(n.Call).(*ast.CallExpr)
+			out.Call = r.restoreNode(n.Call, allowDuplicate).(*ast.CallExpr)
 		}
 
 		// Decoration: End
@@ -521,7 +525,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Elt
 		if n.Elt != nil {
-			out.Elt = r.restoreNode(n.Elt).(ast.Expr)
+			out.Elt = r.restoreNode(n.Elt, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -561,7 +565,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.restoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -579,7 +583,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Names
 		for _, v := range n.Names {
-			out.Names = append(out.Names, r.restoreNode(v).(*ast.Ident))
+			out.Names = append(out.Names, r.restoreNode(v, allowDuplicate).(*ast.Ident))
 		}
 
 		// Decoration: Names
@@ -587,7 +591,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.restoreNode(n.Type).(ast.Expr)
+			out.Type = r.restoreNode(n.Type, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: Type
@@ -595,7 +599,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Tag
 		if n.Tag != nil {
-			out.Tag = r.restoreNode(n.Tag).(*ast.BasicLit)
+			out.Tag = r.restoreNode(n.Tag, allowDuplicate).(*ast.BasicLit)
 		}
 
 		// Decoration: End
@@ -622,7 +626,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: List
 		for _, v := range n.List {
-			out.List = append(out.List, r.restoreNode(v).(*ast.Field))
+			out.List = append(out.List, r.restoreNode(v, allowDuplicate).(*ast.Field))
 		}
 
 		// Token: Closing
@@ -653,7 +657,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = r.restoreNode(n.Name).(*ast.Ident)
+			out.Name = r.restoreNode(n.Name, allowDuplicate).(*ast.Ident)
 		}
 
 		// Decoration: Name
@@ -661,7 +665,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Decls
 		for _, v := range n.Decls {
-			out.Decls = append(out.Decls, r.restoreNode(v).(ast.Decl))
+			out.Decls = append(out.Decls, r.restoreNode(v, allowDuplicate).(ast.Decl))
 		}
 
 		// Scope: Scope
@@ -686,7 +690,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = r.restoreNode(n.Init).(ast.Stmt)
+			out.Init = r.restoreNode(n.Init, allowDuplicate).(ast.Stmt)
 		}
 
 		// Token: InitSemicolon
@@ -699,7 +703,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Cond
 		if n.Cond != nil {
-			out.Cond = r.restoreNode(n.Cond).(ast.Expr)
+			out.Cond = r.restoreNode(n.Cond, allowDuplicate).(ast.Expr)
 		}
 
 		// Token: CondSemicolon
@@ -712,7 +716,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Post
 		if n.Post != nil {
-			out.Post = r.restoreNode(n.Post).(ast.Stmt)
+			out.Post = r.restoreNode(n.Post, allowDuplicate).(ast.Stmt)
 		}
 
 		// Decoration: Post
@@ -720,7 +724,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body, allowDuplicate).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -750,7 +754,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Recv
 		if n.Recv != nil {
-			out.Recv = r.restoreNode(n.Recv).(*ast.FieldList)
+			out.Recv = r.restoreNode(n.Recv, allowDuplicate).(*ast.FieldList)
 		}
 
 		// Decoration: Recv
@@ -758,7 +762,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = r.restoreNode(n.Name).(*ast.Ident)
+			out.Name = r.restoreNode(n.Name, allowDuplicate).(*ast.Ident)
 		}
 
 		// Decoration: Name
@@ -766,7 +770,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Params
 		if n.Type.Params != nil {
-			out.Type.Params = r.restoreNode(n.Type.Params).(*ast.FieldList)
+			out.Type.Params = r.restoreNode(n.Type.Params, allowDuplicate).(*ast.FieldList)
 		}
 
 		// Decoration: Params
@@ -774,7 +778,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Results
 		if n.Type.Results != nil {
-			out.Type.Results = r.restoreNode(n.Type.Results).(*ast.FieldList)
+			out.Type.Results = r.restoreNode(n.Type.Results, allowDuplicate).(*ast.FieldList)
 		}
 
 		// Decoration: Results
@@ -782,7 +786,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body, allowDuplicate).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -800,7 +804,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.restoreNode(n.Type).(*ast.FuncType)
+			out.Type = r.restoreNode(n.Type, allowDuplicate).(*ast.FuncType)
 		}
 
 		// Decoration: Type
@@ -808,7 +812,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body, allowDuplicate).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -835,7 +839,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Params
 		if n.Params != nil {
-			out.Params = r.restoreNode(n.Params).(*ast.FieldList)
+			out.Params = r.restoreNode(n.Params, allowDuplicate).(*ast.FieldList)
 		}
 
 		// Decoration: Params
@@ -843,7 +847,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Results
 		if n.Results != nil {
-			out.Results = r.restoreNode(n.Results).(*ast.FieldList)
+			out.Results = r.restoreNode(n.Results, allowDuplicate).(*ast.FieldList)
 		}
 
 		// Decoration: End
@@ -878,7 +882,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Specs
 		for _, v := range n.Specs {
-			out.Specs = append(out.Specs, r.restoreNode(v).(ast.Spec))
+			out.Specs = append(out.Specs, r.restoreNode(v, allowDuplicate).(ast.Spec))
 		}
 
 		// Token: Rparen
@@ -909,7 +913,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Call
 		if n.Call != nil {
-			out.Call = r.restoreNode(n.Call).(*ast.CallExpr)
+			out.Call = r.restoreNode(n.Call, allowDuplicate).(*ast.CallExpr)
 		}
 
 		// Decoration: End
@@ -955,7 +959,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = r.restoreNode(n.Init).(ast.Stmt)
+			out.Init = r.restoreNode(n.Init, allowDuplicate).(ast.Stmt)
 		}
 
 		// Decoration: Init
@@ -963,7 +967,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Cond
 		if n.Cond != nil {
-			out.Cond = r.restoreNode(n.Cond).(ast.Expr)
+			out.Cond = r.restoreNode(n.Cond, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: Cond
@@ -971,7 +975,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body, allowDuplicate).(*ast.BlockStmt)
 		}
 
 		// Token: ElseTok
@@ -984,7 +988,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Else
 		if n.Else != nil {
-			out.Else = r.restoreNode(n.Else).(ast.Stmt)
+			out.Else = r.restoreNode(n.Else, allowDuplicate).(ast.Stmt)
 		}
 
 		// Decoration: End
@@ -1002,7 +1006,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = r.restoreNode(n.Name).(*ast.Ident)
+			out.Name = r.restoreNode(n.Name, allowDuplicate).(*ast.Ident)
 		}
 
 		// Decoration: Name
@@ -1010,7 +1014,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Path
 		if n.Path != nil {
-			out.Path = r.restoreNode(n.Path).(*ast.BasicLit)
+			out.Path = r.restoreNode(n.Path, allowDuplicate).(*ast.BasicLit)
 		}
 
 		// Decoration: End
@@ -1028,7 +1032,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.restoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: X
@@ -1054,7 +1058,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.restoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: X
@@ -1069,7 +1073,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Index
 		if n.Index != nil {
-			out.Index = r.restoreNode(n.Index).(ast.Expr)
+			out.Index = r.restoreNode(n.Index, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: Index
@@ -1101,7 +1105,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Methods
 		if n.Methods != nil {
-			out.Methods = r.restoreNode(n.Methods).(*ast.FieldList)
+			out.Methods = r.restoreNode(n.Methods, allowDuplicate).(*ast.FieldList)
 		}
 
 		// Decoration: End
@@ -1122,7 +1126,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Key
 		if n.Key != nil {
-			out.Key = r.restoreNode(n.Key).(ast.Expr)
+			out.Key = r.restoreNode(n.Key, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: Key
@@ -1137,7 +1141,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = r.restoreNode(n.Value).(ast.Expr)
+			out.Value = r.restoreNode(n.Value, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1155,7 +1159,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Label
 		if n.Label != nil {
-			out.Label = r.restoreNode(n.Label).(*ast.Ident)
+			out.Label = r.restoreNode(n.Label, allowDuplicate).(*ast.Ident)
 		}
 
 		// Decoration: Label
@@ -1170,7 +1174,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Stmt
 		if n.Stmt != nil {
-			out.Stmt = r.restoreNode(n.Stmt).(ast.Stmt)
+			out.Stmt = r.restoreNode(n.Stmt, allowDuplicate).(ast.Stmt)
 		}
 
 		// Decoration: End
@@ -1198,7 +1202,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Key
 		if n.Key != nil {
-			out.Key = r.restoreNode(n.Key).(ast.Expr)
+			out.Key = r.restoreNode(n.Key, allowDuplicate).(ast.Expr)
 		}
 
 		// Token: Rbrack
@@ -1209,7 +1213,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = r.restoreNode(n.Value).(ast.Expr)
+			out.Value = r.restoreNode(n.Value, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1236,7 +1240,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 		// Map: Files
 		out.Files = map[string]*ast.File{}
 		for k, v := range n.Files {
-			out.Files[k] = r.restoreNode(v).(*ast.File)
+			out.Files[k] = r.restoreNode(v, allowDuplicate).(*ast.File)
 		}
 
 		return out
@@ -1257,7 +1261,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.restoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: X
@@ -1289,7 +1293,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Key
 		if n.Key != nil {
-			out.Key = r.restoreNode(n.Key).(ast.Expr)
+			out.Key = r.restoreNode(n.Key, allowDuplicate).(ast.Expr)
 		}
 
 		// Token: Comma
@@ -1302,7 +1306,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = r.restoreNode(n.Value).(ast.Expr)
+			out.Value = r.restoreNode(n.Value, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: Value
@@ -1323,7 +1327,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.restoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: X
@@ -1331,7 +1335,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body, allowDuplicate).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -1356,7 +1360,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Results
 		for _, v := range n.Results {
-			out.Results = append(out.Results, r.restoreNode(v).(ast.Expr))
+			out.Results = append(out.Results, r.restoreNode(v, allowDuplicate).(ast.Expr))
 		}
 
 		// Decoration: End
@@ -1381,7 +1385,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body, allowDuplicate).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -1399,7 +1403,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.restoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X, allowDuplicate).(ast.Expr)
 		}
 
 		// Token: Period
@@ -1410,7 +1414,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Sel
 		if n.Sel != nil {
-			out.Sel = r.restoreNode(n.Sel).(*ast.Ident)
+			out.Sel = r.restoreNode(n.Sel, allowDuplicate).(*ast.Ident)
 		}
 
 		// Decoration: End
@@ -1428,7 +1432,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Chan
 		if n.Chan != nil {
-			out.Chan = r.restoreNode(n.Chan).(ast.Expr)
+			out.Chan = r.restoreNode(n.Chan, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: Chan
@@ -1443,7 +1447,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Value
 		if n.Value != nil {
-			out.Value = r.restoreNode(n.Value).(ast.Expr)
+			out.Value = r.restoreNode(n.Value, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1461,7 +1465,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.restoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: X
@@ -1476,7 +1480,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Low
 		if n.Low != nil {
-			out.Low = r.restoreNode(n.Low).(ast.Expr)
+			out.Low = r.restoreNode(n.Low, allowDuplicate).(ast.Expr)
 		}
 
 		// Token: Colon1
@@ -1487,7 +1491,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: High
 		if n.High != nil {
-			out.High = r.restoreNode(n.High).(ast.Expr)
+			out.High = r.restoreNode(n.High, allowDuplicate).(ast.Expr)
 		}
 
 		// Token: Colon2
@@ -1500,7 +1504,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Max
 		if n.Max != nil {
-			out.Max = r.restoreNode(n.Max).(ast.Expr)
+			out.Max = r.restoreNode(n.Max, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: Max
@@ -1535,7 +1539,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.restoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1560,7 +1564,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Fields
 		if n.Fields != nil {
-			out.Fields = r.restoreNode(n.Fields).(*ast.FieldList)
+			out.Fields = r.restoreNode(n.Fields, allowDuplicate).(*ast.FieldList)
 		}
 
 		// Decoration: End
@@ -1588,7 +1592,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = r.restoreNode(n.Init).(ast.Stmt)
+			out.Init = r.restoreNode(n.Init, allowDuplicate).(ast.Stmt)
 		}
 
 		// Decoration: Init
@@ -1596,7 +1600,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Tag
 		if n.Tag != nil {
-			out.Tag = r.restoreNode(n.Tag).(ast.Expr)
+			out.Tag = r.restoreNode(n.Tag, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: Tag
@@ -1604,7 +1608,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body, allowDuplicate).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -1622,7 +1626,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.restoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X, allowDuplicate).(ast.Expr)
 		}
 
 		// Token: Period
@@ -1640,7 +1644,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.restoreNode(n.Type).(ast.Expr)
+			out.Type = r.restoreNode(n.Type, allowDuplicate).(ast.Expr)
 		}
 
 		// Token: TypeToken
@@ -1670,7 +1674,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = r.restoreNode(n.Name).(*ast.Ident)
+			out.Name = r.restoreNode(n.Name, allowDuplicate).(*ast.Ident)
 		}
 
 		// Token: Assign
@@ -1684,7 +1688,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.restoreNode(n.Type).(ast.Expr)
+			out.Type = r.restoreNode(n.Type, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1709,7 +1713,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Init
 		if n.Init != nil {
-			out.Init = r.restoreNode(n.Init).(ast.Stmt)
+			out.Init = r.restoreNode(n.Init, allowDuplicate).(ast.Stmt)
 		}
 
 		// Decoration: Init
@@ -1717,7 +1721,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Assign
 		if n.Assign != nil {
-			out.Assign = r.restoreNode(n.Assign).(ast.Stmt)
+			out.Assign = r.restoreNode(n.Assign, allowDuplicate).(ast.Stmt)
 		}
 
 		// Decoration: Assign
@@ -1725,7 +1729,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Body
 		if n.Body != nil {
-			out.Body = r.restoreNode(n.Body).(*ast.BlockStmt)
+			out.Body = r.restoreNode(n.Body, allowDuplicate).(*ast.BlockStmt)
 		}
 
 		// Decoration: End
@@ -1751,7 +1755,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: X
 		if n.X != nil {
-			out.X = r.restoreNode(n.X).(ast.Expr)
+			out.X = r.restoreNode(n.X, allowDuplicate).(ast.Expr)
 		}
 
 		// Decoration: End
@@ -1769,7 +1773,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Names
 		for _, v := range n.Names {
-			out.Names = append(out.Names, r.restoreNode(v).(*ast.Ident))
+			out.Names = append(out.Names, r.restoreNode(v, allowDuplicate).(*ast.Ident))
 		}
 
 		// Decoration: Names
@@ -1777,7 +1781,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// Node: Type
 		if n.Type != nil {
-			out.Type = r.restoreNode(n.Type).(ast.Expr)
+			out.Type = r.restoreNode(n.Type, allowDuplicate).(ast.Expr)
 		}
 
 		// Token: Assign
@@ -1790,7 +1794,7 @@ func (r *fileRestorer) restoreNode(n dst.Node) ast.Node {
 
 		// List: Values
 		for _, v := range n.Values {
-			out.Values = append(out.Values, r.restoreNode(v).(ast.Expr))
+			out.Values = append(out.Values, r.restoreNode(v, allowDuplicate).(ast.Expr))
 		}
 
 		// Decoration: End

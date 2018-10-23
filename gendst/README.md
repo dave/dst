@@ -1,11 +1,11 @@
 # gendst
 
 The `gendst` package is used to create the generated portions of the `dst` and `decorator` packages.
-The input data is in the [data](https://github.com/dave/dst/blob/master/gendst/data/data.go) package, 
-which was painstakingly manually compiled. The code in [positions.go](https://github.com/dave/dst/blob/master/gendst/data/positions.go)
+The manually compiled input data is in [data.go](https://github.com/dave/dst/blob/master/gendst/data/data.go). 
+In addition the code in [positions.go](https://github.com/dave/dst/blob/master/gendst/data/positions.go)
 is sliced up automatically to make the documentation for the [decoration holder classes](https://github.com/dave/dst/blob/master/decorations-types-generated.go).
 
-Everything else is generated from this: 
+The following files are generated: 
 
 ### dst
 * [decorations-node-generated.go](https://github.com/dave/dst/blob/master/decorations-node-generated.go)

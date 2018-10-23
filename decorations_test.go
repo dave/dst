@@ -16,6 +16,35 @@ import (
 	"github.com/dave/dst/decorator"
 )
 
+func ExampleClone() {
+	code := `package main
+
+	var i /* a */ int`
+
+	f, err := decorator.Parse(code)
+	if err != nil {
+		panic(err)
+	}
+
+	cloned := dst.Clone(f.Decls[0]).(*dst.GenDecl)
+
+	cloned.Decs.Space = dst.NewLine
+	cloned.Specs[0].(*dst.ValueSpec).Names[0].Name = "j"
+	cloned.Specs[0].(*dst.ValueSpec).Decs.Names.Replace("/* b */")
+
+	f.Decls = append(f.Decls, cloned)
+
+	if err := decorator.Print(f); err != nil {
+		panic(err)
+	}
+
+	//Output:
+	//package main
+	//
+	//var i /* a */ int
+	//var j /* b */ int
+}
+
 func ExampleTypes() {
 	code := `package main
 

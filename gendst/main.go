@@ -37,5 +37,8 @@ func run() error {
 	if err := generateRestorer(names); err != nil {
 		return err
 	}
+	if err := generateClone(names); err != nil {
+		return err
+	}
 	return nil
 }
