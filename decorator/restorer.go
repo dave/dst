@@ -32,18 +32,42 @@ func Restore(file *dst.File) (*token.FileSet, *ast.File) {
 // NewRestorer creates a new Restorer
 func NewRestorer() *Restorer {
 	return &Restorer{
-		Fset:    token.NewFileSet(),
-		Nodes:   map[dst.Node]ast.Node{},
-		Scopes:  map[*dst.Scope]*ast.Scope{},
-		Objects: map[*dst.Object]*ast.Object{},
+		Fset: token.NewFileSet(),
+		Map: Map{
+			Ast: AstMap{
+				Nodes:   map[dst.Node]ast.Node{},
+				Scopes:  map[*dst.Scope]*ast.Scope{},
+				Objects: map[*dst.Object]*ast.Object{},
+			},
+			Dst: DstMap{
+				Nodes:   map[ast.Node]dst.Node{},
+				Scopes:  map[*ast.Scope]*dst.Scope{},
+				Objects: map[*ast.Object]*dst.Object{},
+			},
+		},
 	}
 }
 
 type Restorer struct {
-	Fset    *token.FileSet              // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
+	Map
+	Fset *token.FileSet // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
+}
+
+type Map struct {
+	Ast AstMap
+	Dst DstMap
+}
+
+type AstMap struct {
 	Nodes   map[dst.Node]ast.Node       // Mapping from dst to ast Nodes
 	Objects map[*dst.Object]*ast.Object // Mapping from dst to ast Objects
 	Scopes  map[*dst.Scope]*ast.Scope   // Mapping from dst to ast Scopes
+}
+
+type DstMap struct {
+	Nodes   map[ast.Node]dst.Node       // Mapping from ast to dst Nodes
+	Objects map[*ast.Object]*dst.Object // Mapping from ast to dst Objects
+	Scopes  map[*ast.Scope]*dst.Scope   // Mapping from ast to dst Scopes
 }
 
 type fileRestorer struct {
@@ -252,7 +276,7 @@ func (r *fileRestorer) restoreObject(o *dst.Object) *ast.Object {
 	if o == nil {
 		return nil
 	}
-	if ro, ok := r.Objects[o]; ok {
+	if ro, ok := r.Ast.Objects[o]; ok {
 		return ro
 	}
 	/*
@@ -275,7 +299,8 @@ func (r *fileRestorer) restoreObject(o *dst.Object) *ast.Object {
 	*/
 	out := &ast.Object{}
 
-	r.Objects[o] = out
+	r.Ast.Objects[o] = out
+	r.Dst.Objects[out] = o
 
 	out.Kind = ast.ObjKind(o.Kind)
 	out.Name = o.Name
@@ -314,7 +339,7 @@ func (r *fileRestorer) restoreScope(s *dst.Scope) *ast.Scope {
 	if s == nil {
 		return nil
 	}
-	if rs, ok := r.Scopes[s]; ok {
+	if rs, ok := r.Ast.Scopes[s]; ok {
 		return rs
 	}
 	/*
@@ -329,7 +354,8 @@ func (r *fileRestorer) restoreScope(s *dst.Scope) *ast.Scope {
 	*/
 	out := &ast.Scope{}
 
-	r.Scopes[s] = out
+	r.Ast.Scopes[s] = out
+	r.Dst.Scopes[out] = s
 
 	out.Outer = r.restoreScope(s.Outer)
 	out.Objects = map[string]*ast.Object{}

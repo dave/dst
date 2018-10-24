@@ -79,13 +79,19 @@ func DecorateFile(fset *token.FileSet, f *ast.File) *dst.File {
 // New returns a new decorator.
 func New() *Decorator {
 	return &Decorator{
-		DstNodes:    map[ast.Node]dst.Node{},
-		DstScopes:   map[*ast.Scope]*dst.Scope{},
-		DstObjects:  map[*ast.Object]*dst.Object{},
-		AstNodes:    map[dst.Node]ast.Node{},
-		AstScopes:   map[*dst.Scope]*ast.Scope{},
-		AstObjects:  map[*dst.Object]*ast.Object{},
-		Info:        &Info{Filenames: map[*dst.File]string{}},
+		Map: Map{
+			Ast: AstMap{
+				Nodes:   map[dst.Node]ast.Node{},
+				Scopes:  map[*dst.Scope]*ast.Scope{},
+				Objects: map[*dst.Object]*ast.Object{},
+			},
+			Dst: DstMap{
+				Nodes:   map[ast.Node]dst.Node{},
+				Scopes:  map[*ast.Scope]*dst.Scope{},
+				Objects: map[*ast.Object]*dst.Object{},
+			},
+		},
+		Filenames:   map[*dst.File]string{},
 		decorations: map[ast.Node]map[string][]string{},
 		space:       map[ast.Node]dst.SpaceType{},
 		after:       map[ast.Node]dst.SpaceType{},
@@ -93,19 +99,10 @@ func New() *Decorator {
 }
 
 type Decorator struct {
-	DstNodes     map[ast.Node]dst.Node       // Mapping from ast to dst Nodes
-	DstScopes    map[*ast.Scope]*dst.Scope   // Mapping from ast to dst Scopes
-	DstObjects   map[*ast.Object]*dst.Object // Mapping from ast to dst Objects
-	AstNodes     map[dst.Node]ast.Node       // Mapping from dst to ast Nodes
-	AstScopes    map[*dst.Scope]*ast.Scope   // Mapping from dst to ast Scopes
-	AstObjects   map[*dst.Object]*ast.Object // Mapping from dst to ast Objects
-	Info         *Info                       // Info object containing source file names
+	Map
+	Filenames    map[*dst.File]string // Source file names
 	decorations  map[ast.Node]map[string][]string
 	space, after map[ast.Node]dst.SpaceType
-}
-
-type Info struct {
-	Filenames map[*dst.File]string // Source file names
 }
 
 // Decorate decorates an ast.Node and returns a dst.Node
@@ -128,10 +125,10 @@ func (d *Decorator) Decorate(fset *token.FileSet, n ast.Node) dst.Node {
 	switch n := n.(type) {
 	case *ast.Package:
 		for k, v := range n.Files {
-			d.Info.Filenames[d.DstNodes[v].(*dst.File)] = k
+			d.Filenames[d.Dst.Nodes[v].(*dst.File)] = k
 		}
 	case *ast.File:
-		d.Info.Filenames[out.(*dst.File)] = fset.File(n.Pos()).Name()
+		d.Filenames[out.(*dst.File)] = fset.File(n.Pos()).Name()
 	}
 
 	return out
@@ -146,7 +143,7 @@ func (d *Decorator) decorateObject(o *ast.Object) *dst.Object {
 	if o == nil {
 		return nil
 	}
-	if do, ok := d.DstObjects[o]; ok {
+	if do, ok := d.Dst.Objects[o]; ok {
 		return do
 	}
 	/*
@@ -169,8 +166,8 @@ func (d *Decorator) decorateObject(o *ast.Object) *dst.Object {
 	*/
 
 	out := &dst.Object{}
-	d.DstObjects[o] = out
-	d.AstObjects[out] = o
+	d.Dst.Objects[o] = out
+	d.Ast.Objects[out] = o
 	out.Kind = dst.ObjKind(o.Kind)
 	out.Name = o.Name
 
@@ -204,7 +201,7 @@ func (d *Decorator) decorateScope(s *ast.Scope) *dst.Scope {
 	if s == nil {
 		return nil
 	}
-	if ds, ok := d.DstScopes[s]; ok {
+	if ds, ok := d.Dst.Scopes[s]; ok {
 		return ds
 	}
 	/*
@@ -219,8 +216,8 @@ func (d *Decorator) decorateScope(s *ast.Scope) *dst.Scope {
 	*/
 	out := &dst.Scope{}
 
-	d.DstScopes[s] = out
-	d.AstScopes[out] = s
+	d.Dst.Scopes[s] = out
+	d.Ast.Scopes[out] = s
 
 	out.Outer = d.decorateScope(s.Outer)
 	out.Objects = map[string]*dst.Object{}

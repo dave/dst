@@ -21,7 +21,7 @@ func generateRestorer(names []string) error {
 		Id("n").Qual(DSTPATH, "Node"),
 		Id("allowDuplicate").Bool(),
 	).Qual("go/ast", "Node").BlockFunc(func(g *Group) {
-		g.If(List(Id("an"), Id("ok")).Op(":=").Id("r").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
+		g.If(List(Id("an"), Id("ok")).Op(":=").Id("r").Dot("Ast").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
 			If(Id("allowDuplicate")).Block(
 				Return(Id("an")),
 			).Else().Block(
@@ -32,7 +32,8 @@ func generateRestorer(names []string) error {
 			for _, nodeName := range names {
 				g.Case(Op("*").Qual(DSTPATH, nodeName)).BlockFunc(func(g *Group) {
 					g.Id("out").Op(":=").Op("&").Qual("go/ast", nodeName).Values()
-					g.Id("r").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
+					g.Id("r").Dot("Ast").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
+					g.Id("r").Dot("Dst").Dot("Nodes").Index(Id("out")).Op("=").Id("n")
 
 					if nodeName != "Package" {
 						g.Id("r").Dot("applySpace").Call(Id("n").Dot("Decs").Dot("Space"))

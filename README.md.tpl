@@ -78,7 +78,7 @@ and provides the `Apply` function with similar semantics.
 Adapting the `go/types` package to use `dst` as input is non-trivial because `go/types` uses 
 position information in several places. A work-around is to convert from `ast` to `dst` using
 [Decorator](https://godoc.org/github.com/dave/dst/decorator#Decorator). After conversion, this 
-exposes `DstNodes` and `AstNodes` which map between `ast.Node` and `dst.Node`. This way, the 
+exposes `Dst.Nodes` and `Ast.Nodes` which map between `ast.Node` and `dst.Node`. This way, the 
 `go/types` package can be used:
 
 {{ "ExampleTypes" | example }}

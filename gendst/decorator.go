@@ -14,7 +14,7 @@ func generateDecorator(names []string) error {
 
 	/*
 		func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
-			if dn, ok := d.DstNodes[n]; ok {
+			if dn, ok := d.Dst.Nodes[n]; ok {
 				return dn
 			}
 		}
@@ -22,15 +22,18 @@ func generateDecorator(names []string) error {
 	f.Func().Params(Id("d").Op("*").Id("Decorator")).Id("decorateNode").Params(
 		Id("n").Qual("go/ast", "Node"),
 	).Qual(DSTPATH, "Node").BlockFunc(func(g *Group) {
-		g.If(List(Id("dn"), Id("ok")).Op(":=").Id("d").Dot("DstNodes").Index(Id("n")), Id("ok")).Block(
+		g.If(List(Id("dn"), Id("ok")).Op(":=").Id("d").Dot("Dst").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
 			Return(Id("dn")),
 		)
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
 				g.Case(Op("*").Qual("go/ast", nodeName)).BlockFunc(func(g *Group) {
+
 					g.Id("out").Op(":=").Op("&").Qual(DSTPATH, nodeName).Values()
-					g.Id("d").Dot("DstNodes").Index(Id("n")).Op("=").Id("out")
-					g.Id("d").Dot("AstNodes").Index(Id("out")).Op("=").Id("n")
+
+					g.Id("d").Dot("Dst").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
+					g.Id("d").Dot("Ast").Dot("Nodes").Index(Id("out")).Op("=").Id("n")
+
 					if nodeName != "Package" {
 						g.Line()
 						g.Id("out").Dot("Decs").Dot("Space").Op("=").Id("d").Dot("space").Index(Id("n"))
