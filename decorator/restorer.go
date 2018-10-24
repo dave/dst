@@ -173,7 +173,7 @@ func (f *fileRestorer) addCommentField(n ast.Node, slash token.Pos, text string)
 	}
 }
 
-func (f *fileRestorer) applyDecorations(node ast.Node, name string, decorations dst.Decorations, end bool) {
+func (f *fileRestorer) applyDecorations(node ast.Node, decorations dst.Decorations, end bool) {
 	firstLine := true
 	for _, d := range decorations {
 
