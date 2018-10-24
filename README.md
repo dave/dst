@@ -299,8 +299,8 @@ f := dec.Decorate(fset, astFile).(*dst.File)
 // Find the *dst.Ident for the definition of "i"
 dstDef := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.DeclStmt).Decl.(*dst.GenDecl).Specs[0].(*dst.ValueSpec).Names[0]
 
-// Find the *ast.Ident using the AstNodes mapping
-astDef := dec.AstNodes[dstDef].(*ast.Ident)
+// Find the *ast.Ident using the Ast.Nodes mapping
+astDef := dec.Ast.Nodes[dstDef].(*ast.Ident)
 
 // Find the types.Object corresponding to "i"
 obj := typesInfo.Defs[astDef]
