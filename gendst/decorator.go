@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/dave/dst/gendst/data"
 	. "github.com/dave/jennifer/jen"
 )
@@ -107,7 +109,9 @@ func generateDecorator(names []string) error {
 								frag.Field.Get("out").Op("=").Id("d").Dot("decorateNode").Call(frag.Field.Get("n")).Assert(frag.Type.Literal(DSTPATH)),
 							)
 						case data.Ignored:
-							// TODO
+							// TODO: What about newlines inside ignored blocks?
+							g.Line().Commentf("Ignored: %s", frag.Name)
+							g.Add(frag.LengthField.Get("out")).Op("=").Add(frag.Length.Get("n", true))
 						case data.Value:
 							g.Line().Commentf("Value: %s", frag.Name)
 							if frag.Value != nil {
@@ -121,6 +125,10 @@ func generateDecorator(names []string) error {
 						case data.Object:
 							g.Line().Commentf("Object: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Id("d").Dot("decorateObject").Call(frag.Field.Get("n"))
+						case data.SpecialDecoration:
+							// ignore
+						default:
+							panic(fmt.Sprintf("unknown fragment type %T", frag))
 						}
 					}
 

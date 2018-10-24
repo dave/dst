@@ -117,13 +117,16 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Ignored{
+			Name: "Length",
 			Length: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement {
-					return jen.Int().Parens(jen.Add(n).Dot("End").Call().Op("-").Add(n).Dot("Pos").Call())
+					return jen.Int().Parens(jen.Add(n).Dot("To").Op("-").Add(n).Dot("From"))
 				}),
 				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Length") }),
 			},
-			PositionField: Field{"From"},
+			LengthField: Field{"Length"},
+			FromField:   Field{"From"},
+			ToField:     Field{"To"},
 		},
 		Decoration{
 			Name: "End",
@@ -1031,13 +1034,16 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Ignored{
+			Name: "Length",
 			Length: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement {
-					return jen.Int().Parens(jen.Add(n).Dot("End").Call().Op("-").Add(n).Dot("Pos").Call())
+					return jen.Int().Parens(jen.Add(n).Dot("To").Op("-").Add(n).Dot("From"))
 				}),
 				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Length") }),
 			},
-			PositionField: Field{"From"},
+			LengthField: Field{"Length"},
+			FromField:   Field{"From"},
+			ToField:     Field{"To"},
 		},
 		Decoration{
 			Name: "End",
@@ -1972,13 +1978,16 @@ var Info = map[string][]Part{
 			Name: "Start",
 		},
 		Ignored{
+			Name: "Length",
 			Length: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement {
-					return jen.Int().Parens(jen.Add(n).Dot("End").Call().Op("-").Add(n).Dot("Pos").Call())
+					return jen.Int().Parens(jen.Add(n).Dot("To").Op("-").Add(n).Dot("From"))
 				}),
 				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Length") }),
 			},
-			PositionField: Field{"From"},
+			LengthField: Field{"Length"},
+			FromField:   Field{"From"},
+			ToField:     Field{"To"},
 		},
 		Decoration{
 			Name: "End",
@@ -2372,8 +2381,10 @@ type Token struct {
 }
 
 type Ignored struct {
-	Length        Code
-	PositionField FieldSpec
+	Name               string
+	Length             Code
+	LengthField        FieldSpec
+	FromField, ToField FieldSpec
 }
 
 // Value that must be copied from ast.Node to dst.Node but doesn't result in anything rendered to the output.

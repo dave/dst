@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/dave/dst/gendst/data"
 	. "github.com/dave/jennifer/jen"
 )
@@ -111,7 +113,11 @@ func generateRestorer(names []string) error {
 								}
 							})
 						case data.Ignored:
-							// TODO
+							// TODO: What about newlines inside ignored blocks?
+							g.Line().Commentf("Ignored: %s", frag.Name)
+							g.Add(frag.FromField.Get("out")).Op("=").Id("r").Dot("cursor")
+							g.Id("r").Dot("cursor").Op("+=").Qual("go/token", "Pos").Parens(frag.Length.Get("n", false))
+							g.Add(frag.ToField.Get("out")).Op("=").Id("r").Dot("cursor")
 						case data.Value:
 							g.Line().Commentf("Value: %s", frag.Name)
 							if frag.Value != nil {
@@ -125,6 +131,8 @@ func generateRestorer(names []string) error {
 						case data.Object:
 							g.Line().Commentf("Object: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Id("r").Dot("restoreObject").Call(frag.Field.Get("n"))
+						default:
+							panic(fmt.Sprintf("unknown fragment type %T", frag))
 						}
 					}
 

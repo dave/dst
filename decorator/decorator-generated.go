@@ -90,6 +90,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out.Decs.Space = d.space[n]
 		out.Decs.After = d.after[n]
 
+		// Ignored: Length
+		out.Length = int(n.To - n.From)
+
 		if nd, ok := d.decorations[n]; ok {
 			if decs, ok := nd["Start"]; ok {
 				out.Decs.Start = decs
@@ -108,6 +111,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 		out.Decs.Space = d.space[n]
 		out.Decs.After = d.after[n]
 
+		// Ignored: Length
+		out.Length = int(n.To - n.From)
+
 		if nd, ok := d.decorations[n]; ok {
 			if decs, ok := nd["Start"]; ok {
 				out.Decs.Start = decs
@@ -125,6 +131,9 @@ func (d *Decorator) decorateNode(n ast.Node) dst.Node {
 
 		out.Decs.Space = d.space[n]
 		out.Decs.After = d.after[n]
+
+		// Ignored: Length
+		out.Length = int(n.To - n.From)
 
 		if nd, ok := d.decorations[n]; ok {
 			if decs, ok := nd["Start"]; ok {

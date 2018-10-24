@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/dave/dst/gendst/data"
 	. "github.com/dave/jennifer/jen"
 )
@@ -59,8 +61,6 @@ func generateClone(names []string) error {
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("Clone").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH))
 								}
 							})
-						case data.Ignored:
-							// TODO
 						case data.Value:
 							g.Line().Commentf("Value: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Add(frag.Field.Get("n"))
@@ -70,6 +70,10 @@ func generateClone(names []string) error {
 						case data.Object:
 							g.Line().Commentf("Object: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Id("CloneObject").Call(frag.Field.Get("n"))
+						case data.Ignored, data.SpecialDecoration:
+							// ignore
+						default:
+							panic(fmt.Sprintf("unknown fragment type %T", frag))
 						}
 					}
 
