@@ -77,7 +77,10 @@ func generateFragger(names []string) error {
 								pos = frag.PositionField.Get("n")
 							}
 							g.Id("f").Dot("addString").Call(Id("n"), frag.ValueField.Get("n"), pos)
-						case data.Ignored, data.Init, data.Value, data.Scope, data.Object, data.SpecialDecoration:
+						case data.Bad:
+							g.Line().Comment("Bad")
+							g.Id("f").Dot("addBad").Call(Id("n"), frag.FromField.Get("n"), Int().Parens(frag.ToField.Get("n").Op("-").Add(frag.FromField.Get("n"))))
+						case data.Init, data.Value, data.Scope, data.Object, data.SpecialDecoration:
 							// do nothing
 						default:
 							panic(fmt.Sprintf("unknown fragment type %T", frag))

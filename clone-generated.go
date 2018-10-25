@@ -73,6 +73,9 @@ func Clone(n Node) Node {
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
 
+		// Bad
+		out.Length = n.Length
+
 		// Decoration: End
 		out.Decs.End = append(out.Decs.End, n.Decs.End...)
 
@@ -87,6 +90,9 @@ func Clone(n Node) Node {
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
 
+		// Bad
+		out.Length = n.Length
+
 		// Decoration: End
 		out.Decs.End = append(out.Decs.End, n.Decs.End...)
 
@@ -100,6 +106,9 @@ func Clone(n Node) Node {
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
+
+		// Bad
+		out.Length = n.Length
 
 		// Decoration: End
 		out.Decs.End = append(out.Decs.End, n.Decs.End...)

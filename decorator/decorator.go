@@ -16,11 +16,15 @@ import (
 // be string, []byte, or io.Reader.
 func Parse(src interface{}) (*dst.File, error) {
 	fset := token.NewFileSet()
+
+	// If ParseFile returns an error and also a non-nil file, the errors were just parse errors so
+	// we should continue decorating the file and return the error.
 	f, err := parser.ParseFile(fset, "", src, parser.ParseComments)
-	if err != nil {
+	if err != nil && f == nil {
 		return nil, err
 	}
-	return Decorate(fset, f).(*dst.File), nil
+
+	return Decorate(fset, f).(*dst.File), err
 }
 
 // ParseFile uses parser.ParseFile to parse and decorate a Go source file.

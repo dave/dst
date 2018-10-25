@@ -47,6 +47,14 @@ func (f *fragger) addString(n ast.Node, s string, pos token.Pos) {
 	f.cursor += len(s)
 }
 
+func (f *fragger) addBad(n ast.Node, pos token.Pos, length int) {
+	if pos.IsValid() {
+		f.cursor = int(pos)
+	}
+	f.Fragments = append(f.Fragments, &badFragment{Node: n, Pos: token.Pos(f.cursor), Length: length})
+	f.cursor += length
+}
+
 func (f *fragger) addComment(text string, pos token.Pos) {
 	// Don't need to worry about the cursor with comments - they are added to the fragment list in
 	// the wrong order, then we sort the list based on Pos
@@ -65,8 +73,9 @@ func (f *fragger) fragment(node ast.Node) {
 
 	if f.fset != nil {
 		processFile := func(astf *ast.File) {
-			// we will avoid adding a newline decoration that is inside a comment
 			avoid := map[int]bool{}
+
+			// we will avoid adding a newline decoration that is inside a comment
 			for _, cg := range astf.Comments {
 				for _, c := range cg.List {
 
@@ -88,7 +97,7 @@ func (f *fragger) fragment(node ast.Node) {
 				}
 			}
 
-			// avoid newlines inside multi-line (back-quoted) strings
+			// avoid newlines inside multi-line (back-quoted) strings or bad nodes
 			for _, frag := range f.Fragments {
 				switch frag := frag.(type) {
 				case *stringFragment:
@@ -103,6 +112,20 @@ func (f *fragger) fragment(node ast.Node) {
 					if endLine > startLine {
 						for i := startLine; i < endLine; i++ {
 							avoid[i+1] = true // we avoid the lines that follow the lines in the string
+						}
+					}
+
+				case *badFragment:
+
+					// Newlines inside bad nodes are not printed by the formatter, so there is no need
+					// to reconstruct them in the restorer.
+
+					startLine := f.fset.Position(frag.Pos).Line
+					endLine := f.fset.Position(frag.Pos + token.Pos(frag.Length)).Line
+
+					if endLine > startLine {
+						for i := startLine; i < endLine; i++ {
+							avoid[i+1] = true // we avoid the lines that follow the lines in the node
 						}
 					}
 				}
@@ -159,7 +182,7 @@ func (f *fragger) fragment(node ast.Node) {
 	// Search for nodes and comments that start directly after newlines. We note their indent.
 	currentIndent := 0
 	for i, frag := range f.Fragments {
-		if i == 0 || f.Fragments[i-1].HasNewline() {
+		if i == 0 || f.Fragments[i-1].Newline() {
 			currentIndent = f.fset.Position(frag.Position()).Column
 		}
 		switch frag := frag.(type) {
@@ -509,7 +532,7 @@ func (f *fragger) findIndentedComments(from int, indents [2]int) (frags [2][]fra
 
 type fragment interface {
 	Position() token.Pos
-	HasNewline() bool
+	Newline() bool // True if the fragment ends in a newline ("\n" or "//...")
 }
 
 type tokenFragment struct {
@@ -522,6 +545,12 @@ type stringFragment struct {
 	Node   ast.Node
 	String string
 	Pos    token.Pos
+}
+
+type badFragment struct {
+	Node   ast.Node
+	Pos    token.Pos
+	Length int
 }
 
 type commentFragment struct {
@@ -548,12 +577,14 @@ func (v *stringFragment) Position() token.Pos     { return v.Pos }
 func (v *commentFragment) Position() token.Pos    { return v.Pos }
 func (v *newlineFragment) Position() token.Pos    { return v.Pos }
 func (v *decorationFragment) Position() token.Pos { return v.Pos }
+func (v *badFragment) Position() token.Pos        { return v.Pos }
 
-func (v *tokenFragment) HasNewline() bool      { return false }
-func (v *stringFragment) HasNewline() bool     { return false }
-func (v *commentFragment) HasNewline() bool    { return strings.HasPrefix(v.Text, "//") }
-func (v *newlineFragment) HasNewline() bool    { return true }
-func (v *decorationFragment) HasNewline() bool { return false }
+func (v *tokenFragment) Newline() bool      { return false }
+func (v *stringFragment) Newline() bool     { return false }
+func (v *commentFragment) Newline() bool    { return strings.HasPrefix(v.Text, "//") }
+func (v *newlineFragment) Newline() bool    { return true }
+func (v *decorationFragment) Newline() bool { return false }
+func (v *badFragment) Newline() bool        { return false }
 
 func (f fragger) debug(fset *token.FileSet, w io.Writer) {
 	formatPos := func(s token.Position) string {
@@ -578,6 +609,8 @@ func (f fragger) debug(fset *token.FileSet, w io.Writer) {
 			fmt.Fprintf(w, "%s %s %s\n", nodeType(v.Node), v.Name, formatPos(fset.Position(v.Pos)))
 		case *commentFragment:
 			fmt.Fprintf(w, "%q %s\n", v.Text, formatPos(fset.Position(v.Pos)))
+		case *badFragment:
+			fmt.Fprintf(w, "%s %d %s\n", nodeType(v.Node), v.Length, formatPos(fset.Position(v.Pos)))
 		default:
 			fmt.Fprintf(w, "%T %s\n", v, formatPos(fset.Position(v.Position())))
 		}

@@ -112,9 +112,8 @@ func generateRestorer(names []string) error {
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v"), Id("allowDuplicate")).Assert(frag.Elem.Literal("go/ast"))
 								}
 							})
-						case data.Ignored:
-							// TODO: What about newlines inside ignored blocks?
-							g.Line().Commentf("Ignored: %s", frag.Name)
+						case data.Bad:
+							g.Line().Comment("Bad")
 							g.Add(frag.FromField.Get("out")).Op("=").Id("r").Dot("cursor")
 							g.Id("r").Dot("cursor").Op("+=").Qual("go/token", "Pos").Parens(frag.Length.Get("n", false))
 							g.Add(frag.ToField.Get("out")).Op("=").Id("r").Dot("cursor")

@@ -70,7 +70,10 @@ func generateClone(names []string) error {
 						case data.Object:
 							g.Line().Commentf("Object: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Id("CloneObject").Call(frag.Field.Get("n"))
-						case data.Ignored, data.SpecialDecoration:
+						case data.Bad:
+							g.Line().Comment("Bad")
+							g.Add(frag.LengthField.Get("out")).Op("=").Add(frag.LengthField.Get("n"))
+						case data.SpecialDecoration:
 							// ignore
 						default:
 							panic(fmt.Sprintf("unknown fragment type %T", frag))

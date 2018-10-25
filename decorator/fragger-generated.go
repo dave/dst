@@ -69,6 +69,9 @@ func (f *fragger) processNode(n ast.Node) {
 		// Decoration: Start
 		f.addDecoration(n, "Start", n.Pos())
 
+		// Bad
+		f.addBad(n, n.From, int(n.To-n.From))
+
 		// Decoration: End
 		f.addDecoration(n, "End", n.End())
 
@@ -77,6 +80,9 @@ func (f *fragger) processNode(n ast.Node) {
 		// Decoration: Start
 		f.addDecoration(n, "Start", n.Pos())
 
+		// Bad
+		f.addBad(n, n.From, int(n.To-n.From))
+
 		// Decoration: End
 		f.addDecoration(n, "End", n.End())
 
@@ -84,6 +90,9 @@ func (f *fragger) processNode(n ast.Node) {
 
 		// Decoration: Start
 		f.addDecoration(n, "Start", n.Pos())
+
+		// Bad
+		f.addBad(n, n.From, int(n.To-n.From))
 
 		// Decoration: End
 		f.addDecoration(n, "End", n.End())

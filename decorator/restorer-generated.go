@@ -94,7 +94,7 @@ func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
 
-		// Ignored: Length
+		// Bad
 		out.From = r.cursor
 		r.cursor += token.Pos(n.Length)
 		out.To = r.cursor
@@ -113,7 +113,7 @@ func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
 
-		// Ignored: Length
+		// Bad
 		out.From = r.cursor
 		r.cursor += token.Pos(n.Length)
 		out.To = r.cursor
@@ -132,7 +132,7 @@ func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
 
-		// Ignored: Length
+		// Bad
 		out.From = r.cursor
 		r.cursor += token.Pos(n.Length)
 		out.To = r.cursor

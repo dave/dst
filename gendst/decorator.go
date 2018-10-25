@@ -108,9 +108,8 @@ func generateDecorator(names []string) error {
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
 								frag.Field.Get("out").Op("=").Id("d").Dot("decorateNode").Call(frag.Field.Get("n")).Assert(frag.Type.Literal(DSTPATH)),
 							)
-						case data.Ignored:
-							// TODO: What about newlines inside ignored blocks?
-							g.Line().Commentf("Ignored: %s", frag.Name)
+						case data.Bad:
+							g.Line().Comment("Bad")
 							g.Add(frag.LengthField.Get("out")).Op("=").Add(frag.Length.Get("n", true))
 						case data.Value:
 							g.Line().Commentf("Value: %s", frag.Name)

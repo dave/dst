@@ -116,8 +116,7 @@ var Info = map[string][]Part{
 		Decoration{
 			Name: "Start",
 		},
-		Ignored{
-			Name: "Length",
+		Bad{
 			Length: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement {
 					return jen.Int().Parens(jen.Add(n).Dot("To").Op("-").Add(n).Dot("From"))
@@ -1033,8 +1032,7 @@ var Info = map[string][]Part{
 		Decoration{
 			Name: "Start",
 		},
-		Ignored{
-			Name: "Length",
+		Bad{
 			Length: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement {
 					return jen.Int().Parens(jen.Add(n).Dot("To").Op("-").Add(n).Dot("From"))
@@ -1977,8 +1975,7 @@ var Info = map[string][]Part{
 		Decoration{
 			Name: "Start",
 		},
-		Ignored{
-			Name: "Length",
+		Bad{
 			Length: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement {
 					return jen.Int().Parens(jen.Add(n).Dot("To").Op("-").Add(n).Dot("From"))
@@ -2380,8 +2377,7 @@ type Token struct {
 	TokenField    FieldSpec
 }
 
-type Ignored struct {
-	Name               string
+type Bad struct {
 	Length             Code
 	LengthField        FieldSpec
 	FromField, ToField FieldSpec
