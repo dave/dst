@@ -10,7 +10,7 @@ import (
 	"github.com/andreyvit/diff"
 )
 
-func TestFragger(t *testing.T) {
+func TestFragment(t *testing.T) {
 	tests := []struct {
 		skip, solo bool
 		name       string
@@ -233,11 +233,12 @@ func TestFragger(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			p := newFragger(fset)
+			d := New(fset)
+			p := newFileDecorator(d)
 			p.fragment(f)
 
 			buf := &bytes.Buffer{}
-			p.debug(fset, buf)
+			p.debug(buf)
 
 			if test.expect == "" {
 				t.Error(buf.String())

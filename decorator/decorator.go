@@ -52,10 +52,10 @@ func ParseDir(fset *token.FileSet, path string, filter func(os.FileInfo) bool, m
 	if err != nil {
 		return nil, err
 	}
-	d := New()
+	d := New(fset)
 	out := map[string]*dst.Package{}
 	for k, v := range pkgs {
-		out[k] = d.Decorate(fset, v).(*dst.Package)
+		out[k] = d.Decorate(v).(*dst.Package)
 	}
 	return out, nil
 }
@@ -72,17 +72,18 @@ func ParseExprFrom(fset *token.FileSet, filename string, src interface{}, mode p
 
 // Decorate decorates an ast.Node and returns a dst.Node.
 func Decorate(fset *token.FileSet, n ast.Node) dst.Node {
-	return New().Decorate(fset, n)
+	return New(fset).Decorate(n)
 }
 
 // Decorate decorates a *ast.File and returns a *dst.File.
 func DecorateFile(fset *token.FileSet, f *ast.File) *dst.File {
-	return New().Decorate(fset, f).(*dst.File)
+	return New(fset).Decorate(f).(*dst.File)
 }
 
 // New returns a new decorator.
-func New() *Decorator {
+func New(fset *token.FileSet) *Decorator {
 	return &Decorator{
+		Fset: fset,
 		Map: Map{
 			Ast: AstMap{
 				Nodes:   map[dst.Node]ast.Node{},
@@ -95,32 +96,26 @@ func New() *Decorator {
 				Objects: map[*ast.Object]*dst.Object{},
 			},
 		},
-		Filenames:   map[*dst.File]string{},
-		decorations: map[ast.Node]map[string][]string{},
-		space:       map[ast.Node]dst.SpaceType{},
-		after:       map[ast.Node]dst.SpaceType{},
+		Filenames: map[*dst.File]string{},
 	}
 }
 
 type Decorator struct {
 	Map
-	Filenames    map[*dst.File]string // Source file names
-	decorations  map[ast.Node]map[string][]string
-	space, after map[ast.Node]dst.SpaceType
+	Fset      *token.FileSet
+	Filenames map[*dst.File]string // Source file names
 }
 
 // Decorate decorates an ast.Node and returns a dst.Node
-func (d *Decorator) Decorate(fset *token.FileSet, n ast.Node) dst.Node {
+func (d *Decorator) Decorate(n ast.Node) dst.Node {
 
-	fragger := newFragger(fset)
-	fragger.fragment(n)
+	fd := newFileDecorator(d)
+	fd.fragment(n)
+	fd.link()
+	out := fd.decorateNode(n)
 
-	//fmt.Println("\nFragger:")
-	//fragger.debug(fset, os.Stdout)
-
-	d.space, d.after, d.decorations = fragger.link()
-
-	out := d.decorateNode(n)
+	//fmt.Println("\Fragments:")
+	//fd.debug(os.Stdout)
 
 	//fmt.Println("\nDecorator:")
 	//debug(os.Stdout, out)
@@ -132,7 +127,7 @@ func (d *Decorator) Decorate(fset *token.FileSet, n ast.Node) dst.Node {
 			d.Filenames[d.Dst.Nodes[v].(*dst.File)] = k
 		}
 	case *ast.File:
-		d.Filenames[out.(*dst.File)] = fset.File(n.Pos()).Name()
+		d.Filenames[out.(*dst.File)] = d.Fset.File(n.Pos()).Name()
 	}
 
 	return out
@@ -143,11 +138,11 @@ type decorationInfo struct {
 	decs []string
 }
 
-func (d *Decorator) decorateObject(o *ast.Object) *dst.Object {
+func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {
 	if o == nil {
 		return nil
 	}
-	if do, ok := d.Dst.Objects[o]; ok {
+	if do, ok := f.Dst.Objects[o]; ok {
 		return do
 	}
 	/*
@@ -170,16 +165,16 @@ func (d *Decorator) decorateObject(o *ast.Object) *dst.Object {
 	*/
 
 	out := &dst.Object{}
-	d.Dst.Objects[o] = out
-	d.Ast.Objects[out] = o
+	f.Dst.Objects[o] = out
+	f.Ast.Objects[out] = o
 	out.Kind = dst.ObjKind(o.Kind)
 	out.Name = o.Name
 
 	switch decl := o.Decl.(type) {
 	case *ast.Scope:
-		out.Decl = d.decorateScope(decl)
+		out.Decl = f.decorateScope(decl)
 	case ast.Node:
-		out.Decl = d.decorateNode(decl)
+		out.Decl = f.decorateNode(decl)
 	case nil:
 	default:
 		panic(fmt.Sprintf("o.Decl is %T", o.Decl))
@@ -190,9 +185,9 @@ func (d *Decorator) decorateObject(o *ast.Object) *dst.Object {
 	case int:
 		out.Data = data
 	case *ast.Scope:
-		out.Data = d.decorateScope(data)
+		out.Data = f.decorateScope(data)
 	case ast.Node:
-		out.Data = d.decorateNode(data)
+		out.Data = f.decorateNode(data)
 	case nil:
 	default:
 		panic(fmt.Sprintf("o.Data is %T", o.Data))
@@ -201,11 +196,11 @@ func (d *Decorator) decorateObject(o *ast.Object) *dst.Object {
 	return out
 }
 
-func (d *Decorator) decorateScope(s *ast.Scope) *dst.Scope {
+func (f *fileDecorator) decorateScope(s *ast.Scope) *dst.Scope {
 	if s == nil {
 		return nil
 	}
-	if ds, ok := d.Dst.Scopes[s]; ok {
+	if ds, ok := f.Dst.Scopes[s]; ok {
 		return ds
 	}
 	/*
@@ -220,13 +215,13 @@ func (d *Decorator) decorateScope(s *ast.Scope) *dst.Scope {
 	*/
 	out := &dst.Scope{}
 
-	d.Dst.Scopes[s] = out
-	d.Ast.Scopes[out] = s
+	f.Dst.Scopes[s] = out
+	f.Ast.Scopes[out] = s
 
-	out.Outer = d.decorateScope(s.Outer)
+	out.Outer = f.decorateScope(s.Outer)
 	out.Objects = map[string]*dst.Object{}
 	for k, v := range s.Objects {
-		out.Objects[k] = d.decorateObject(v)
+		out.Objects[k] = f.decorateObject(v)
 	}
 
 	return out

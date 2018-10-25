@@ -72,8 +72,8 @@ func ExampleTypes() {
 	}
 
 	// Decorate the *ast.File to give us a *dst.File
-	dec := decorator.New()
-	f := dec.Decorate(fset, astFile).(*dst.File)
+	dec := decorator.New(fset)
+	f := dec.Decorate(astFile).(*dst.File)
 
 	// Find the *dst.Ident for the definition of "i"
 	dstDef := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.DeclStmt).Decl.(*dst.GenDecl).Specs[0].(*dst.ValueSpec).Names[0]

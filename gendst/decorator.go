@@ -21,10 +21,10 @@ func generateDecorator(names []string) error {
 			}
 		}
 	*/
-	f.Func().Params(Id("d").Op("*").Id("Decorator")).Id("decorateNode").Params(
+	f.Func().Params(Id("f").Op("*").Id("fileDecorator")).Id("decorateNode").Params(
 		Id("n").Qual("go/ast", "Node"),
 	).Qual(DSTPATH, "Node").BlockFunc(func(g *Group) {
-		g.If(List(Id("dn"), Id("ok")).Op(":=").Id("d").Dot("Dst").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
+		g.If(List(Id("dn"), Id("ok")).Op(":=").Id("f").Dot("Dst").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
 			Return(Id("dn")),
 		)
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
@@ -33,13 +33,13 @@ func generateDecorator(names []string) error {
 
 					g.Id("out").Op(":=").Op("&").Qual(DSTPATH, nodeName).Values()
 
-					g.Id("d").Dot("Dst").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
-					g.Id("d").Dot("Ast").Dot("Nodes").Index(Id("out")).Op("=").Id("n")
+					g.Id("f").Dot("Dst").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
+					g.Id("f").Dot("Ast").Dot("Nodes").Index(Id("out")).Op("=").Id("n")
 
 					if nodeName != "Package" {
 						g.Line()
-						g.Id("out").Dot("Decs").Dot("Space").Op("=").Id("d").Dot("space").Index(Id("n"))
-						g.Id("out").Dot("Decs").Dot("After").Op("=").Id("d").Dot("after").Index(Id("n"))
+						g.Id("out").Dot("Decs").Dot("Space").Op("=").Id("f").Dot("space").Index(Id("n"))
+						g.Id("out").Dot("Decs").Dot("After").Op("=").Id("f").Dot("after").Index(Id("n"))
 					}
 					for _, frag := range data.Info[nodeName] {
 						switch frag := frag.(type) {
@@ -71,7 +71,7 @@ func generateDecorator(names []string) error {
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 								frag.Field.Get("out").Op("=").Append(
 									frag.Field.Get("out"),
-									Id("d").Dot("decorateNode").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH)),
+									Id("f").Dot("decorateNode").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH)),
 								),
 							)
 						case data.Map:
@@ -93,9 +93,9 @@ func generateDecorator(names []string) error {
 							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).BlockFunc(func(g *Group) {
 								if frag.Elem.Name == "Object" {
 									// Special case for Package.Imports
-									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("d").Dot("decorateObject").Call(Id("v"))
+									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("f").Dot("decorateObject").Call(Id("v"))
 								} else {
-									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("d").Dot("decorateNode").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH))
+									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("f").Dot("decorateNode").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH))
 								}
 							})
 						case data.Node:
@@ -106,7 +106,7 @@ func generateDecorator(names []string) error {
 								}
 							*/
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
-								frag.Field.Get("out").Op("=").Id("d").Dot("decorateNode").Call(frag.Field.Get("n")).Assert(frag.Type.Literal(DSTPATH)),
+								frag.Field.Get("out").Op("=").Id("f").Dot("decorateNode").Call(frag.Field.Get("n")).Assert(frag.Type.Literal(DSTPATH)),
 							)
 						case data.Bad:
 							g.Line().Comment("Bad")
@@ -120,10 +120,10 @@ func generateDecorator(names []string) error {
 							}
 						case data.Scope:
 							g.Line().Commentf("Scope: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Id("d").Dot("decorateScope").Call(frag.Field.Get("n"))
+							g.Add(frag.Field.Get("out")).Op("=").Id("f").Dot("decorateScope").Call(frag.Field.Get("n"))
 						case data.Object:
 							g.Line().Commentf("Object: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Id("d").Dot("decorateObject").Call(frag.Field.Get("n"))
+							g.Add(frag.Field.Get("out")).Op("=").Id("f").Dot("decorateObject").Call(frag.Field.Get("n"))
 						case data.SpecialDecoration:
 							// ignore
 						default:
@@ -133,7 +133,7 @@ func generateDecorator(names []string) error {
 
 					g.Line()
 					var found bool
-					decs := If(List(Id("nd"), Id("ok")).Op(":=").Id("d").Dot("decorations").Index(Id("n")), Id("ok")).BlockFunc(func(g *Group) {
+					decs := If(List(Id("nd"), Id("ok")).Op(":=").Id("f").Dot("decorations").Index(Id("n")), Id("ok")).BlockFunc(func(g *Group) {
 						for _, frag := range data.Info[nodeName] {
 							switch frag := frag.(type) {
 							case data.Decoration:
@@ -158,7 +158,7 @@ func generateDecorator(names []string) error {
 
 	})
 
-	return f.Save("./decorator/decorator-generated.go")
+	return f.Save("./decorator/decorator-node-generated.go")
 }
 
 func generateDecoratorTestHelper(names []string) error {

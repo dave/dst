@@ -13,7 +13,7 @@ The following files are generated:
 * [clone-generated.go](https://github.com/dave/dst/blob/master/clone-generated.go)
 
 ### decorator
-* [fragger-generated.go](https://github.com/dave/dst/blob/master/decorator/fragger-generated.go)
-* [decorator-generated.go](https://github.com/dave/dst/blob/master/decorator/decorator-generated.go)
+* [decorator-fragment-generated.go](https://github.com/dave/dst/blob/master/decorator/decorator-fragment-generated.go)
+* [decorator-node-generated.go](https://github.com/dave/dst/blob/master/decorator/decorator-node-generated.go)
 * [decorator-info-generated.go](https://github.com/dave/dst/blob/master/decorator/decorator-info-generated.go)
 * [restorer-generated.go](https://github.com/dave/dst/blob/master/decorator/restorer-generated.go)
