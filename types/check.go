@@ -11,6 +11,7 @@ import (
 	"go/token"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator"
 )
 
 // debugging/development support
@@ -52,12 +53,6 @@ type context struct {
 	hasCallOrRecv bool                   // set if an expression contains a function call or channel receive operation
 }
 
-// lookup looks up name in the current context and returns the matching object, or nil.
-func (ctxt *context) lookup(name string) Object {
-	_, obj := ctxt.scope.LookupParent(name, ctxt.pos)
-	return obj
-}
-
 // An importKey identifies an imported package by import path and source directory
 // (directory containing the file containing the import). In practice, the directory
 // may always be the same, or may not matter. Given an (import path, directory), an
@@ -75,6 +70,7 @@ type Checker struct {
 	// (initialized by NewChecker, valid for the life-time of checker)
 	conf *Config
 	fset *token.FileSet
+	info *decorator.Info
 	pkg  *Package
 	*Info
 	objMap map[Object]*declInfo   // maps package-level object to declaration info
@@ -83,8 +79,7 @@ type Checker struct {
 	// information collected during type-checking of a set of package files
 	// (initialized by Files, valid only for the duration of check.Files;
 	// maps and lists are allocated on demand)
-	files            []*dst.File                       // package files
-	unusedDotImports map[*Scope]map[*Package]token.Pos // positions of unused dot-imported packages for each file scope
+	files []*dst.File // package files
 
 	firstErr   error                    // first error encountered
 	methods    map[*TypeName][]*Func    // maps package scope type names to associated non-blank, non-interface methods
@@ -99,22 +94,6 @@ type Checker struct {
 
 	// debugging
 	indent int // indentation for tracing
-}
-
-// addUnusedImport adds the position of a dot-imported package
-// pkg to the map of dot imports for the given file scope.
-func (check *Checker) addUnusedDotImport(scope *Scope, pkg *Package, pos token.Pos) {
-	mm := check.unusedDotImports
-	if mm == nil {
-		mm = make(map[*Scope]map[*Package]token.Pos)
-		check.unusedDotImports = mm
-	}
-	m := mm[scope]
-	if m == nil {
-		m = make(map[*Package]token.Pos)
-		mm[scope] = m
-	}
-	m[pkg] = pos
 }
 
 // addDeclDep adds the dependency edge (check.decl -> to) if check.decl exists
@@ -168,7 +147,7 @@ func (check *Checker) pathString() string {
 
 // NewChecker returns a new Checker instance for a given package.
 // Package files may be added incrementally via checker.Files.
-func NewChecker(conf *Config, fset *token.FileSet, pkg *Package, info *Info) *Checker {
+func NewChecker(conf *Config, di *decorator.Info, pkg *Package, info *Info) *Checker {
 	// make sure we have a configuration
 	if conf == nil {
 		conf = new(Config)
@@ -181,7 +160,7 @@ func NewChecker(conf *Config, fset *token.FileSet, pkg *Package, info *Info) *Ch
 
 	return &Checker{
 		conf:   conf,
-		fset:   fset,
+		info:   di,
 		pkg:    pkg,
 		Info:   info,
 		objMap: make(map[Object]*declInfo),
@@ -194,7 +173,6 @@ func NewChecker(conf *Config, fset *token.FileSet, pkg *Package, info *Info) *Ch
 func (check *Checker) initFiles(files []*dst.File) {
 	// start with a clean slate (check.Files may be called multiple times)
 	check.files = nil
-	check.unusedDotImports = nil
 
 	check.firstErr = nil
 	check.methods = nil

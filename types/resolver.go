@@ -128,7 +128,7 @@ func (check *Checker) filename(fileNo int) string {
 	return fmt.Sprintf("file[%d]", fileNo)
 }
 
-func (check *Checker) importPackage(pos token.Pos, path, dir string) *Package {
+func (check *Checker) importPackage(path, dir string) *Package {
 	// If we already have a package for the given (path, dir)
 	// pair, use it instead of doing a full import.
 	// Checker.impMap only caches packages that are marked Complete
@@ -227,7 +227,7 @@ func (check *Checker) collectObjects() {
 		// determine file directory, necessary to resolve imports
 		// FileName may be "" (typically for tests) in which case
 		// we get "." as the directory which is what we would want.
-		fileDir := dir(check.fset.Position(file.Name.Pos()).Filename)
+		fileDir := dir(check.info.Filenames[file])
 
 		for _, decl := range file.Decls {
 			switch d := decl.(type) {
@@ -242,11 +242,11 @@ func (check *Checker) collectObjects() {
 						// import package
 						path, err := validatedImportPath(s.Path.Value)
 						if err != nil {
-							check.errorf(s.Path.Pos(), "invalid import path (%s)", err)
+							check.errorf("invalid import path (%s)", err)
 							continue
 						}
 
-						imp := check.importPackage(s.Path.Pos(), path, fileDir)
+						imp := check.importPackage(path, fileDir)
 						if imp == nil {
 							continue
 						}
@@ -265,16 +265,16 @@ func (check *Checker) collectObjects() {
 							name = s.Name.Name
 							if path == "C" {
 								// match cmd/compile (not prescribed by spec)
-								check.errorf(s.Name.Pos(), `cannot rename import "C"`)
+								check.errorf(`cannot rename import "C"`)
 								continue
 							}
 							if name == "init" {
-								check.errorf(s.Name.Pos(), "cannot declare init - must be func")
+								check.errorf("cannot declare init - must be func")
 								continue
 							}
 						}
 
-						obj := NewPkgName(s.Pos(), pkg, name, imp)
+						obj := NewPkgName(pkg, name, imp)
 						if s.Name != nil {
 							// in a dot-import, the dot represents the package
 							check.recordDef(s.Name, obj)
@@ -302,15 +302,12 @@ func (check *Checker) collectObjects() {
 									// information because the same package - found
 									// via Config.Packages - may be dot-imported in
 									// another package!)
-									check.declare(fileScope, nil, obj, token.NoPos)
+									check.declare(fileScope, nil, obj)
 								}
 							}
-							// add position to set of dot-import positions for this file
-							// (this is only needed for "imported but not used" errors)
-							check.addUnusedDotImport(fileScope, imp, s.Pos())
 						} else {
 							// declare imported package object in file scope
-							check.declare(fileScope, nil, obj, token.NoPos)
+							check.declare(fileScope, nil, obj)
 						}
 
 					case *dst.ValueSpec:
@@ -326,7 +323,7 @@ func (check *Checker) collectObjects() {
 
 							// declare all constants
 							for i, name := range s.Names {
-								obj := NewConst(name.Pos(), pkg, name.Name, nil, constant.MakeInt64(int64(iota)))
+								obj := NewConst(pkg, name.Name, nil, constant.MakeInt64(int64(iota)))
 
 								var init dst.Expr
 								if i < len(last.Values) {
@@ -355,7 +352,7 @@ func (check *Checker) collectObjects() {
 
 							// declare all variables
 							for i, name := range s.Names {
-								obj := NewVar(name.Pos(), pkg, name.Name, nil)
+								obj := NewVar(pkg, name.Name, nil)
 								lhs[i] = obj
 
 								d := d1
@@ -374,21 +371,21 @@ func (check *Checker) collectObjects() {
 							check.arityMatch(s, nil)
 
 						default:
-							check.invalidAST(s.Pos(), "invalid token %s", d.Tok)
+							check.invalidAST("invalid token %s", d.Tok)
 						}
 
 					case *dst.TypeSpec:
-						obj := NewTypeName(s.Name.Pos(), pkg, s.Name.Name, nil)
-						check.declarePkgObj(s.Name, obj, &declInfo{file: fileScope, typ: s.Type, alias: s.Assign.IsValid()})
+						obj := NewTypeName(pkg, s.Name.Name, nil)
+						check.declarePkgObj(s.Name, obj, &declInfo{file: fileScope, typ: s.Type, alias: s.Assign})
 
 					default:
-						check.invalidAST(s.Pos(), "unknown dst.Spec node %T", s)
+						check.invalidAST("unknown dst.Spec node %T", s)
 					}
 				}
 
 			case *dst.FuncDecl:
 				name := d.Name.Name
-				obj := NewFunc(d.Name.Pos(), pkg, name, nil)
+				obj := NewFunc(pkg, name, nil)
 				if d.Recv == nil {
 					// regular function
 					if name == "init" {
@@ -397,10 +394,10 @@ func (check *Checker) collectObjects() {
 						check.recordDef(d.Name, obj)
 						// init functions must have a body
 						if d.Body == nil {
-							check.softErrorf(obj.pos, "missing function body")
+							check.softErrorf("missing function body")
 						}
 					} else {
-						check.declare(pkg.scope, d.Name, obj, token.NoPos)
+						check.declare(pkg.scope, d.Name, obj)
 					}
 				} else {
 					// method
@@ -417,7 +414,7 @@ func (check *Checker) collectObjects() {
 				obj.setOrder(uint32(len(check.objMap)))
 
 			default:
-				check.invalidAST(d.Pos(), "unknown dst.Decl node %T", d)
+				check.invalidAST("unknown dst.Decl node %T", d)
 			}
 		}
 	}
@@ -427,10 +424,10 @@ func (check *Checker) collectObjects() {
 		for _, obj := range scope.elems {
 			if alt := pkg.scope.Lookup(obj.Name()); alt != nil {
 				if pkg, ok := obj.(*PkgName); ok {
-					check.errorf(alt.Pos(), "%s already declared through import of %s", alt.Name(), pkg.Imported())
+					check.errorf("%s already declared through import of %s", alt.Name(), pkg.Imported())
 					check.reportAltDecl(pkg)
 				} else {
-					check.errorf(alt.Pos(), "%s already declared through dot-import of %s", alt.Name(), obj.Pkg())
+					check.errorf("%s already declared through dot-import of %s", alt.Name(), obj.Pkg())
 					// TODO(gri) dot-imported objects don't have a position; reportAltDecl won't print anything
 					check.reportAltDecl(obj)
 				}
@@ -580,19 +577,12 @@ func (check *Checker) unusedImports() {
 					path := obj.imported.path
 					base := pkgName(path)
 					if obj.name == base {
-						check.softErrorf(obj.pos, "%q imported but not used", path)
+						check.softErrorf("%q imported but not used", path)
 					} else {
-						check.softErrorf(obj.pos, "%q imported but not used as %s", path, obj.name)
+						check.softErrorf("%q imported but not used as %s", path, obj.name)
 					}
 				}
 			}
-		}
-	}
-
-	// check use of dot-imported packages
-	for _, unusedDotImports := range check.unusedDotImports {
-		for pkg, pos := range unusedDotImports {
-			check.softErrorf(pos, "%q imported but not used", pkg.path)
 		}
 	}
 }

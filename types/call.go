@@ -7,8 +7,6 @@
 package types
 
 import (
-	"go/token"
-
 	"github.com/dave/dst"
 )
 
@@ -120,15 +118,6 @@ func (check *Checker) useLHS(arg ...dst.Expr) {
 			// never type-check the blank name on the lhs
 			if ident.Name == "_" {
 				continue
-			}
-			if _, obj := check.scope.LookupParent(ident.Name, token.NoPos); obj != nil {
-				// It's ok to mark non-local variables, but ignore variables
-				// from other packages to avoid potential race conditions with
-				// dot-imported variables.
-				if w, _ := obj.(*Var); w != nil && w.pkg == check.pkg {
-					v = w
-					v_used = v.used
-				}
 			}
 		}
 		check.rawExpr(&x, e, nil)

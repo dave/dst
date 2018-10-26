@@ -6,8 +6,10 @@ package types
 
 import (
 	"fmt"
+	"go/parser"
 	"go/token"
 
+	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 )
 
@@ -63,13 +65,15 @@ func Eval(fset *token.FileSet, pkg *Package, pos token.Pos, expr string) (_ Type
 	}
 
 	// parse expressions
-	node, err := decorator.ParseExprFrom(fset, "eval", expr, 0)
+	dec := decorator.New()
+	exp, err := parser.ParseExprFrom(fset, "eval", expr, 0)
 	if err != nil {
 		return TypeAndValue{}, err
 	}
+	node := dec.Decorate(fset, exp).(dst.Expr)
 
 	// initialize checker
-	check := NewChecker(nil, fset, pkg, nil)
+	check := NewChecker(nil, dec.Info, pkg, nil)
 	check.scope = scope
 	check.pos = pos
 	defer check.handleBailout(&err)

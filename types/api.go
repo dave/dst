@@ -29,9 +29,9 @@ package types
 import (
 	"bytes"
 	"go/constant"
-	"go/token"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator"
 )
 
 // An Error describes a type-checking error; it implements the error interface.
@@ -344,9 +344,9 @@ func (init *Initializer) String() string {
 // The package is specified by a list of *dst.Files and corresponding
 // file set, and the package path the package is identified with.
 // The clean path must not be empty or dot (".").
-func (conf *Config) Check(path string, fset *token.FileSet, files []*dst.File, info *Info) (*Package, error) {
+func (conf *Config) Check(path string, di *decorator.Info, files []*dst.File, info *Info) (*Package, error) {
 	pkg := NewPackage(path, "")
-	return pkg, NewChecker(conf, fset, pkg, info).Files(files)
+	return pkg, NewChecker(conf, di, pkg, info).Files(files)
 }
 
 // AssertableTo reports whether a value of type V can be asserted to have type T.

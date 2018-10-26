@@ -8,7 +8,6 @@ package types
 
 import (
 	"fmt"
-	"go/token"
 	"strings"
 
 	"github.com/dave/dst"
@@ -40,8 +39,6 @@ func (check *Checker) sprintf(format string, args ...interface{}) string {
 			panic("internal error: should always pass *operand")
 		case *operand:
 			arg = operandString(a, check.qualifier)
-		case token.Pos:
-			arg = check.fset.Position(a).String()
 		case dst.Expr:
 			arg = ExprString(a)
 		case Object:
