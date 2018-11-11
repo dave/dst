@@ -1,15 +1,20 @@
 package decorator
 
 import (
+	"context"
 	"fmt"
 	"go/ast"
 	"go/format"
 	"go/token"
 	"io"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator/resolver"
+	"github.com/dave/dst/dstutil"
 )
 
 // Print uses format.Node to print a *dst.File to stdout
@@ -51,6 +56,28 @@ func NewRestorer() *Restorer {
 type Restorer struct {
 	Map
 	Fset *token.FileSet // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
+
+	// If a Resolver is provided, the names of all imported packages are resolved, and the imports
+	// block is updated. All remote identifiers are updated (sometimes this involves changing
+	// SelectorExpr.X.Name, or even swapping between Ident and SelectorExpr). To force specific
+	// import alias names, use the FileRestorer.Alias map.
+	Resolver resolver.PackageResolver
+}
+
+// NewPackageRestorer returns a restorer which resolves package names relative to a specific dir
+// and local path.
+func (r *Restorer) NewPackageRestorer(path, dir string) *PackageRestorer {
+	return &PackageRestorer{
+		Restorer: r,
+		Path:     path,
+		Dir:      dir,
+	}
+}
+
+type PackageRestorer struct {
+	*Restorer
+	Dir  string // source dir for package name resolution
+	Path string // local package path for identifier resolution
 }
 
 type Map struct {
@@ -70,8 +97,11 @@ type DstMap struct {
 	Scopes  map[*ast.Scope]*dst.Scope   // Mapping from ast to dst Scopes
 }
 
-type fileRestorer struct {
-	*Restorer
+type FileRestorer struct {
+	*PackageRestorer
+	Alias           map[string]string // map of package path -> package alias for imports
+	name            string
+	file            *dst.File
 	lines           []int
 	comments        []*ast.CommentGroup
 	base            int
@@ -83,21 +113,35 @@ type fileRestorer struct {
 
 // RestoreFile restores a *dst.File to an *ast.File
 func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
+	return r.NewPackageRestorer("", "").RestoreFile(name, file)
+}
 
-	// Base is the pos that the file will start at in the fset
-	base := r.Fset.Base()
+// RestoreFile restores a *dst.File to an *ast.File
+func (pr *PackageRestorer) RestoreFile(name string, file *dst.File) *ast.File {
+	return pr.NewFileRestorer(name, file).RestoreFile(context.Background())
+}
 
-	fr := &fileRestorer{
-		Restorer: r,
-		lines:    []int{0}, // initialise with the first line at Pos 0
-		base:     base,
-		cursor:   token.Pos(base),
-		nodeDecl: map[*ast.Object]dst.Node{},
-		nodeData: map[*ast.Object]dst.Node{},
+func (pr *PackageRestorer) NewFileRestorer(name string, file *dst.File) *FileRestorer {
+	return &FileRestorer{
+		PackageRestorer: pr,
+		Alias:           map[string]string{},
+		name:            name,
+		file:            file,
+		lines:           []int{0}, // initialise with the first line at Pos 0
+		nodeDecl:        map[*ast.Object]dst.Node{},
+		nodeData:        map[*ast.Object]dst.Node{},
 	}
+}
+
+func (fr *FileRestorer) RestoreFile(ctx context.Context) *ast.File {
+
+	fr.base = fr.Fset.Base() // base is the pos that the file will start at in the fset
+	fr.cursor = token.Pos(fr.base)
+
+	fr.updateImports(ctx)
 
 	// restore the file, populate comments and lines
-	f := fr.restoreNode(file, false).(*ast.File)
+	f := fr.restoreNode(fr.file, false).(*ast.File)
 
 	for _, cg := range fr.comments {
 		f.Comments = append(f.Comments, cg)
@@ -105,7 +149,7 @@ func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
 
 	size := fr.fileSize()
 
-	ff := r.Fset.AddFile(name, base, size)
+	ff := fr.Fset.AddFile(fr.name, fr.base, size)
 	if !ff.SetLines(fr.lines) {
 		panic("SetLines failed")
 	}
@@ -124,7 +168,424 @@ func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
 	return f
 }
 
-func (f *fileRestorer) fileSize() int {
+func (fr *FileRestorer) updateImports(ctx context.Context) {
+
+	if fr.Resolver == nil {
+		return
+	}
+
+	// list of the import block(s)
+	var blocks []*dst.GenDecl
+
+	// map of package path -> alias for all packages currently in the imports block(s)
+	imports := map[string]string{}
+
+	// list of package paths that occur in the source
+	packages := map[string]bool{}
+
+	all := map[string]bool{}
+	var allOrdered []string
+
+	dst.Inspect(fr.file, func(n dst.Node) bool {
+		switch n := n.(type) {
+		case *dst.Ident:
+			if n.Path == "" {
+				return true
+			}
+			if _, ok := packages[n.Path]; !ok {
+				packages[n.Path] = true
+				all[n.Path] = true
+				allOrdered = append(allOrdered, n.Path)
+			}
+
+		case *dst.GenDecl:
+			if n.Tok != token.IMPORT {
+				return true
+			}
+			blocks = append(blocks, n)
+
+		case *dst.ImportSpec:
+			path, err := strconv.Unquote(n.Path.Value)
+			if err != nil {
+				panic(err)
+			}
+			if n.Name == nil {
+				imports[path] = ""
+			} else {
+				imports[path] = n.Name.Name
+			}
+		}
+		return true
+	})
+
+	// resolved names of all packages in packages
+	resolved := map[string]string{}
+
+	for path := range packages {
+		name, err := fr.Resolver.ResolvePackage(ctx, path, fr.Dir)
+		if err != nil {
+			panic(err)
+		}
+		resolved[path] = name
+	}
+
+	// make a list of packages we should remove from the import block(s)
+	deletions := map[string]bool{}
+	for path, alias := range imports {
+		if alias == "_" || path == "C" {
+			// never remove anonymous imports, or the "C" import
+			if !all[path] {
+				all[path] = true
+				allOrdered = append(allOrdered, path)
+			}
+			continue
+		}
+		if packages[path] {
+			// if the package is still in use, don't remove
+			continue
+		}
+		deletions[path] = true
+	}
+
+	// make a list of the packages we should add to the first import block, and the packages we
+	// should convert from anonymous import to normal import
+	additions := map[string]bool{}
+	unanon := map[string]bool{}
+	for path := range packages {
+		if alias, ok := imports[path]; ok {
+			if alias == "_" {
+				unanon[path] = true
+			}
+		} else {
+			additions[path] = true
+		}
+	}
+
+	// any anonymous imports manually added with FileRestorer.Alias should be added too
+	for path, alias := range fr.Alias {
+		if alias == "_" && !all[path] {
+			additions[path] = true
+		}
+	}
+
+	sort.Slice(allOrdered, func(i, j int) bool {
+		pi, pj := allOrdered[i], allOrdered[j]
+
+		// "C" import should be last
+		ic := pi == "C"
+		jc := pj == "C"
+		if ic != jc {
+			return jc
+		}
+
+		// package paths with a . should be ordered after those without
+		idot := strings.Contains(pi, ".")
+		jdot := strings.Contains(pj, ".")
+		if idot != jdot {
+			return jdot
+		}
+
+		return pi < pj
+	})
+
+	// work out the actual aliases for all packages (and rename conflicts)
+	aliases := map[string]string{} // alias in the package block
+	names := map[string]string{}   // name in the code
+
+	conflict := func(name string) bool {
+		for _, n := range names {
+			if name == n {
+				return true
+			}
+		}
+		return false
+	}
+
+	findAlias := func(path, preferred string) (name, alias string) {
+		if preferred == "" {
+			preferred = resolved[path]
+		}
+		modifier := 1
+		current := preferred
+		for conflict(current) {
+			current = fmt.Sprintf("%s%d", preferred, modifier)
+			modifier++
+		}
+		if current == resolved[path] {
+			return current, ""
+		}
+		return current, current
+	}
+
+	for _, path := range allOrdered {
+		if deletions[path] {
+			// ignore if it's going to be deleted
+			continue
+		}
+
+		var alias string
+		if a, ok := fr.Alias[path]; ok {
+			// If we have provided a custom alias, use this
+			alias = a
+		} else if a, ok := imports[path]; ok {
+			// ... otherwise use the alias from the existing imports block
+			alias = a
+		}
+
+		if alias == "." {
+			// no conflict checking for dot-imports
+			aliases[path] = "."
+			names[path] = ""
+			continue
+		}
+		if alias == "_" {
+			if unanon[path] {
+				// for anonymous imports that we are converting to regular imports...
+				names[path], aliases[path] = findAlias(path, "")
+			} else {
+				// no conflict checking for anonymous imports
+				aliases[path] = "_"
+				names[path] = ""
+			}
+			continue
+		}
+		names[path], aliases[path] = findAlias(path, alias)
+	}
+
+	// convert any anonymous imports to regular imports
+	if len(unanon) > 0 {
+		for _, blk := range blocks {
+			for _, spec := range blk.Specs {
+				spec := spec.(*dst.ImportSpec)
+				path, err := strconv.Unquote(spec.Path.Value)
+				if err != nil {
+					panic(err)
+				}
+				if !unanon[path] {
+					continue
+				}
+				if aliases[path] == "" {
+					spec.Name = nil
+					continue
+				}
+				spec.Name = &dst.Ident{Name: aliases[path]}
+			}
+		}
+	}
+
+	// update the alias for any that need it
+	for _, blk := range blocks {
+		for _, spec := range blk.Specs {
+			spec := spec.(*dst.ImportSpec)
+			path, err := strconv.Unquote(spec.Path.Value)
+			if err != nil {
+				panic(err)
+			}
+			if spec.Name == nil && aliases[path] != "" {
+				// missing alias
+				spec.Name = &dst.Ident{Name: aliases[path]}
+			} else if spec.Name != nil && aliases[path] == "" {
+				// alias needs to be removed
+				spec.Name = nil
+			} else if spec.Name != nil && aliases[path] != spec.Name.Name {
+				// alias wrong
+				spec.Name.Name = aliases[path]
+			}
+		}
+	}
+
+	// make any additions
+	if len(additions) > 0 {
+
+		// if there's currently no import blocks, we must create one
+		if len(blocks) == 0 {
+			gd := &dst.GenDecl{Tok: token.IMPORT}
+			fr.file.Decls = append([]dst.Decl{gd}, fr.file.Decls...)
+			blocks = append(blocks, gd)
+		}
+
+		specs := blocks[0].Specs
+
+		for path := range additions {
+			is := &dst.ImportSpec{
+				Path: &dst.BasicLit{Kind: token.STRING, Value: fmt.Sprintf("%q", path)},
+			}
+			if aliases[path] != "" {
+				is.Name = &dst.Ident{
+					Name: aliases[path],
+				}
+			}
+			specs = append(specs, is)
+		}
+
+		// rearrange import block
+		sort.Slice(specs, func(i, j int) bool {
+			pi, err := strconv.Unquote(specs[i].(*dst.ImportSpec).Path.Value)
+			if err != nil {
+				panic(err)
+			}
+			pj, err := strconv.Unquote(specs[j].(*dst.ImportSpec).Path.Value)
+			if err != nil {
+				panic(err)
+			}
+
+			// "C" import should be last
+			ic := pi == "C"
+			jc := pj == "C"
+			if ic != jc {
+				return jc
+			}
+
+			// package paths with a . should be ordered after those without
+			idot := strings.Contains(pi, ".")
+			jdot := strings.Contains(pj, ".")
+			if idot != jdot {
+				return jdot
+			}
+
+			return pi < pj
+		})
+
+		var foundDotImport bool
+		for _, spec := range specs {
+			path, err := strconv.Unquote(spec.(*dst.ImportSpec).Path.Value)
+			if err != nil {
+				panic(err)
+			}
+			if strings.Contains(path, ".") && !foundDotImport {
+				// first dot-import -> empty line above
+				spec.Decorations().Space = dst.EmptyLine
+				spec.Decorations().After = dst.NewLine
+				foundDotImport = true
+				continue
+			}
+			// all other specs, just newlines
+			spec.Decorations().Space = dst.NewLine
+			spec.Decorations().After = dst.NewLine
+		}
+
+		blocks[0].Specs = specs
+
+		if len(specs) == 1 {
+			blocks[0].Lparen = false
+			blocks[0].Rparen = false
+		} else {
+			blocks[0].Lparen = true
+			blocks[0].Rparen = true
+		}
+	}
+
+	deleteBlocks := map[dst.Decl]bool{}
+
+	if len(deletions) > 0 {
+		for _, blk := range blocks {
+			specs := make([]dst.Spec, 0, len(blk.Specs))
+			for _, spec := range blk.Specs {
+				path, err := strconv.Unquote(spec.(*dst.ImportSpec).Path.Value)
+				if err != nil {
+					panic(err)
+				}
+				if deletions[path] {
+					continue
+				}
+				specs = append(specs, spec)
+			}
+			blk.Specs = specs
+			if len(specs) == 0 {
+				deleteBlocks[blk] = true
+			} else if len(specs) == 1 {
+				blk.Lparen = false
+				blk.Rparen = false
+			} else {
+				blk.Lparen = true
+				blk.Rparen = true
+			}
+		}
+	}
+
+	if len(deleteBlocks) > 0 {
+		decls := make([]dst.Decl, 0, len(fr.file.Decls))
+		for _, decl := range fr.file.Decls {
+			if deleteBlocks[decl] {
+				continue
+			}
+			decls = append(decls, decl)
+		}
+		fr.file.Decls = decls
+	}
+
+	// update the SelectorExpr and Ident in the rest of the file
+	dstutil.Apply(fr.file, func(c *dstutil.Cursor) bool {
+		switch n := c.Node().(type) {
+		case *dst.SelectorExpr:
+			if n.Sel.Path == "" {
+				return true
+			}
+			x := n.X.(*dst.Ident)
+			sel := n.Sel
+			if names[n.Sel.Path] == "" {
+				// blank name -> replace this with Ident
+				id := &dst.Ident{
+					Name: n.Sel.Name,
+					Path: n.Sel.Path,
+					Obj:  n.Sel.Obj,
+				}
+
+				// merge decorations for n, x and sel:
+
+				if n.Decs.Space == dst.EmptyLine || x.Decs.Space == dst.EmptyLine || sel.Decs.Space == dst.EmptyLine {
+					id.Decs.Space = dst.EmptyLine
+				} else if n.Decs.Space == dst.NewLine || x.Decs.Space == dst.NewLine || sel.Decs.Space == dst.NewLine {
+					id.Decs.Space = dst.NewLine
+				}
+
+				if n.Decs.After == dst.EmptyLine || x.Decs.After == dst.EmptyLine || sel.Decs.After == dst.EmptyLine {
+					id.Decs.After = dst.EmptyLine
+				} else if n.Decs.After == dst.NewLine || x.Decs.After == dst.NewLine || sel.Decs.After == dst.NewLine {
+					id.Decs.After = dst.NewLine
+				}
+
+				// add all decorations
+				id.Decs.Start.Append([]string(n.Decs.Start)...)
+				id.Decs.Start.Append([]string(x.Decs.Start)...)
+				id.Decs.Start.Append([]string(x.Decs.End)...)
+				id.Decs.Start.Append([]string(n.Decs.X)...)
+				id.Decs.Start.Append([]string(sel.Decs.Start)...)
+				id.Decs.End.Append([]string(sel.Decs.End)...)
+				id.Decs.End.Append([]string(n.Decs.End)...)
+
+				c.Replace(id)
+			} else if names[n.Sel.Path] != x.Name {
+				// update name
+				x.Name = names[n.Sel.Path]
+			}
+		case *dst.Ident:
+			if n.Path == "" {
+				return true
+			}
+			if _, ok := c.Parent().(*dst.SelectorExpr); ok {
+				// skip idents inside SelectorExpr
+				return true
+			}
+			if names[n.Path] != "" {
+				// add a SelectorExpr
+				sel := &dst.SelectorExpr{
+					X:   &dst.Ident{Name: names[n.Path]},
+					Sel: &dst.Ident{Name: n.Name, Path: n.Path, Obj: n.Obj},
+				}
+				sel.Decs.Space = n.Decs.Space
+				sel.Decs.After = n.Decs.After
+				sel.Decs.Start.Append([]string(n.Decs.Start)...)
+				sel.Decs.End.Append([]string(n.Decs.End)...)
+				c.Replace(sel)
+			}
+		}
+		return true
+	}, nil)
+
+}
+
+func (f *FileRestorer) fileSize() int {
 
 	// If a comment is at the end of a file, it will extend past the current cursor position...
 
@@ -146,7 +607,7 @@ func (f *fileRestorer) fileSize() int {
 	return end - f.base
 }
 
-func (f *fileRestorer) applyLiteral(text string) {
+func (f *FileRestorer) applyLiteral(text string) {
 	isMultiLine := strings.HasPrefix(text, "`") && strings.Contains(text, "\n")
 	if !isMultiLine {
 		return
@@ -159,7 +620,7 @@ func (f *fileRestorer) applyLiteral(text string) {
 	}
 }
 
-func (f *fileRestorer) hasCommentField(n ast.Node) bool {
+func (f *FileRestorer) hasCommentField(n ast.Node) bool {
 	switch n.(type) {
 	case *ast.Field, *ast.ValueSpec, *ast.TypeSpec, *ast.ImportSpec:
 		return true
@@ -167,7 +628,7 @@ func (f *fileRestorer) hasCommentField(n ast.Node) bool {
 	return false
 }
 
-func (f *fileRestorer) addCommentField(n ast.Node, slash token.Pos, text string) {
+func (f *FileRestorer) addCommentField(n ast.Node, slash token.Pos, text string) {
 	c := &ast.Comment{Slash: slash, Text: text}
 	switch n := n.(type) {
 	case *ast.Field:
@@ -197,7 +658,7 @@ func (f *fileRestorer) addCommentField(n ast.Node, slash token.Pos, text string)
 	}
 }
 
-func (f *fileRestorer) applyDecorations(node ast.Node, decorations dst.Decorations, end bool) {
+func (f *FileRestorer) applyDecorations(node ast.Node, decorations dst.Decorations, end bool) {
 	firstLine := true
 	for _, d := range decorations {
 
@@ -248,7 +709,7 @@ func (f *fileRestorer) applyDecorations(node ast.Node, decorations dst.Decoratio
 	}
 }
 
-func (f *fileRestorer) applySpace(space dst.SpaceType) {
+func (f *FileRestorer) applySpace(space dst.SpaceType) {
 	var newlines int
 	switch space {
 	case dst.NewLine:
@@ -272,7 +733,7 @@ func (f *fileRestorer) applySpace(space dst.SpaceType) {
 	}
 }
 
-func (r *fileRestorer) restoreObject(o *dst.Object) *ast.Object {
+func (r *FileRestorer) restoreObject(o *dst.Object) *ast.Object {
 	if o == nil {
 		return nil
 	}
@@ -335,7 +796,7 @@ func (r *fileRestorer) restoreObject(o *dst.Object) *ast.Object {
 	return out
 }
 
-func (r *fileRestorer) restoreScope(s *dst.Scope) *ast.Scope {
+func (r *FileRestorer) restoreScope(s *dst.Scope) *ast.Scope {
 	if s == nil {
 		return nil
 	}

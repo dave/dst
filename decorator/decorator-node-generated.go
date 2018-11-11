@@ -1,8 +1,9 @@
 package decorator
 
 import (
-	"github.com/dave/dst"
 	"go/ast"
+
+	"github.com/dave/dst"
 )
 
 func (f *fileDecorator) decorateNode(n ast.Node) dst.Node {
@@ -966,6 +967,9 @@ func (f *fileDecorator) decorateNode(n ast.Node) dst.Node {
 
 		// Object: Obj
 		out.Obj = f.decorateObject(n.Obj)
+
+		// Path: Path
+		out.Path = f.resolvePath(n)
 
 		if nd, ok := f.decorations[n]; ok {
 			if decs, ok := nd["Start"]; ok {

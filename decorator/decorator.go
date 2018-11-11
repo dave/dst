@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator/resolver"
 )
 
 // Parse uses parser.ParseFile to parse and decorate a Go source file. The src parameter should
@@ -47,8 +48,8 @@ func ParseExpr(x string) (dst.Expr, error) {
 }
 
 // ParseDir uses parser.ParseDir to parse and decorate a directory containing Go source.
-func ParseDir(fset *token.FileSet, path string, filter func(os.FileInfo) bool, mode parser.Mode) (map[string]*dst.Package, error) {
-	pkgs, err := parser.ParseDir(fset, path, filter, mode)
+func ParseDir(fset *token.FileSet, dir string, filter func(os.FileInfo) bool, mode parser.Mode) (map[string]*dst.Package, error) {
+	pkgs, err := parser.ParseDir(fset, dir, filter, mode)
 	if err != nil {
 		return nil, err
 	}
@@ -104,6 +105,12 @@ type Decorator struct {
 	Map
 	Fset      *token.FileSet
 	Filenames map[*dst.File]string // Source file names
+
+	// If a Resolver is provided, it is used to resolve Ident nodes. During decoration, remote
+	// identifiers (e.g. usually part of a qualified identifier SelectorExpr, but sometimes on
+	// their own for dot-imported packages) are updated with the path of the package they are
+	// imported from.
+	Resolver resolver.IdentResolver
 }
 
 // Decorate decorates an ast.Node and returns a dst.Node
@@ -136,6 +143,13 @@ func (d *Decorator) Decorate(n ast.Node) dst.Node {
 type decorationInfo struct {
 	name string
 	decs []string
+}
+
+func (f *fileDecorator) resolvePath(id *ast.Ident) string {
+	if f.Resolver == nil {
+		return ""
+	}
+	return f.Resolver.ResolveIdent(id)
 }
 
 func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {

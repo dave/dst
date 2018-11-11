@@ -124,6 +124,9 @@ func generateDecorator(names []string) error {
 						case data.Object:
 							g.Line().Commentf("Object: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Id("f").Dot("decorateObject").Call(frag.Field.Get("n"))
+						case data.PathDecoration:
+							g.Line().Commentf("Path: %s", frag.Name)
+							g.Add(frag.Field.Get("out")).Op("=").Id("f").Dot("resolvePath").Call(Id("n"))
 						case data.SpecialDecoration:
 							// ignore
 						default:

@@ -2,12 +2,13 @@ package decorator
 
 import (
 	"fmt"
-	"github.com/dave/dst"
 	"go/ast"
 	"go/token"
+
+	"github.com/dave/dst"
 )
 
-func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
+func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 	if an, ok := r.Ast.Nodes[n]; ok {
 		if allowDuplicate {
 			return an
