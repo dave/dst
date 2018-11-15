@@ -205,10 +205,7 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 			blocks = append(blocks, n)
 
 		case *dst.ImportSpec:
-			path, err := strconv.Unquote(n.Path.Value)
-			if err != nil {
-				panic(err)
-			}
+			path := mustUnquote(n.Path.Value)
 			if n.Name == nil {
 				imports[path] = ""
 			} else {
@@ -218,7 +215,7 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 		return true
 	})
 
-	// resolved names of all packages in packages
+	// resolved names of all packages in use
 	resolved := map[string]string{}
 
 	for path := range packages {
@@ -268,25 +265,7 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 		}
 	}
 
-	sort.Slice(allOrdered, func(i, j int) bool {
-		pi, pj := allOrdered[i], allOrdered[j]
-
-		// "C" import should be last
-		ic := pi == "C"
-		jc := pj == "C"
-		if ic != jc {
-			return jc
-		}
-
-		// package paths with a . should be ordered after those without
-		idot := strings.Contains(pi, ".")
-		jdot := strings.Contains(pj, ".")
-		if idot != jdot {
-			return jdot
-		}
-
-		return pi < pj
-	})
+	sort.Slice(allOrdered, func(i, j int) bool { return packagePathOrderLess(allOrdered[i], allOrdered[j]) })
 
 	// work out the actual aliases for all packages (and rename conflicts)
 	aliases := map[string]string{} // alias in the package block
@@ -301,19 +280,29 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 		return false
 	}
 
+	// Finds a unique alias given a path and a preferred alias. If preferred == "", we look up the
+	// name of the package in the resolved map.
 	findAlias := func(path, preferred string) (name, alias string) {
+
+		// if we pass in a preferred alias we should always return an alias even when the alias
+		// matches the package name.
+		aliased := preferred != ""
+
 		if preferred == "" {
 			preferred = resolved[path]
 		}
+
 		modifier := 1
 		current := preferred
 		for conflict(current) {
 			current = fmt.Sprintf("%s%d", preferred, modifier)
 			modifier++
 		}
-		if current == resolved[path] {
+
+		if !aliased && current == resolved[path] {
 			return current, ""
 		}
+
 		return current, current
 	}
 
@@ -357,10 +346,7 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 		for _, blk := range blocks {
 			for _, spec := range blk.Specs {
 				spec := spec.(*dst.ImportSpec)
-				path, err := strconv.Unquote(spec.Path.Value)
-				if err != nil {
-					panic(err)
-				}
+				path := mustUnquote(spec.Path.Value)
 				if !unanon[path] {
 					continue
 				}
@@ -377,10 +363,7 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 	for _, blk := range blocks {
 		for _, spec := range blk.Specs {
 			spec := spec.(*dst.ImportSpec)
-			path, err := strconv.Unquote(spec.Path.Value)
-			if err != nil {
-				panic(err)
-			}
+			path := mustUnquote(spec.Path.Value)
 			if spec.Name == nil && aliases[path] != "" {
 				// missing alias
 				spec.Name = &dst.Ident{Name: aliases[path]}
@@ -420,43 +403,23 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 
 		// rearrange import block
 		sort.Slice(specs, func(i, j int) bool {
-			pi, err := strconv.Unquote(specs[i].(*dst.ImportSpec).Path.Value)
-			if err != nil {
-				panic(err)
-			}
-			pj, err := strconv.Unquote(specs[j].(*dst.ImportSpec).Path.Value)
-			if err != nil {
-				panic(err)
-			}
-
-			// "C" import should be last
-			ic := pi == "C"
-			jc := pj == "C"
-			if ic != jc {
-				return jc
-			}
-
-			// package paths with a . should be ordered after those without
-			idot := strings.Contains(pi, ".")
-			jdot := strings.Contains(pj, ".")
-			if idot != jdot {
-				return jdot
-			}
-
-			return pi < pj
+			return packagePathOrderLess(
+				mustUnquote(specs[i].(*dst.ImportSpec).Path.Value),
+				mustUnquote(specs[j].(*dst.ImportSpec).Path.Value),
+			)
 		})
 
-		var foundDotImport bool
+		// imports with a period in the path are assumed to not be standard library packages, so
+		// get a newline separating them from standard library packages. We remove any other
+		// newlines found in this block.
+		var foundDomainImport bool
 		for _, spec := range specs {
-			path, err := strconv.Unquote(spec.(*dst.ImportSpec).Path.Value)
-			if err != nil {
-				panic(err)
-			}
-			if strings.Contains(path, ".") && !foundDotImport {
-				// first dot-import -> empty line above
+			path := mustUnquote(spec.(*dst.ImportSpec).Path.Value)
+			if strings.Contains(path, ".") && !foundDomainImport {
+				// first non-std-lib import -> empty line above
 				spec.Decorations().Space = dst.EmptyLine
 				spec.Decorations().After = dst.NewLine
-				foundDotImport = true
+				foundDomainImport = true
 				continue
 			}
 			// all other specs, just newlines
@@ -481,10 +444,7 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 		for _, blk := range blocks {
 			specs := make([]dst.Spec, 0, len(blk.Specs))
 			for _, spec := range blk.Specs {
-				path, err := strconv.Unquote(spec.(*dst.ImportSpec).Path.Value)
-				if err != nil {
-					panic(err)
-				}
+				path := mustUnquote(spec.(*dst.ImportSpec).Path.Value)
 				if deletions[path] {
 					continue
 				}
@@ -583,6 +543,24 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 		return true
 	}, nil)
 
+}
+
+func packagePathOrderLess(pi, pj string) bool {
+	// "C" import should be last
+	ic := pi == "C"
+	jc := pj == "C"
+	if ic != jc {
+		return jc
+	}
+
+	// package paths with a . should be ordered after those without
+	idot := strings.Contains(pi, ".")
+	jdot := strings.Contains(pj, ".")
+	if idot != jdot {
+		return jdot
+	}
+
+	return pi < pj
 }
 
 func (f *FileRestorer) fileSize() int {
@@ -824,5 +802,13 @@ func (r *FileRestorer) restoreScope(s *dst.Scope) *ast.Scope {
 		out.Objects[k] = r.restoreObject(v)
 	}
 
+	return out
+}
+
+func mustUnquote(s string) string {
+	out, err := strconv.Unquote(s)
+	if err != nil {
+		panic(err)
+	}
 	return out
 }
