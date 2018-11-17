@@ -4,7 +4,17 @@ import (
 	"fmt"
 	"go/ast"
 	"go/types"
+
+	"golang.org/x/tools/go/packages"
 )
+
+func FromPackage(pkg *packages.Package) *IdentResolver {
+	return &IdentResolver{
+		Path:       pkg.PkgPath,
+		Uses:       pkg.TypesInfo.Uses,
+		Selections: pkg.TypesInfo.Selections,
+	}
+}
 
 type IdentResolver struct {
 	Path       string // local path

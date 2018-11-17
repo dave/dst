@@ -229,7 +229,7 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 	// make a list of packages we should remove from the import block(s)
 	deletions := map[string]bool{}
 	for path, alias := range imports {
-		if alias == "_" || path == "C" {
+		if alias == "_" || path == "C" || fr.Alias[path] == "_" {
 			// never remove anonymous imports, or the "C" import
 			if !all[path] {
 				all[path] = true
@@ -312,8 +312,11 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 			continue
 		}
 
+		// if we set the alias to "_" but the package is still in use, we should ignore the alias
+		ignoreAlias := fr.Alias[path] == "_" && packages[path]
+
 		var alias string
-		if a, ok := fr.Alias[path]; ok {
+		if a, ok := fr.Alias[path]; ok && !ignoreAlias {
 			// If we have provided a custom alias, use this
 			alias = a
 		} else if a, ok := imports[path]; ok {
@@ -382,7 +385,13 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 
 		// if there's currently no import blocks, we must create one
 		if len(blocks) == 0 {
-			gd := &dst.GenDecl{Tok: token.IMPORT}
+			gd := &dst.GenDecl{
+				Tok: token.IMPORT,
+				// make sure it has an empty line before and after
+				Decs: dst.GenDeclDecorations{
+					NodeDecs: dst.NodeDecs{Space: dst.EmptyLine, After: dst.EmptyLine},
+				},
+			}
 			fr.file.Decls = append([]dst.Decl{gd}, fr.file.Decls...)
 			blocks = append(blocks, gd)
 		}
@@ -409,33 +418,7 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 			)
 		})
 
-		// imports with a period in the path are assumed to not be standard library packages, so
-		// get a newline separating them from standard library packages. We remove any other
-		// newlines found in this block.
-		var foundDomainImport bool
-		for _, spec := range specs {
-			path := mustUnquote(spec.(*dst.ImportSpec).Path.Value)
-			if strings.Contains(path, ".") && !foundDomainImport {
-				// first non-std-lib import -> empty line above
-				spec.Decorations().Space = dst.EmptyLine
-				spec.Decorations().After = dst.NewLine
-				foundDomainImport = true
-				continue
-			}
-			// all other specs, just newlines
-			spec.Decorations().Space = dst.NewLine
-			spec.Decorations().After = dst.NewLine
-		}
-
 		blocks[0].Specs = specs
-
-		if len(specs) == 1 {
-			blocks[0].Lparen = false
-			blocks[0].Rparen = false
-		} else {
-			blocks[0].Lparen = true
-			blocks[0].Rparen = true
-		}
 	}
 
 	deleteBlocks := map[dst.Decl]bool{}
@@ -460,6 +443,35 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 				blk.Lparen = true
 				blk.Rparen = true
 			}
+		}
+	}
+
+	if len(additions) > 0 {
+		// imports with a period in the path are assumed to not be standard library packages, so
+		// get a newline separating them from standard library packages. We remove any other
+		// newlines found in this block. We do this after the deletions because the first non-stdlib
+		// import might be deleted.
+		var foundDomainImport bool
+		for _, spec := range blocks[0].Specs {
+			path := mustUnquote(spec.(*dst.ImportSpec).Path.Value)
+			if strings.Contains(path, ".") && !foundDomainImport {
+				// first non-std-lib import -> empty line above
+				spec.Decorations().Space = dst.EmptyLine
+				spec.Decorations().After = dst.NewLine
+				foundDomainImport = true
+				continue
+			}
+			// all other specs, just newlines
+			spec.Decorations().Space = dst.NewLine
+			spec.Decorations().After = dst.NewLine
+		}
+
+		if len(blocks[0].Specs) == 1 {
+			blocks[0].Lparen = false
+			blocks[0].Rparen = false
+		} else {
+			blocks[0].Lparen = true
+			blocks[0].Rparen = true
 		}
 	}
 

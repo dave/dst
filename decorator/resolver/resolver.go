@@ -26,13 +26,19 @@ func main() {
 }
 */
 
+// TODO: combine interfaces into Resolver, combine Decorator and Restorer to a single type
+//type Resolver interface {
+//	PackageResolver
+//	IdentResolver
+//}
+
 // PackageResolver resolves a package path to a package name.
 type PackageResolver interface {
 	ResolvePackage(ctx context.Context, importPath, fromDir string) (string, error)
 }
 
-// IdentResolver resolves a identifier or qualified identifier node (e.g. *Ident or *SelectorExpr)
-// to a package path. Returns an empty string if the node is not a qualified identifier.
+// IdentResolver resolves an identifier to a package path. Returns an empty string if the node is
+// not an identifier.
 type IdentResolver interface {
 	ResolveIdent(node *ast.Ident) string
 }
