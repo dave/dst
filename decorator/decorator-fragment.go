@@ -237,9 +237,10 @@ func (f *fileDecorator) link() {
 		case *decorationFragment:
 
 			// Special case for hanging indent (See https://github.com/dave/dst/issues/18)
-			// If we're on the End decoration of a Stmt or Decl, and the start / end indents
-			// are not the same (OR it's a case / comm clause), then search forward over empty lines
-			// for all comments with the same indent as the End decoration.
+			//
+			// If we're on the End decoration of a Stmt or Decl, and indents: end == start+1 (OR
+			// it's a case / comm clause), then search forward over empty lines for all comments
+			// with the same indent as the End decoration.
 			//
 			// These should be attached to the end node. We also search for subsequent comments that
 			// have the same indent as the Start. If the next decoration node is the start of a Stmt
@@ -254,15 +255,13 @@ func (f *fileDecorator) link() {
 				continue
 			}
 
-			start := f.startIndents[frag.Node]
-			end := f.endIndents[frag.Node]
-
-			_, labeledStmt := frag.Node.(*ast.LabeledStmt)
-
-			if labeledStmt {
+			if _, labeledStmt := frag.Node.(*ast.LabeledStmt); labeledStmt {
 				// Special case: labeled statements shouldn't be treated in the same way.
 				continue
 			}
+
+			start := f.startIndents[frag.Node]
+			end := f.endIndents[frag.Node]
 
 			_, caseClause := frag.Node.(*ast.CaseClause)
 			_, commClause := frag.Node.(*ast.CommClause)
@@ -273,7 +272,7 @@ func (f *fileDecorator) link() {
 				end++
 			}
 
-			if start == end {
+			if end != start+1 {
 				continue
 			}
 

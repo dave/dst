@@ -1,6 +1,7 @@
 package dummy
 
 import (
+	"go/format"
 	"io"
 	"path/filepath"
 	"strings"
@@ -15,6 +16,15 @@ type Src string
 type Dir map[string]Item
 
 func (s Src) create(dir, name string, fs billy.Filesystem) {
+	src := string(s)
+	if strings.HasSuffix(name, ".go") {
+		// if it's a go file, format first
+		b, err := format.Source([]byte(s))
+		if err != nil {
+			panic(err)
+		}
+		src = string(b)
+	}
 	if err := fs.MkdirAll(dir, 0777); err != nil {
 		panic(err)
 	}
@@ -23,7 +33,7 @@ func (s Src) create(dir, name string, fs billy.Filesystem) {
 		panic(err)
 	}
 	defer f.Close()
-	if _, err := io.Copy(f, strings.NewReader(string(s))); err != nil {
+	if _, err := io.Copy(f, strings.NewReader(src)); err != nil {
 		panic(err)
 	}
 }

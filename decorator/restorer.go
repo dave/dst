@@ -176,6 +176,7 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 
 	// list of the import block(s)
 	var blocks []*dst.GenDecl
+	var hasCgoBlock bool
 
 	// map of package path -> alias for all packages currently in the imports block(s)
 	imports := map[string]string{}
@@ -200,6 +201,11 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 
 		case *dst.GenDecl:
 			if n.Tok != token.IMPORT {
+				return true
+			}
+			// if this block has 1 spec and it's the "C" import, ignore it.
+			if len(n.Specs) == 1 && mustUnquote(n.Specs[0].(*dst.ImportSpec).Path.Value) == "C" {
+				hasCgoBlock = true
 				return true
 			}
 			blocks = append(blocks, n)
@@ -262,6 +268,8 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 	for path, alias := range fr.Alias {
 		if alias == "_" && !all[path] {
 			additions[path] = true
+			all[path] = true
+			allOrdered = append(allOrdered, path)
 		}
 	}
 
@@ -392,7 +400,12 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 					NodeDecs: dst.NodeDecs{Space: dst.EmptyLine, After: dst.EmptyLine},
 				},
 			}
-			fr.file.Decls = append([]dst.Decl{gd}, fr.file.Decls...)
+			if hasCgoBlock {
+				// special case for if we have the "C" import
+				fr.file.Decls = append([]dst.Decl{fr.file.Decls[0], gd}, fr.file.Decls[1:]...)
+			} else {
+				fr.file.Decls = append([]dst.Decl{gd}, fr.file.Decls...)
+			}
 			blocks = append(blocks, gd)
 		}
 
@@ -558,13 +571,6 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 }
 
 func packagePathOrderLess(pi, pj string) bool {
-	// "C" import should be last
-	ic := pi == "C"
-	jc := pj == "C"
-	if ic != jc {
-		return jc
-	}
-
 	// package paths with a . should be ordered after those without
 	idot := strings.Contains(pi, ".")
 	jdot := strings.Contains(pj, ".")

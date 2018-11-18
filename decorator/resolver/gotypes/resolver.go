@@ -1,7 +1,6 @@
 package gotypes
 
 import (
-	"fmt"
 	"go/ast"
 	"go/types"
 
@@ -29,7 +28,7 @@ func (r *IdentResolver) ResolveIdent(id *ast.Ident) string {
 	}
 	pkg := obj.Pkg()
 	if pkg == nil {
-		panic(fmt.Sprintf("Ident %q Pkg is nil", id.Name))
+		return "" // pre-defined idents in the universe scope - e.g. "byte"
 	}
 	if pkg.Path() == r.Path {
 		return "" // local package

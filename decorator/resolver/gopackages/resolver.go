@@ -41,5 +41,9 @@ func (r *PackageResolver) ResolvePackage(ctx context.Context, importPath, fromDi
 
 	p := pkgs[0]
 
+	if len(p.Errors) > 0 {
+		return "", p.Errors[0]
+	}
+
 	return p.Name, nil
 }

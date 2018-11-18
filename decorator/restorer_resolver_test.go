@@ -5,37 +5,20 @@ import (
 	"context"
 	"fmt"
 	"go/format"
+	"go/token"
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"testing"
 
 	"github.com/andreyvit/diff"
 	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/resolver"
+	"github.com/dave/dst/decorator/resolver/gopackages"
 	"github.com/dave/dst/decorator/resolver/gotypes"
 	"github.com/dave/dst/dstutil/dummy"
 	"golang.org/x/tools/go/packages"
 )
-
-/*
-{desc: "package names are corrected"},
-{desc: "alias imports are retainied correctly"},
-{desc: "don't remove anon imports"},
-{desc: "don't remove C import"},
-{desc: "only adds to first import block"},
-{desc: "removes from all imports block"},
-{desc: "only re-orders first block"},
-{desc: "doesn't re-order first import block if no additions (check with a deletion)"},
-{desc: "re-orders first import block correctly when adding"},
-{desc: "convert anonymous import to standard"},
-{desc: "anon imports manually added with Alias"},
-{desc: "conflicts are resolved in correct order"},
-{desc: "manually added alias work as expected"},
-{desc: "manually added alias take priority over alias in imports block"},
-{desc: "alias from import block works correctly"},
-{desc: "line-feed formatting in re-agganged first block is correctly modified"},
-*/
 
 func TestRestorerResolver(t *testing.T) {
 	type tc struct {
@@ -53,30 +36,64 @@ func TestRestorerResolver(t *testing.T) {
 	}{
 		{
 			name: "simple",
+			root: "a.b",
 			src: dummy.Dir{
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
 						func main(){}
 					`),
-					"c.go": dummy.Src("package main\n\nfunc C(){}"),
 				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"go.mod": dummy.Src("module root"),
+				"a": dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
+				"b": dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
+				"fmt": dummy.Dir{
+					"a": dummy.Dir{"fmt.go": dummy.Src("package fmt \n\n func A(){}")},
+					"b": dummy.Dir{"fmt.go": dummy.Src("package fmt \n\n func B(){}")},
+					"c": dummy.Dir{"fmt.go": dummy.Src("package fmt \n\n func C(){}")},
+				},
+				"go.mod": dummy.Src("module a.b"),
 			},
 			cases: []tc{
+				{
+					name: "add-anon",
+					desc: "adding an anonymous import to a file that has no imports creates a new import block",
+					restorer: func(r *FileRestorer) {
+						r.Alias["a.b/a"] = "_"
+					},
+					expect: `package main
+
+            			import _ "a.b/a"
+
+	            		func main() {}`,
+				},
 				{
 					name: "add-one",
 					desc: "adding an import to a file that has no imports creates a new import block",
 					mutate: func(f *dst.File) {
 						b := f.Decls[0].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/a", Name: "A"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/a", Name: "A"}}})
 					},
 					expect: `package main
 
-            			import "root/a"
+            			import "a.b/a"
 
 	            		func main() { a.A() }`,
+				},
+				{
+					name: "add-one-alias",
+					desc: "manually added alias work as expected",
+					mutate: func(f *dst.File) {
+						b := f.Decls[0].(*dst.FuncDecl).Body
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/a", Name: "A"}}})
+					},
+					restorer: func(r *FileRestorer) {
+						r.Alias["a.b/a"] = "a1"
+					},
+					expect: `package main
+
+            			import a1 "a.b/a"
+
+	            		func main() { a1.A() }`,
 				},
 				{
 					name: "add-two",
@@ -85,15 +102,15 @@ func TestRestorerResolver(t *testing.T) {
 						b := f.Decls[0].(*dst.FuncDecl).Body
 						b.List = append(
 							b.List,
-							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/a", Name: "A"}}},
-							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b", Name: "B"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/a", Name: "A"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/b", Name: "B"}}},
 						)
 					},
 					expect: `package main
 
 						import (
-    	        			"root/a"
-        	    			"root/b"
+    	        			"a.b/a"
+        	    			"a.b/b"
             			)
 
             			func main() { a.A(); b.B() }`,
@@ -105,25 +122,99 @@ func TestRestorerResolver(t *testing.T) {
 						b := f.Decls[0].(*dst.FuncDecl).Body
 						b.List = append(
 							b.List,
-							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/c/c", Name: "C"}}},
-							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/a/c", Name: "A"}}},
-							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b/c", Name: "B"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/fmt/c", Name: "C"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/fmt/a", Name: "A"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/fmt/b", Name: "B"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "fmt", Name: "Print"}}},
 						)
 					},
 					expect: `package main
             
             			import (
-			            	"root/a/c"
-            				c1 "root/b/c"
-            				c2 "root/c/c"
+							"fmt"
+
+			            	fmt1 "a.b/fmt/a"
+            				fmt2 "a.b/fmt/b"
+            				fmt3 "a.b/fmt/c"
             			)
             
-            			func main() { c2.C(); c.A(); c1.B() }`,
+            			func main() { fmt3.C(); fmt1.A(); fmt2.B(); fmt.Print() }`,
+				},
+				{
+					name: "cgo",
+					desc: "if cgo import is found (manually added here), and import is added, it will create a new block below cgo",
+					mutate: func(f *dst.File) {
+
+						cgo := &dst.GenDecl{
+							Tok: token.IMPORT,
+							Specs: []dst.Spec{
+								&dst.ImportSpec{Path: &dst.BasicLit{Kind: token.STRING, Value: strconv.Quote("C")}},
+							},
+						}
+						f.Decls = append([]dst.Decl{cgo}, f.Decls...)
+
+						b := f.Decls[1].(*dst.FuncDecl).Body
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/a", Name: "A"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/b", Name: "B"}}})
+					},
+					expect: `package main
+            
+			            import "C"
+            
+            			import (
+            				"a.b/a"
+            				"a.b/b"
+            			)
+            
+            			func main() { a.A(); b.B() }`,
 				},
 			},
 		},
 		{
-			name: "existing",
+			name: "single-existing-import-ab",
+			root: "a.b",
+			src: dummy.Dir{
+				"main": dummy.Dir{
+					"main.go": dummy.Src(`package main
+
+            			import "a.b/a"
+
+            			func main() { a.A() }
+					`),
+				},
+				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
+				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
+				"go.mod": dummy.Src("module a.b"),
+			},
+			cases: []tc{
+				{
+					name: "add-c",
+					desc: "if C import is found as part of another block, it is ignored and ordered first",
+					mutate: func(f *dst.File) {
+
+						firstBlock := f.Decls[0].(*dst.GenDecl)
+						firstBlock.Specs = append(firstBlock.Specs, &dst.ImportSpec{Path: &dst.BasicLit{Kind: token.STRING, Value: strconv.Quote("C")}})
+
+						b := f.Decls[1].(*dst.FuncDecl).Body
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/b", Name: "B"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "bufio", Name: "NewReader"}}})
+					},
+					expect: `package main
+            
+            			import (
+            				"C"
+            				"bufio"
+            
+			            	"a.b/a"
+            				"a.b/b"
+            			)
+            
+            			func main() { a.A(); b.B(); bufio.NewReader() }`,
+				},
+			},
+		},
+		{
+			name: "single-existing-import",
 			src: dummy.Dir{
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
@@ -132,12 +223,27 @@ func TestRestorerResolver(t *testing.T) {
 
             			func main() { a.A() }
 					`),
-					"c.go": dummy.Src("package main\n\nfunc C(){}"),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
+				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
 				"go.mod": dummy.Src("module root"),
 			},
 			cases: []tc{
+				{
+					name: "add-anon",
+					desc: "adding an new anonymous import to a file that already has imports creates a new import",
+					restorer: func(r *FileRestorer) {
+						r.Alias["root/b"] = "_"
+					},
+					expect: `package main
+
+            			import (
+							"root/a"
+							_ "root/b"
+						)
+
+	            		func main() { a.A() }`,
+				},
 				{
 					name: "change-to-anon-remove-use",
 					desc: "changing from standard to anonymous import works",
@@ -155,6 +261,18 @@ func TestRestorerResolver(t *testing.T) {
             			func main() {}`,
 				},
 				{
+					name: "change-to-alias",
+					desc: "changing a current import to an alias",
+					restorer: func(r *FileRestorer) {
+						r.Alias["root/a"] = "a1"
+					},
+					expect: `package main
+            
+            			import a1 "root/a"
+            
+            			func main() { a1.A() }`,
+				},
+				{
 					name: "change-to-anon-still-in-use",
 					desc: "changing from standard to anonymous import has no effect if the package is still in use",
 					restorer: func(r *FileRestorer) {
@@ -167,7 +285,8 @@ func TestRestorerResolver(t *testing.T) {
             			func main() { a.A() }`,
 				},
 				{
-					name: "add",
+					name: "add-single-import",
+					desc: "adding a simple import should work as expected",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
 						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b", Name: "B"}}})
@@ -183,6 +302,7 @@ func TestRestorerResolver(t *testing.T) {
 				},
 				{
 					name: "delete-all",
+					desc: "deleting all the imports should also delete the import block",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
 						b.List = nil
@@ -190,6 +310,170 @@ func TestRestorerResolver(t *testing.T) {
 					expect: `package main
 
             			func main() {}`,
+				},
+			},
+		},
+
+		{
+			name: "existing-anon",
+			src: dummy.Dir{
+				"main": dummy.Dir{
+					"main.go": dummy.Src(`package main
+
+            			import _ "root/a"
+
+            			func main() { }
+					`),
+				},
+				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
+				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
+				"go.mod": dummy.Src("module root"),
+			},
+			cases: []tc{
+				{
+					name: "add-standard",
+					desc: "adding a standard import to a file with an anon import, the anon import stays anon",
+					mutate: func(f *dst.File) {
+						b := f.Decls[1].(*dst.FuncDecl).Body
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b", Name: "B"}}})
+					},
+					expect: `package main
+
+            			import (
+            				_ "root/a"
+            				"root/b"
+            			)
+
+            			func main() { b.B() }`,
+				},
+				{
+					name: "convert-to-standard",
+					desc: "convert anonymous import to standard works as intended",
+					mutate: func(f *dst.File) {
+						b := f.Decls[1].(*dst.FuncDecl).Body
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/a", Name: "A"}}})
+					},
+					expect: `package main
+
+            			import "root/a"
+
+            			func main() { a.A() }`,
+				},
+			},
+		},
+
+		{
+			name: "block-not-rearranged",
+			root: "a.b",
+			src: dummy.Dir{
+				"main": dummy.Dir{
+					"main.go": dummy.Src(`package main
+
+            			import (
+							"a.b/a"
+							"a.b/b"
+							"a.b/c"
+							"fmt"
+						)
+
+            			func main() { a.A(); b.B(); c.C(); fmt.Print() }
+					`),
+				},
+				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
+				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
+				"c":      dummy.Dir{"c.go": dummy.Src("package c \n\n func C(){}")},
+				"d":      dummy.Dir{"d.go": dummy.Src("package d \n\n func D(){}")},
+				"go.mod": dummy.Src("module a.b"),
+			},
+			cases: []tc{
+				{
+					name: "no-addition",
+					desc: "doesn't re-arrange first import block if no additions",
+					mutate: func(f *dst.File) {
+						b := f.Decls[1].(*dst.FuncDecl).Body
+						b.List = b.List[1:4]
+					},
+					expect: `package main
+
+            			import (
+							"a.b/b"
+							"a.b/c"
+							"fmt"
+						)
+
+            			func main() { b.B(); c.C(); fmt.Print() }`,
+				},
+				{
+					name: "no-addition",
+					desc: "re-arrange first import block if additions",
+					mutate: func(f *dst.File) {
+						b := f.Decls[1].(*dst.FuncDecl).Body
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/d", Name: "D"}}})
+					},
+					expect: `package main
+
+            			import (
+							"fmt"
+
+							"a.b/a"
+							"a.b/b"
+							"a.b/c"
+							"a.b/d"
+						)
+
+            			func main() { a.A(); b.B(); c.C(); fmt.Print(); d.D() }`,
+				},
+			},
+		},
+
+		{
+			name: "two-blocks-not-arranged",
+			root: "a.b",
+			src: dummy.Dir{
+				"main": dummy.Dir{
+					"main.go": dummy.Src(`package main
+
+            			import (
+							"a.b/a"
+							"fmt"
+						)
+
+						import (
+							"a.b/b"
+							"io"
+						)
+
+            			func main() { a.A(); b.B(); io.Copy(nil, nil); fmt.Print() }
+					`),
+				},
+				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
+				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
+				"c":      dummy.Dir{"c.go": dummy.Src("package c \n\n func C(){}")},
+				"go.mod": dummy.Src("module a.b"),
+			},
+			cases: []tc{
+				{
+					name: "add-one",
+					desc: "only re-arrange first block",
+					mutate: func(f *dst.File) {
+						b := f.Decls[2].(*dst.FuncDecl).Body
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/c", Name: "C"}}})
+					},
+					expect: `package main
+
+            			import (
+							"fmt"
+							
+							"a.b/a"
+							"a.b/c"
+						)
+
+						import (
+							"a.b/b"
+							"io"
+						)
+
+            			func main() { a.A(); b.B(); io.Copy(nil, nil); fmt.Print(); c.C() }`,
 				},
 			},
 		},
@@ -235,11 +519,13 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
+						// first-import-block
             			import (
 							"root/a"
 							"root/b"
 						)
 
+						// second-import-block
 						import (
 							"root/c"
 							"root/d"
@@ -265,6 +551,7 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
+						// first-import-block
 						import (
 							"root/a"
 							"root/b"
@@ -273,7 +560,27 @@ func TestRestorerResolver(t *testing.T) {
 						func main() { a.A(); b.B() }`,
 				},
 				{
-					name: "block-deleted-ad-added",
+					name: "delete-from-second-block",
+					desc: "imports can be deleted from non-primary block",
+					mutate: func(f *dst.File) {
+						b := f.Decls[2].(*dst.FuncDecl).Body
+						b.List = b.List[0:3]
+					},
+					expect: `package main
+
+						// first-import-block
+						import (
+							"root/a"
+							"root/b"
+						)
+
+						// second-import-block
+						import "root/c"
+
+						func main() { a.A(); b.B(); c.C() }`,
+				},
+				{
+					name: "block-deleted-and-added",
 					desc: "if all imports are removed from first block and one added, it's ok",
 					mutate: func(f *dst.File) {
 						b := f.Decls[2].(*dst.FuncDecl).Body
@@ -282,8 +589,10 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 						
+						// first-import-block
 						import "root/e"
 
+						// second-import-block
 						import (
 							"root/c"
 							"root/d"
@@ -295,44 +604,50 @@ func TestRestorerResolver(t *testing.T) {
 		},
 		{
 			name: "first-block-decorated",
+			root: "a.b",
 			src: dummy.Dir{
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
 						import (
 							// before c
-							"root/c" // after c
+							"a.b/c" // after c
 							// before a
-							"root/a" // after a
+							"a.b/a" // after a
+							// before fmt
+							"fmt" // after fmt
 						)
 
-            			func main() { a.A(); c.C(); }
+            			func main() { a.A(); c.C(); fmt.Print() }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
 				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
 				"c":      dummy.Dir{"c.go": dummy.Src("package c \n\n func C(){}")},
-				"go.mod": dummy.Src("module root"),
+				"go.mod": dummy.Src("module a.b"),
 			},
 			cases: []tc{
 				{
 					name: "decorations-retained",
-					desc: "decorations in re-ordered block are retained",
+					desc: "decorations in re-arranged block are retained",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b", Name: "B"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/b", Name: "B"}}})
 					},
 					expect: `package main
 
             			import (
+							// before fmt
+							"fmt" // after fmt
+
             				// before a
-            				"root/a" // after a
-            				"root/b"
+            				"a.b/a" // after a
+            				"a.b/b"
             				// before c
-            				"root/c" // after c
+            				"a.b/c" // after c
             			)
 
-            			func main() { a.A(); c.C(); b.B() }`,
+            			func main() { a.A(); c.C(); fmt.Print(); b.B() }`,
 				},
 			},
 		},
@@ -353,7 +668,7 @@ func TestRestorerResolver(t *testing.T) {
 
 						)
 
-            			func main() { a.A(); fmt.Print(); bytes.Title(); }
+            			func main() { a.A(); fmt.Print(); bytes.Title([]byte{}); }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -362,8 +677,7 @@ func TestRestorerResolver(t *testing.T) {
 			},
 			cases: []tc{
 				{
-					solo: true,
-					name: "block-reordered-spacing-fixed",
+					name: "block-rearranged-spacing-fixed",
 					desc: "line-feed formatting in re-arranged first block is correctly modified",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
@@ -381,11 +695,11 @@ func TestRestorerResolver(t *testing.T) {
             				"foo.bar/b"
             			)
             
-            			func main() { a.A(); fmt.Print(); bytes.Title(); io.Copy(); b.B() }`,
+            			func main() { a.A(); fmt.Print(); bytes.Title([]byte{}); io.Copy(); b.B() }`,
 				},
 				{
 
-					name: "block-reordered-spacing-fixed-delete-first-non-std",
+					name: "block-rearranged-spacing-fixed-delete-first-non-std",
 					desc: "when we delete the first non-std-lib import, the line-spacing is correct",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
@@ -401,11 +715,56 @@ func TestRestorerResolver(t *testing.T) {
             				"foo.bar/b"
             			)
             
-            			func main() { fmt.Print(); bytes.Title(); b.B() }`,
+            			func main() { fmt.Print(); bytes.Title([]byte{}); b.B() }`,
 				},
 			},
 		},
+		{
+			name: "existing-alias",
+			src: dummy.Dir{
+				"main": dummy.Dir{
+					"main.go": dummy.Src(`package main
 
+            			import a1 "root/a"
+
+            			func main() { a1.A() }
+					`),
+				},
+				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
+				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
+				"go.mod": dummy.Src("module root"),
+			},
+			cases: []tc{
+				{
+					name: "alias-retained",
+					desc: "alias from import block works correctly",
+					mutate: func(f *dst.File) {
+						b := f.Decls[1].(*dst.FuncDecl).Body
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b", Name: "B"}}})
+					},
+					expect: `package main
+
+            			import (
+            				a1 "root/a"
+            				"root/b"
+            			)
+
+            			func main() { a1.A(); b.B() }`,
+				},
+				{
+					name: "manually-added-overrides",
+					desc: "manually added alias take priority over alias in imports block",
+					restorer: func(r *FileRestorer) {
+						r.Alias["root/a"] = "a2"
+					},
+					expect: `package main
+
+            			import a2 "root/a"
+
+            			func main() { a2.A() }`,
+				},
+			},
+		},
 		{
 			name: "existing-alias-package-name",
 			src: dummy.Dir{
@@ -620,9 +979,6 @@ func TestRestorerResolver(t *testing.T) {
 	}
 	for _, test := range tests {
 		for _, c := range test.cases {
-			if solo && !c.solo {
-				continue // TODO: remove
-			}
 			t.Run(test.name+"/"+c.name, func(t *testing.T) {
 				if solo && !c.solo {
 					t.Skip()
@@ -653,6 +1009,13 @@ func TestRestorerResolver(t *testing.T) {
 				}
 				pkg := pkgs[0]
 
+				if len(pkg.Errors) > 0 {
+					for _, v := range pkg.Errors {
+						t.Error(v.Error())
+					}
+					t.Fatal("errors loading package")
+				}
+
 				d := New(pkg.Fset)
 				d.Resolver = gotypes.FromPackage(pkg)
 
@@ -669,7 +1032,7 @@ func TestRestorerResolver(t *testing.T) {
 				}
 
 				r := NewRestorer()
-				r.Resolver = &resolver.Guess{}
+				r.Resolver = &gopackages.PackageResolver{Config: cfg}
 				pr := r.NewPackageRestorer(mainPkg, mainDir)
 				fr := pr.NewFileRestorer("main.go", file)
 
@@ -700,11 +1063,11 @@ func TestRestorerResolver(t *testing.T) {
 }
 
 func TestPackageOrder(t *testing.T) {
-	paths := []string{"C", "a.b/d", "a.b/c", "fmt", "bytes", "a/b"}
+	paths := []string{"a.b/d", "a.b/c", "fmt", "bytes", "a/b", "C"}
 	sort.Slice(paths, func(i, j int) bool {
 		return packagePathOrderLess(paths[i], paths[j])
 	})
-	expect := "[a/b bytes fmt a.b/c a.b/d C]"
+	expect := "[C a/b bytes fmt a.b/c a.b/d]"
 	found := fmt.Sprint(paths)
 	if found != expect {
 		t.Errorf("expect %s, found %s", expect, found)

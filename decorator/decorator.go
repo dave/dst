@@ -121,7 +121,7 @@ func (d *Decorator) Decorate(n ast.Node) dst.Node {
 	fd.link()
 	out := fd.decorateNode(n)
 
-	//fmt.Println("\Fragments:")
+	//fmt.Println("\nFragments:")
 	//fd.debug(os.Stdout)
 
 	//fmt.Println("\nDecorator:")
