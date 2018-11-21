@@ -1,15 +1,17 @@
 package decorator
 
 import (
+	"bytes"
 	"fmt"
 	"go/build"
 	"go/format"
 	"io/ioutil"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/dave/dst/decorator/resolver/gobuild"
 
 	"github.com/andreyvit/diff"
 )
@@ -42,21 +44,37 @@ func TestLoadStdLibAll(t *testing.T) {
 			continue
 		}
 
-		testPackageRestoresCorrectlyWithImports(t, pkgPath)
-
+		t.Run(pkgPath, func(t *testing.T) {
+			testPackageRestoresCorrectlyWithImports(t, pkgPath)
+		})
 	}
 }
 
 func testPackageRestoresCorrectlyWithImports(t *testing.T, path string) {
 	t.Helper()
-	t.Run(path, func(t *testing.T) {
-		pkgs, err := Load(nil, path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		for _, v := range pkgs {
-			err := v.save(func(filename string, data []byte, perm os.FileMode) error {
-				existing, err := ioutil.ReadFile(filename)
+	pkgs, err := Load(nil, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range pkgs {
+
+		// must use go/build package resolver for standard library because of https://github.com/golang/go/issues/26924
+		r := NewRestorer()
+		r.Path = p.PkgPath
+		r.Resolver = &gobuild.PackageResolver{Dir: p.Dir}
+
+		for _, file := range p.Files {
+
+			fpath := p.Decorator.Filenames[file]
+			_, fname := filepath.Split(fpath)
+
+			t.Run(fname, func(t *testing.T) {
+				buf := &bytes.Buffer{}
+				if err := r.Fprint(buf, file); err != nil {
+					t.Fatal(err)
+				}
+
+				existing, err := ioutil.ReadFile(fpath)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -64,15 +82,10 @@ func testPackageRestoresCorrectlyWithImports(t *testing.T, path string) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				if string(expect) != string(data) {
-					_, fname := filepath.Split(filename)
-					t.Fatalf("%s: %s", fname, diff.LineDiff(string(expect), string(data)))
+				if string(expect) != buf.String() {
+					t.Error(diff.LineDiff(string(expect), buf.String()))
 				}
-				return nil
 			})
-			if err != nil {
-				t.Fatal(err)
-			}
 		}
-	})
+	}
 }

@@ -22,12 +22,12 @@ type PackageResolver struct {
 func (r *PackageResolver) ResolvePackage(importPath string) (string, error) {
 
 	fp := r.FindPackage
-	if r.FindPackage == nil {
+	if fp == nil {
 		fp = (*build.Context).Import
 	}
 
 	bc := r.Context
-	if r.Context == nil {
+	if bc == nil {
 		bc = &build.Default
 	}
 
