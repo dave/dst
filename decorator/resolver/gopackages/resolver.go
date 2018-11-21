@@ -2,6 +2,7 @@ package gopackages
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/dave/dst/decorator/resolver"
 	"golang.org/x/tools/go/packages"
@@ -19,6 +20,11 @@ func (r *PackageResolver) ResolvePackage(path string) (string, error) {
 	}
 	r.Config.Mode = packages.LoadTypes
 	r.Config.Tests = false
+
+	if strings.HasPrefix(path, "golang_org/x/") {
+		// special case for golang_org vendored packages bug: https://github.com/golang/go/issues/28912
+		path = "vendor/" + path
+	}
 
 	pkgs, err := packages.Load(&r.Config, "pattern="+path)
 	if err != nil {

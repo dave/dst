@@ -13,8 +13,8 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// PackageDecorator returns a new package decorator
-func NewDecorator(fset *token.FileSet) *PackageDecorator {
+// New returns a new package decorator
+func New(fset *token.FileSet) *PackageDecorator {
 	return &PackageDecorator{
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
@@ -22,8 +22,8 @@ func NewDecorator(fset *token.FileSet) *PackageDecorator {
 	}
 }
 
-// NewDecoratorWithImports returns a new package decorator with import management attributes set.
-func NewDecoratorWithImports(pkg *packages.Package) *PackageDecorator {
+// NewWithImports returns a new package decorator with import management attributes set.
+func NewWithImports(pkg *packages.Package) *PackageDecorator {
 	return &PackageDecorator{
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
@@ -62,7 +62,7 @@ func (d *PackageDecorator) DecorateNode(n ast.Node) dst.Node {
 	fd.fragment(n)
 	fd.link()
 
-	out := fd.decorateNode(n)
+	out := fd.decorateNode(nil, n)
 
 	//fmt.Println("\nFragments:")
 	//fd.debug(os.Stdout)
@@ -110,11 +110,11 @@ type decorationInfo struct {
 	decs []string
 }
 
-func (f *fileDecorator) resolvePath(id *ast.Ident) string {
+func (f *fileDecorator) resolvePath(parent ast.Node, id *ast.Ident) string {
 	if f.Resolver == nil {
 		return ""
 	}
-	path, err := f.Resolver.ResolveIdent(f.file, id)
+	path, err := f.Resolver.ResolveIdent(f.file, parent, id)
 	if err != nil {
 		panic(err)
 	}
@@ -160,7 +160,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {
 	case *ast.Scope:
 		out.Decl = f.decorateScope(decl)
 	case ast.Node:
-		out.Decl = f.decorateNode(decl)
+		out.Decl = f.decorateNode(nil, decl)
 	case nil:
 	default:
 		panic(fmt.Sprintf("o.Decl is %T", o.Decl))
@@ -173,7 +173,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {
 	case *ast.Scope:
 		out.Data = f.decorateScope(data)
 	case ast.Node:
-		out.Data = f.decorateNode(data)
+		out.Data = f.decorateNode(nil, data)
 	case nil:
 	default:
 		panic(fmt.Sprintf("o.Data is %T", o.Data))

@@ -3,7 +3,10 @@ package decorator
 import (
 	"fmt"
 	"go/ast"
+	"go/format"
 	"go/token"
+	"io"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -44,6 +47,17 @@ type PackageRestorer struct {
 	// SelectorExpr.X.Name, or even swapping between Ident and SelectorExpr). To force specific
 	// import alias names, use the FileRestorer.Alias map.
 	Resolver resolver.PackageResolver
+}
+
+// Print uses format.Node to print a *dst.File to stdout
+func (pr *PackageRestorer) Print(f *dst.File) error {
+	return pr.Fprint(os.Stdout, f)
+}
+
+// Fprint uses format.Node to print a *dst.File to a writer
+func (pr *PackageRestorer) Fprint(w io.Writer, f *dst.File) error {
+	af := pr.RestoreFile("", f)
+	return format.Node(w, pr.Fset, af)
 }
 
 func (pr *PackageRestorer) FileRestorer(name string, file *dst.File) *FileRestorer {
@@ -454,7 +468,10 @@ func (fr *FileRestorer) updateImports() {
 			if n.Sel.Path == "" {
 				return true
 			}
-			x := n.X.(*dst.Ident)
+			x, ok := n.X.(*dst.Ident)
+			if !ok {
+				return true
+			}
 			sel := n.Sel
 			if names[n.Sel.Path] == "" {
 				// blank name -> replace this with Ident

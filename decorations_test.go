@@ -72,7 +72,7 @@ func ExampleTypes() {
 	}
 
 	// Decorate the *ast.File to give us a *dst.File
-	d := decorator.NewDecorator(fset)
+	d := decorator.New(fset)
 
 	f := d.DecorateFile(astFile)
 

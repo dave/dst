@@ -233,7 +233,7 @@ func TestFragment(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			d := NewDecorator(fset)
+			d := New(fset)
 
 			fd := d.newFileDecorator()
 			fd.fragment(f)

@@ -101,7 +101,7 @@ func TestDecoratorResolver(t *testing.T) {
 			}
 			pkg := pkgs[0]
 
-			d := NewDecoratorWithImports(pkg)
+			d := NewWithImports(pkg)
 
 			var file *dst.File
 			for _, sf := range pkg.Syntax {

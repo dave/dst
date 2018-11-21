@@ -44,6 +44,54 @@ func TestNodeResolver(t *testing.T) {
 			},
 		},
 		{
+			name: "non-qualified-ident",
+			src: dummy.Dir{
+				"main": dummy.Dir{
+					"main.go": dummy.Src(`package main
+
+						import (
+							"root/a"
+						)
+
+						func main(){
+							t.A()
+						}
+
+						var t a.T
+					`),
+				},
+				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n type T struct{} \n\n func (T)A(){}")},
+				"go.mod": dummy.Src("module root"),
+			},
+			cases: []tc{
+				{"A", ""},
+			},
+		},
+		{
+			name: "field",
+			src: dummy.Dir{
+				"main": dummy.Dir{
+					"main.go": dummy.Src(`package main
+
+						import (
+							"root/a"
+						)
+
+						func main(){
+							t := a.T{
+								B: 0,
+							}
+						}
+					`),
+				},
+				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n type T struct{B int}")},
+				"go.mod": dummy.Src("module root"),
+			},
+			cases: []tc{
+				{"B", ""},
+			},
+		},
+		{
 			name: "more",
 			src: dummy.Dir{
 				"main": dummy.Dir{
@@ -111,19 +159,22 @@ func TestNodeResolver(t *testing.T) {
 				Info: pkg.TypesInfo,
 			}
 
+			parents := map[string]ast.Node{}
 			nodes := map[string]*ast.Ident{}
 			for _, f := range pkg.Syntax {
+				_, fname := filepath.Split(pkg.Fset.File(f.Pos()).Name())
+				if fname != "main.go" {
+					continue
+				}
 				ast.Inspect(f, func(n ast.Node) bool {
-					// TODO: Only handles idents in CallExpr - extend to any node?
 					switch n := n.(type) {
-					case *ast.CallExpr:
-						switch n := n.Fun.(type) {
-						case *ast.SelectorExpr:
-							nodes[n.Sel.Name] = n.Sel
-						case *ast.Ident:
-							if _, ok := nodes[n.Name]; !ok {
-								nodes[n.Name] = n
-							}
+					case *ast.SelectorExpr:
+						nodes[n.Sel.Name] = n.Sel
+						parents[n.Sel.Name] = n
+					case *ast.Ident:
+						if _, ok := nodes[n.Name]; !ok {
+							nodes[n.Name] = n
+							parents[n.Name] = nil
 						}
 					}
 					return true
@@ -131,11 +182,9 @@ func TestNodeResolver(t *testing.T) {
 			}
 
 			for _, c := range test.cases {
-				n, ok := nodes[c.id]
-				if !ok {
-					t.Errorf("node not found for %q", c.id)
-				}
-				found, err := res.ResolveIdent(nil, n)
+				//ast.Print(pkg.Fset, parents[c.id])
+				//ast.Print(pkg.Fset, nodes[c.id])
+				found, err := res.ResolveIdent(nil, parents[c.id], nodes[c.id])
 				if err != nil {
 					t.Error(err)
 				}

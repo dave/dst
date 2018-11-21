@@ -1013,7 +1013,7 @@ func TestRestorerResolver(t *testing.T) {
 					t.Fatal("errors loading package")
 				}
 
-				d := NewDecoratorWithImports(pkg)
+				d := NewWithImports(pkg)
 
 				var file *dst.File
 				for _, sf := range pkg.Syntax {

@@ -27,7 +27,7 @@ func ParseFile(fset *token.FileSet, filename string, src interface{}, mode parse
 		return nil, err
 	}
 
-	return NewDecorator(fset).DecorateFile(f), err
+	return New(fset).DecorateFile(f), err
 }
 
 // ParseDir uses parser.ParseDir to parse and decorate a directory containing Go source.
@@ -38,19 +38,19 @@ func ParseDir(fset *token.FileSet, dir string, filter func(os.FileInfo) bool, mo
 	}
 	out := map[string]*dst.Package{}
 	for k, v := range pkgs {
-		out[k] = NewDecorator(fset).DecorateNode(v).(*dst.Package)
+		out[k] = New(fset).DecorateNode(v).(*dst.Package)
 	}
 	return out, nil
 }
 
 // Decorate decorates an ast.Node and returns a dst.Node.
 func Decorate(fset *token.FileSet, n ast.Node) dst.Node {
-	return NewDecorator(fset).DecorateNode(n)
+	return New(fset).DecorateNode(n)
 }
 
 // Decorate decorates a *ast.File and returns a *dst.File.
 func DecorateFile(fset *token.FileSet, f *ast.File) *dst.File {
-	return NewDecorator(fset).DecorateFile(f)
+	return New(fset).DecorateFile(f)
 }
 
 // Print uses format.Node to print a *dst.File to stdout
