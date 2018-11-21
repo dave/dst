@@ -4,8 +4,6 @@ import (
 	"os"
 	"testing"
 
-	"context"
-
 	"path/filepath"
 
 	"github.com/dave/dst/decorator/resolver"
@@ -57,7 +55,7 @@ func TestPackageResolver(t *testing.T) {
 			for _, c := range test.cases {
 				end, root, r := test.resolve()
 				fromDir := filepath.Join(root, c.fromDir)
-				name, err := r.ResolvePackage(context.Background(), c.importPath, fromDir)
+				name, err := r.ResolvePackage(c.importPath, fromDir)
 				if end != nil {
 					end() // delete temp dir if created
 				}

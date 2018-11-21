@@ -1,9 +1,9 @@
 package resolver
 
 import (
-	"context"
 	"errors"
 	"go/ast"
+	"go/types"
 	"strings"
 )
 
@@ -26,21 +26,15 @@ func main() {
 }
 */
 
-// TODO: combine interfaces into Resolver, combine Decorator and Restorer to a single type
-//type Resolver interface {
-//	PackageResolver
-//	IdentResolver
-//}
-
 // PackageResolver resolves a package path to a package name.
 type PackageResolver interface {
-	ResolvePackage(ctx context.Context, importPath, fromDir string) (string, error)
+	ResolvePackage(path, dir string) (string, error)
 }
 
 // IdentResolver resolves an identifier to a package path. Returns an empty string if the node is
 // not an identifier.
 type IdentResolver interface {
-	ResolveIdent(node *ast.Ident) string
+	ResolveIdent(id *ast.Ident, info *types.Info, file *ast.File, dir string) (string, error)
 }
 
 var PackageNotFoundError = errors.New("package not found")
@@ -50,7 +44,7 @@ var PackageNotFoundError = errors.New("package not found")
 // last slash).
 type Guess map[string]string
 
-func (r Guess) ResolvePackage(ctx context.Context, importPath, fromDir string) (string, error) {
+func (r Guess) ResolvePackage(importPath, fromDir string) (string, error) {
 	if n, ok := r[importPath]; ok {
 		return n, nil
 	}
@@ -65,7 +59,7 @@ func (r Guess) ResolvePackage(ctx context.Context, importPath, fromDir string) (
 // properly resolve identifiers in dot import packages.
 type Map map[string]string
 
-func (r Map) ResolvePackage(ctx context.Context, importPath, fromDir string) (string, error) {
+func (r Map) ResolvePackage(importPath, fromDir string) (string, error) {
 	if n, ok := r[importPath]; ok {
 		return n, nil
 	}

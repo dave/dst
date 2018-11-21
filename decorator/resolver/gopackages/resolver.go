@@ -1,7 +1,6 @@
 package gopackages
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/dave/dst/decorator/resolver"
@@ -10,10 +9,9 @@ import (
 
 type PackageResolver struct {
 	*packages.Config
-	Dir string // default dir for when fromDir == ""
 }
 
-func (r *PackageResolver) ResolvePackage(ctx context.Context, importPath, fromDir string) (string, error) {
+func (r *PackageResolver) ResolvePackage(importPath, fromDir string) (string, error) {
 
 	if r.Config == nil {
 		r.Config = &packages.Config{}
@@ -21,8 +19,6 @@ func (r *PackageResolver) ResolvePackage(ctx context.Context, importPath, fromDi
 
 	if fromDir != "" {
 		r.Config.Dir = fromDir
-	} else if r.Dir != "" {
-		r.Config.Dir = r.Dir
 	}
 	r.Tests = false
 	r.Mode = packages.LoadTypes

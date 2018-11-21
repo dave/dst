@@ -1,100 +1,55 @@
 package decorator
 
 import (
-	"context"
 	"fmt"
 	"go/ast"
-	"go/format"
 	"go/token"
-	"io"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/resolver"
 	"github.com/dave/dst/dstutil"
 )
 
-// Print uses format.Node to print a *dst.File to stdout
-func Print(f *dst.File) error {
-	return Fprint(os.Stdout, f)
-}
-
-// Fprint uses format.Node to print a *dst.File to a writer
-func Fprint(w io.Writer, f *dst.File) error {
-	fset, af := Restore(f)
-	return format.Node(w, fset, af)
-}
-
-// Restore restores a *dst.File to a *token.FileSet and a *ast.File
-func Restore(file *dst.File) (*token.FileSet, *ast.File) {
-	r := NewRestorer()
-	return r.Fset, r.RestoreFile("", file)
-}
-
-// NewRestorer creates a new Restorer
-func NewRestorer() *Restorer {
-	return &Restorer{
-		Fset: token.NewFileSet(),
-		Map: Map{
-			Ast: AstMap{
-				Nodes:   map[dst.Node]ast.Node{},
-				Scopes:  map[*dst.Scope]*ast.Scope{},
-				Objects: map[*dst.Object]*ast.Object{},
-			},
-			Dst: DstMap{
-				Nodes:   map[ast.Node]dst.Node{},
-				Scopes:  map[*ast.Scope]*dst.Scope{},
-				Objects: map[*ast.Object]*dst.Object{},
-			},
-		},
-	}
-}
-
-type Restorer struct {
-	Map
-	Fset *token.FileSet // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
-
-	// If a Resolver is provided, the names of all imported packages are resolved, and the imports
-	// block is updated. All remote identifiers are updated (sometimes this involves changing
-	// SelectorExpr.X.Name, or even swapping between Ident and SelectorExpr). To force specific
-	// import alias names, use the FileRestorer.Alias map.
-	Resolver resolver.PackageResolver
-}
-
 // NewPackageRestorer returns a restorer which resolves package names relative to a specific dir
 // and local path.
-func (r *Restorer) NewPackageRestorer(path, dir string) *PackageRestorer {
+func (r *Restorer) PackageRestorer(path, dir string) *PackageRestorer {
 	return &PackageRestorer{
 		Restorer: r,
 		Path:     path,
 		Dir:      dir,
+		Fset:     token.NewFileSet(),
 	}
+}
+
+// RestoreFile restores a *dst.File to an *ast.File
+func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
+	return r.PackageRestorer("", "").RestoreFile(name, file)
 }
 
 type PackageRestorer struct {
 	*Restorer
-	Dir  string // source dir for package name resolution
-	Path string // local package path for identifier resolution
+	Path string         // local package path for identifier resolution
+	Dir  string         // source dir for package name resolution
+	Fset *token.FileSet // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
 }
 
-type Map struct {
-	Ast AstMap
-	Dst DstMap
+func (pr *PackageRestorer) FileRestorer(name string, file *dst.File) *FileRestorer {
+	return &FileRestorer{
+		PackageRestorer: pr,
+		Alias:           map[string]string{},
+		name:            name,
+		file:            file,
+		lines:           []int{0}, // initialise with the first line at Pos 0
+		nodeDecl:        map[*ast.Object]dst.Node{},
+		nodeData:        map[*ast.Object]dst.Node{},
+	}
 }
 
-type AstMap struct {
-	Nodes   map[dst.Node]ast.Node       // Mapping from dst to ast Nodes
-	Objects map[*dst.Object]*ast.Object // Mapping from dst to ast Objects
-	Scopes  map[*dst.Scope]*ast.Scope   // Mapping from dst to ast Scopes
-}
-
-type DstMap struct {
-	Nodes   map[ast.Node]dst.Node       // Mapping from ast to dst Nodes
-	Objects map[*ast.Object]*dst.Object // Mapping from ast to dst Objects
-	Scopes  map[*ast.Scope]*dst.Scope   // Mapping from ast to dst Scopes
+// RestoreFile restores a *dst.File to an *ast.File
+func (pr *PackageRestorer) RestoreFile(name string, file *dst.File) *ast.File {
+	return pr.FileRestorer(name, file).Restore()
 }
 
 type FileRestorer struct {
@@ -111,34 +66,16 @@ type FileRestorer struct {
 	cursorAtNewLine token.Pos                // The cursor position directly after adding a newline decoration (or a line comment which ends in a "\n"). If we're still at this cursor position when we add a line space, reduce the "\n" by one.
 }
 
-// RestoreFile restores a *dst.File to an *ast.File
-func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
-	return r.NewPackageRestorer("", "").RestoreFile(name, file)
-}
+func (fr *FileRestorer) Restore() *ast.File {
 
-// RestoreFile restores a *dst.File to an *ast.File
-func (pr *PackageRestorer) RestoreFile(name string, file *dst.File) *ast.File {
-	return pr.NewFileRestorer(name, file).RestoreFile(context.Background())
-}
-
-func (pr *PackageRestorer) NewFileRestorer(name string, file *dst.File) *FileRestorer {
-	return &FileRestorer{
-		PackageRestorer: pr,
-		Alias:           map[string]string{},
-		name:            name,
-		file:            file,
-		lines:           []int{0}, // initialise with the first line at Pos 0
-		nodeDecl:        map[*ast.Object]dst.Node{},
-		nodeData:        map[*ast.Object]dst.Node{},
+	if fr.Fset == nil {
+		fr.Fset = token.NewFileSet()
 	}
-}
-
-func (fr *FileRestorer) RestoreFile(ctx context.Context) *ast.File {
 
 	fr.base = fr.Fset.Base() // base is the pos that the file will start at in the fset
 	fr.cursor = token.Pos(fr.base)
 
-	fr.updateImports(ctx)
+	fr.updateImports()
 
 	// restore the file, populate comments and lines
 	f := fr.restoreNode(fr.file, false).(*ast.File)
@@ -168,7 +105,7 @@ func (fr *FileRestorer) RestoreFile(ctx context.Context) *ast.File {
 	return f
 }
 
-func (fr *FileRestorer) updateImports(ctx context.Context) {
+func (fr *FileRestorer) updateImports() {
 
 	if fr.Resolver == nil {
 		return
@@ -225,7 +162,7 @@ func (fr *FileRestorer) updateImports(ctx context.Context) {
 	resolved := map[string]string{}
 
 	for path := range packages {
-		name, err := fr.Resolver.ResolvePackage(ctx, path, fr.Dir)
+		name, err := fr.Resolver.ResolvePackage(path, fr.Dir)
 		if err != nil {
 			panic(err)
 		}

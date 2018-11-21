@@ -2,7 +2,6 @@ package decorator
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"go/format"
 	"go/token"
@@ -14,8 +13,6 @@ import (
 
 	"github.com/andreyvit/diff"
 	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/resolver/gopackages"
-	"github.com/dave/dst/decorator/resolver/gotypes"
 	"github.com/dave/dst/dstutil/dummy"
 	"golang.org/x/tools/go/packages"
 )
@@ -1016,13 +1013,13 @@ func TestRestorerResolver(t *testing.T) {
 					t.Fatal("errors loading package")
 				}
 
-				d := New(pkg.Fset)
-				d.Resolver = gotypes.FromPackage(pkg)
+				dr := WithImports()
+				pd := dr.PackageDecoratorFromPackage(pkg)
 
 				var file *dst.File
 				for _, sf := range pkg.Syntax {
 					if _, name := filepath.Split(pkg.Fset.File(sf.Pos()).Name()); name == "main.go" {
-						file = d.Decorate(sf).(*dst.File)
+						file = pd.DecorateFile(sf)
 						break
 					}
 				}
@@ -1031,19 +1028,17 @@ func TestRestorerResolver(t *testing.T) {
 					c.mutate(file)
 				}
 
-				r := NewRestorer()
-				r.Resolver = &gopackages.PackageResolver{Config: cfg}
-				pr := r.NewPackageRestorer(mainPkg, mainDir)
-				fr := pr.NewFileRestorer("main.go", file)
+				pr := dr.PackageRestorer(mainPkg, mainDir)
+				fr := pr.FileRestorer("main.go", file)
 
 				if c.restorer != nil {
 					c.restorer(fr)
 				}
 
-				restoredFile := fr.RestoreFile(context.Background())
+				restoredFile := fr.Restore()
 
 				buf := &bytes.Buffer{}
-				if err := format.Node(buf, r.Fset, restoredFile); err != nil {
+				if err := format.Node(buf, fr.Fset, restoredFile); err != nil {
 					t.Fatal(err)
 				}
 

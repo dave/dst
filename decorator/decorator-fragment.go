@@ -11,27 +11,6 @@ import (
 	"github.com/dave/dst"
 )
 
-func newFileDecorator(decorator *Decorator) *fileDecorator {
-	return &fileDecorator{
-		Decorator:    decorator,
-		startIndents: map[ast.Node]int{},
-		endIndents:   map[ast.Node]int{},
-		space:        map[ast.Node]dst.SpaceType{},
-		after:        map[ast.Node]dst.SpaceType{},
-		decorations:  map[ast.Node]map[string][]string{},
-	}
-}
-
-type fileDecorator struct {
-	*Decorator
-	cursor       int
-	fragments    []fragment
-	startIndents map[ast.Node]int
-	endIndents   map[ast.Node]int
-	space, after map[ast.Node]dst.SpaceType
-	decorations  map[ast.Node]map[string][]string
-}
-
 func (f *fileDecorator) addDecorationFragment(n ast.Node, name string, pos token.Pos) {
 	f.fragments = append(f.fragments, &decorationFragment{Node: n, Name: name, Pos: token.Pos(f.cursor)})
 }

@@ -1,7 +1,6 @@
 package gobuild
 
 import (
-	"context"
 	"go/build"
 
 	"github.com/dave/dst/decorator/resolver"
@@ -17,14 +16,9 @@ type PackageResolver struct {
 	// other fields can be left empty (as in SimpleFinder).
 	FindPackage func(ctxt *build.Context, importPath, fromDir string, mode build.ImportMode) (*build.Package, error)
 	Context     *build.Context
-	Dir         string // default dir for when fromDir == ""
 }
 
-func (r *PackageResolver) ResolvePackage(ctx context.Context, importPath, fromDir string) (string, error) {
-
-	if fromDir == "" {
-		fromDir = r.Dir
-	}
+func (r *PackageResolver) ResolvePackage(importPath, fromDir string) (string, error) {
 
 	fp := r.FindPackage
 	if r.FindPackage == nil {

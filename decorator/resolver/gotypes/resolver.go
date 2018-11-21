@@ -1,37 +1,26 @@
 package gotypes
 
 import (
+	"errors"
 	"go/ast"
 	"go/types"
-
-	"golang.org/x/tools/go/packages"
 )
 
-func FromPackage(pkg *packages.Package) *IdentResolver {
-	return &IdentResolver{
-		Path:       pkg.PkgPath,
-		Uses:       pkg.TypesInfo.Uses,
-		Selections: pkg.TypesInfo.Selections,
+type IdentResolver struct{}
+
+func (r *IdentResolver) ResolveIdent(id *ast.Ident, info *types.Info, file *ast.File, dir string) (string, error) {
+
+	if info == nil || info.Uses == nil || info.Selections == nil {
+		return "", errors.New("gotypes.IdentResolver needs Uses and Selections in types info")
 	}
-}
 
-type IdentResolver struct {
-	Path       string // local path
-	Uses       map[*ast.Ident]types.Object
-	Selections map[*ast.SelectorExpr]*types.Selection
-}
-
-func (r *IdentResolver) ResolveIdent(id *ast.Ident) string {
-	obj, ok := r.Uses[id]
+	obj, ok := info.Uses[id]
 	if !ok {
-		return "" // not found in uses -> not a remote identifier
+		return "", nil // not found in uses -> not a remote identifier
 	}
 	pkg := obj.Pkg()
 	if pkg == nil {
-		return "" // pre-defined idents in the universe scope - e.g. "byte"
+		return "", nil // pre-defined idents in the universe scope - e.g. "byte"
 	}
-	if pkg.Path() == r.Path {
-		return "" // local package
-	}
-	return pkg.Path()
+	return pkg.Path(), nil
 }

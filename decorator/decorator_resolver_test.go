@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/resolver/gotypes"
 	"github.com/dave/dst/dstutil/dummy"
 	"golang.org/x/tools/go/packages"
 )
@@ -102,17 +101,13 @@ func TestDecoratorResolver(t *testing.T) {
 			}
 			pkg := pkgs[0]
 
-			d := New(pkg.Fset)
-			d.Resolver = &gotypes.IdentResolver{
-				Path:       pkg.PkgPath,
-				Uses:       pkg.TypesInfo.Uses,
-				Selections: pkg.TypesInfo.Selections,
-			}
+			dr := WithImports()
+			pd := dr.PackageDecoratorFromPackage(pkg)
 
 			var file *dst.File
 			for _, sf := range pkg.Syntax {
 				if _, name := filepath.Split(pkg.Fset.File(sf.Pos()).Name()); name == "main.go" {
-					file = d.Decorate(sf).(*dst.File)
+					file = pd.DecorateFile(sf)
 					break
 				}
 			}

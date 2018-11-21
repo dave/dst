@@ -69,7 +69,7 @@ func TestNodeResolver(t *testing.T) {
 			cases: []tc{
 				{"A", "root/a"},
 				{"B", "root/b"},
-				{"C", ""},
+				{"C", "root/main"},
 			},
 		},
 	}
@@ -107,11 +107,7 @@ func TestNodeResolver(t *testing.T) {
 			}
 			pkg := pkgs[0]
 
-			res := &gotypes.IdentResolver{
-				Path:       pkg.PkgPath,
-				Uses:       pkg.TypesInfo.Uses,
-				Selections: pkg.TypesInfo.Selections,
-			}
+			res := &gotypes.IdentResolver{}
 
 			nodes := map[string]*ast.Ident{}
 			for _, f := range pkg.Syntax {
@@ -137,7 +133,10 @@ func TestNodeResolver(t *testing.T) {
 				if !ok {
 					t.Errorf("node not found for %q", c.id)
 				}
-				found := res.ResolveIdent(n)
+				found, err := res.ResolveIdent(n, pkg.TypesInfo, nil, "")
+				if err != nil {
+					t.Error(err)
+				}
 				if found != c.expect {
 					t.Errorf("expect %q, found %q", c.expect, found)
 				}
