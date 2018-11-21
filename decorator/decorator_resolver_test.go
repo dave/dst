@@ -101,13 +101,12 @@ func TestDecoratorResolver(t *testing.T) {
 			}
 			pkg := pkgs[0]
 
-			dr := WithImports()
-			pd := dr.PackageDecoratorFromPackage(pkg)
+			d := NewDecoratorWithImports(pkg)
 
 			var file *dst.File
 			for _, sf := range pkg.Syntax {
 				if _, name := filepath.Split(pkg.Fset.File(sf.Pos()).Name()); name == "main.go" {
-					file = pd.DecorateFile(sf)
+					file = d.DecorateFile(sf)
 					break
 				}
 			}

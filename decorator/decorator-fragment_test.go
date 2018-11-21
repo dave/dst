@@ -233,10 +233,9 @@ func TestFragment(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			dr := New()
-			pd := dr.PackageDecorator(fset)
+			d := NewDecorator(fset)
 
-			fd := pd.newFileDecorator()
+			fd := d.newFileDecorator()
 			fd.fragment(f)
 
 			buf := &bytes.Buffer{}

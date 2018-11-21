@@ -1013,13 +1013,12 @@ func TestRestorerResolver(t *testing.T) {
 					t.Fatal("errors loading package")
 				}
 
-				dr := WithImports()
-				pd := dr.PackageDecoratorFromPackage(pkg)
+				d := NewDecoratorWithImports(pkg)
 
 				var file *dst.File
 				for _, sf := range pkg.Syntax {
 					if _, name := filepath.Split(pkg.Fset.File(sf.Pos()).Name()); name == "main.go" {
-						file = pd.DecorateFile(sf)
+						file = d.DecorateFile(sf)
 						break
 					}
 				}
@@ -1028,8 +1027,8 @@ func TestRestorerResolver(t *testing.T) {
 					c.mutate(file)
 				}
 
-				pr := dr.PackageRestorer(mainPkg, mainDir)
-				fr := pr.FileRestorer("main.go", file)
+				r := NewRestorerWithImports(mainPkg, mainDir)
+				fr := r.FileRestorer("main.go", file)
 
 				if c.restorer != nil {
 					c.restorer(fr)

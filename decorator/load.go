@@ -18,8 +18,6 @@ func Load(cfg *packages.Config, patterns ...string) ([]*Package, error) {
 		return nil, err
 	}
 
-	d := WithImports()
-
 	var out []*Package
 	for _, pkg := range pkgs {
 
@@ -28,7 +26,7 @@ func Load(cfg *packages.Config, patterns ...string) ([]*Package, error) {
 		}
 
 		if pkg.Syntax != nil {
-			p.Decorator = d.PackageDecoratorFromPackage(pkg)
+			p.Decorator = NewDecoratorWithImports(pkg)
 			for _, f := range pkg.Syntax {
 				p.Files = append(p.Files, p.Decorator.DecorateFile(f))
 			}

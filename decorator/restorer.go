@@ -9,30 +9,41 @@ import (
 	"strings"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator/resolver"
+	"github.com/dave/dst/decorator/resolver/gopackages"
 	"github.com/dave/dst/dstutil"
 )
 
-// NewPackageRestorer returns a restorer which resolves package names relative to a specific dir
-// and local path.
-func (r *Restorer) PackageRestorer(path, dir string) *PackageRestorer {
+// NewRestorer returns a restorer.
+func NewRestorer() *PackageRestorer {
 	return &PackageRestorer{
-		Restorer: r,
-		Path:     path,
-		Dir:      dir,
-		Fset:     token.NewFileSet(),
+		Map:  newMap(),
+		Fset: token.NewFileSet(),
 	}
 }
 
-// RestoreFile restores a *dst.File to an *ast.File
-func (r *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
-	return r.PackageRestorer("", "").RestoreFile(name, file)
+// NewRestorerWithImports returns a restorer with import management attributes set.
+func NewRestorerWithImports(path, dir string) *PackageRestorer {
+	return &PackageRestorer{
+		Map:  newMap(),
+		Fset: token.NewFileSet(),
+		Path: path,
+		Resolver: &gopackages.PackageResolver{
+			Dir: dir,
+		},
+	}
 }
 
 type PackageRestorer struct {
-	*Restorer
-	Path string         // local package path for identifier resolution
-	Dir  string         // source dir for package name resolution
+	Map
 	Fset *token.FileSet // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
+	Path string         // local package path for identifier resolution
+
+	// If a Resolver is provided, the names of all imported packages are resolved, and the imports
+	// block is updated. All remote identifiers are updated (sometimes this involves changing
+	// SelectorExpr.X.Name, or even swapping between Ident and SelectorExpr). To force specific
+	// import alias names, use the FileRestorer.Alias map.
+	Resolver resolver.PackageResolver
 }
 
 func (pr *PackageRestorer) FileRestorer(name string, file *dst.File) *FileRestorer {
@@ -162,7 +173,7 @@ func (fr *FileRestorer) updateImports() {
 	resolved := map[string]string{}
 
 	for path := range packages {
-		name, err := fr.Resolver.ResolvePackage(path, fr.Dir)
+		name, err := fr.Resolver.ResolvePackage(path)
 		if err != nil {
 			panic(err)
 		}

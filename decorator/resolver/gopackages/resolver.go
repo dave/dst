@@ -8,28 +8,25 @@ import (
 )
 
 type PackageResolver struct {
-	*packages.Config
+	Config packages.Config
+	Dir    string
 }
 
-func (r *PackageResolver) ResolvePackage(importPath, fromDir string) (string, error) {
+func (r *PackageResolver) ResolvePackage(path string) (string, error) {
 
-	if r.Config == nil {
-		r.Config = &packages.Config{}
+	if r.Dir != "" {
+		r.Config.Dir = r.Dir
 	}
+	r.Config.Mode = packages.LoadTypes
+	r.Config.Tests = false
 
-	if fromDir != "" {
-		r.Config.Dir = fromDir
-	}
-	r.Tests = false
-	r.Mode = packages.LoadTypes
-
-	pkgs, err := packages.Load(r.Config, "pattern="+importPath)
+	pkgs, err := packages.Load(&r.Config, "pattern="+path)
 	if err != nil {
 		return "", err
 	}
 
 	if len(pkgs) > 1 {
-		return "", fmt.Errorf("%d packages found for %s, %s", len(pkgs), importPath, fromDir)
+		return "", fmt.Errorf("%d packages found for %s, %s", len(pkgs), path, r.Config.Dir)
 	}
 	if len(pkgs) == 0 {
 		return "", resolver.PackageNotFoundError

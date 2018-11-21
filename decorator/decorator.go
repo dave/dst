@@ -4,39 +4,48 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"go/types"
 	"io"
 	"strings"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator/resolver"
+	"github.com/dave/dst/decorator/resolver/gotypes"
 	"golang.org/x/tools/go/packages"
 )
 
 // PackageDecorator returns a new package decorator
-func (d *Decorator) PackageDecorator(fset *token.FileSet) *PackageDecorator {
+func NewDecorator(fset *token.FileSet) *PackageDecorator {
 	return &PackageDecorator{
-		Decorator: d,
+		Map:       newMap(),
+		Filenames: map[*dst.File]string{},
 		Fset:      fset,
 	}
 }
 
-// PackageDecoratorFromPackage returns a new package decorator with import management attributes
-// set.
-func (d *Decorator) PackageDecoratorFromPackage(pkg *packages.Package) *PackageDecorator {
+// NewDecoratorWithImports returns a new package decorator with import management attributes set.
+func NewDecoratorWithImports(pkg *packages.Package) *PackageDecorator {
 	return &PackageDecorator{
-		Decorator: d,
+		Map:       newMap(),
+		Filenames: map[*dst.File]string{},
 		Fset:      pkg.Fset,
 		Path:      pkg.PkgPath,
-		Info:      pkg.TypesInfo,
+		Resolver: &gotypes.IdentResolver{
+			Info: pkg.TypesInfo,
+		},
 	}
 }
 
 type PackageDecorator struct {
-	*Decorator
-	Fset *token.FileSet
-	Dir  string // passed to the ident resolver (not needed by default go/types implementation)
-	Path string
-	Info *types.Info
+	Map
+	Filenames map[*dst.File]string // Source file names
+	Fset      *token.FileSet
+	Path      string // local package path, used to ensure the local path is not set in idents
+
+	// If a Resolver is provided, it is used to resolve Ident nodes. During decoration, remote
+	// identifiers (e.g. usually part of a qualified identifier SelectorExpr, but sometimes on
+	// their own for dot-imported packages) are updated with the path of the package they are
+	// imported from.
+	Resolver resolver.IdentResolver
 }
 
 func (d *PackageDecorator) DecorateFile(f *ast.File) *dst.File {
@@ -105,7 +114,7 @@ func (f *fileDecorator) resolvePath(id *ast.Ident) string {
 	if f.Resolver == nil {
 		return ""
 	}
-	path, err := f.Resolver.ResolveIdent(id, f.Info, f.file, f.Dir)
+	path, err := f.Resolver.ResolveIdent(f.file, id)
 	if err != nil {
 		panic(err)
 	}

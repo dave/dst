@@ -107,7 +107,9 @@ func TestNodeResolver(t *testing.T) {
 			}
 			pkg := pkgs[0]
 
-			res := &gotypes.IdentResolver{}
+			res := &gotypes.IdentResolver{
+				Info: pkg.TypesInfo,
+			}
 
 			nodes := map[string]*ast.Ident{}
 			for _, f := range pkg.Syntax {
@@ -133,7 +135,7 @@ func TestNodeResolver(t *testing.T) {
 				if !ok {
 					t.Errorf("node not found for %q", c.id)
 				}
-				found, err := res.ResolveIdent(n, pkg.TypesInfo, nil, "")
+				found, err := res.ResolveIdent(nil, n)
 				if err != nil {
 					t.Error(err)
 				}

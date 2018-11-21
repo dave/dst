@@ -15,12 +15,12 @@ func TestPackageResolver(t *testing.T) {
 	tests := []struct {
 		skip, solo bool
 		name       string
-		resolve    func() (end func(), root string, r resolver.PackageResolver)
+		resolve    func() (end func(), root string, r *gobuild.PackageResolver)
 		cases      []tc
 	}{
 		{
 			name: "gobuild.Resolver",
-			resolve: func() (end func(), root string, r resolver.PackageResolver) {
+			resolve: func() (end func(), root string, r *gobuild.PackageResolver) {
 				src := dummy.Dir{
 					"main1": dummy.Dir{
 						"vendor":   dummy.Dir{"a": dummy.Dir{"a.go": dummy.Src("package a1 \n\n func A(){}")}},
@@ -59,7 +59,8 @@ func TestPackageResolver(t *testing.T) {
 			for _, c := range test.cases {
 				end, root, r := test.resolve()
 				fromDir := filepath.Join(root, c.fromDir)
-				name, err := r.ResolvePackage(c.importPath, fromDir)
+				r.Dir = fromDir
+				name, err := r.ResolvePackage(c.importPath)
 				if end != nil {
 					end() // delete temp dir if created
 				}

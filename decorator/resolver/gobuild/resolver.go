@@ -16,9 +16,10 @@ type PackageResolver struct {
 	// other fields can be left empty (as in SimpleFinder).
 	FindPackage func(ctxt *build.Context, importPath, fromDir string, mode build.ImportMode) (*build.Package, error)
 	Context     *build.Context
+	Dir         string
 }
 
-func (r *PackageResolver) ResolvePackage(importPath, fromDir string) (string, error) {
+func (r *PackageResolver) ResolvePackage(importPath string) (string, error) {
 
 	fp := r.FindPackage
 	if r.FindPackage == nil {
@@ -30,7 +31,7 @@ func (r *PackageResolver) ResolvePackage(importPath, fromDir string) (string, er
 		bc = &build.Default
 	}
 
-	p, err := fp(bc, importPath, fromDir, 0)
+	p, err := fp(bc, importPath, r.Dir, 0)
 	if err != nil {
 		return "", err
 	}

@@ -72,16 +72,15 @@ func ExampleTypes() {
 	}
 
 	// Decorate the *ast.File to give us a *dst.File
-	dr := decorator.New()
-	pd := dr.PackageDecorator(fset)
+	d := decorator.NewDecorator(fset)
 
-	f := pd.DecorateFile(astFile)
+	f := d.DecorateFile(astFile)
 
 	// Find the *dst.Ident for the definition of "i"
 	dstDef := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.DeclStmt).Decl.(*dst.GenDecl).Specs[0].(*dst.ValueSpec).Names[0]
 
 	// Find the *ast.Ident using the Ast.Nodes mapping
-	astDef := pd.Ast.Nodes[dstDef].(*ast.Ident)
+	astDef := d.Ast.Nodes[dstDef].(*ast.Ident)
 
 	// Find the types.Object corresponding to "i"
 	obj := typesInfo.Defs[astDef]
@@ -98,7 +97,7 @@ func ExampleTypes() {
 	// Find each *dst.Ident in the Dst.Nodes mapping
 	var dstUses []*dst.Ident
 	for _, id := range astUses {
-		dstUses = append(dstUses, pd.Dst.Nodes[id].(*dst.Ident))
+		dstUses = append(dstUses, d.Dst.Nodes[id].(*dst.Ident))
 	}
 
 	// Change the name of the original definition and all uses

@@ -3,43 +3,41 @@ package resolver_test
 import (
 	"testing"
 
-	"path/filepath"
-
 	"github.com/dave/dst/decorator/resolver"
 )
 
 func TestPackageResolver(t *testing.T) {
-	type tc struct{ importPath, fromDir, expectName string }
+	type tc struct{ importPath, expectName string }
 	tests := []struct {
 		skip, solo bool
 		name       string
-		resolve    func() (end func(), root string, r resolver.PackageResolver)
+		resolve    func() (end func(), r resolver.PackageResolver)
 		cases      []tc
 	}{
 		{
 			name: "resolver.Guess",
-			resolve: func() (end func(), root string, r resolver.PackageResolver) {
+			resolve: func() (end func(), r resolver.PackageResolver) {
 				r = resolver.Guess{
 					"a/b/c": "d",
 				}
 				return
 			},
 			cases: []tc{
-				{"a/b/c", "", "d"},
-				{"d/e/f", "", "f"},
+				{"a/b/c", "d"},
+				{"d/e/f", "f"},
 			},
 		},
 		{
 			name: "resolver.Map",
-			resolve: func() (end func(), root string, r resolver.PackageResolver) {
+			resolve: func() (end func(), r resolver.PackageResolver) {
 				r = resolver.Map{
 					"a/b/c": "d",
 				}
 				return
 			},
 			cases: []tc{
-				{"a/b/c", "", "d"},
-				{"d/e/f", "", ""},
+				{"a/b/c", "d"},
+				{"d/e/f", ""},
 			},
 		},
 	}
@@ -59,19 +57,18 @@ func TestPackageResolver(t *testing.T) {
 				t.Skip()
 			}
 			for _, c := range test.cases {
-				end, root, r := test.resolve()
-				fromDir := filepath.Join(root, c.fromDir)
-				name, err := r.ResolvePackage(c.importPath, fromDir)
+				end, r := test.resolve()
+				name, err := r.ResolvePackage(c.importPath)
 				if end != nil {
 					end() // delete temp dir if created
 				}
 				if err == resolver.PackageNotFoundError {
 					name = ""
 				} else if err != nil {
-					t.Errorf("error resolving path %s from dir %s: %v", c.importPath, fromDir, err)
+					t.Errorf("error resolving path %s: %v", c.importPath, err)
 				}
 				if name != c.expectName {
-					t.Errorf("package %s, dir %s - expected %s, got %s", c.importPath, c.fromDir, c.expectName, name)
+					t.Errorf("package %s - expected %s, got %s", c.importPath, c.expectName, name)
 				}
 			}
 		})
