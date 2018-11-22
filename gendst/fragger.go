@@ -80,7 +80,7 @@ func generateFragger(names []string) error {
 						case data.Bad:
 							g.Line().Comment("Bad")
 							g.Id("f").Dot("addBadFragment").Call(Id("n"), frag.FromField.Get("n"), Int().Parens(frag.ToField.Get("n").Op("-").Add(frag.FromField.Get("n"))))
-						case data.Init, data.Value, data.Scope, data.Object, data.SpecialDecoration:
+						case data.Init, data.Value, data.Scope, data.Object, data.SpecialDecoration, data.PathDecoration:
 							// do nothing
 						default:
 							panic(fmt.Sprintf("unknown fragment type %T", frag))

@@ -10,6 +10,6 @@ install:
   - go get -t -v ./...
 script:
   - go test -short ./...
-  - courtney
+  - courtney -v -timeout 20m
 after_success:
   - bash <(curl -s https://codecov.io/bash)

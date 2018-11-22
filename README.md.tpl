@@ -71,7 +71,7 @@ use the `Clone` function to make a deep copy of the node before re-use:
 #### Apply function from astutil
 
 The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package is a fork of `golang.org/x/tools/go/ast/astutil`, 
-and provides the `Apply` function with similar semantics.
+and provides the `Apply` function with similar semantics.     
 
 #### Integrating with go/types
 
@@ -85,6 +85,15 @@ exposes `Dst.Nodes` and `Ast.Nodes` which map between `ast.Node` and `dst.Node`.
 
 If you would like to help create a fully `dst` compatible version of `go/types`, feel free to 
 continue my work in the [types branch](https://github.com/dave/dst/tree/types).
+
+
+#### Imports
+
+The decorator can automatically manage the `import` block(s), which is a non-trivial task. Use 
+`NewWithImports` and `NewRestorerWithImports` to create an import aware decorator / restorer. The 
+`Load` convenience function uses `go/packages` to load packages and decorate all loaded ast files:
+
+{{ "ExampleImports" | example }}
 
 ### Status
 

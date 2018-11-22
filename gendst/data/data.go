@@ -156,6 +156,10 @@ var Info = map[string][]Part{
 			Name:  "Obj",
 			Field: Field{"Obj"},
 		},
+		PathDecoration{
+			Name:  "Path",
+			Field: Field{"Path"},
+		},
 	},
 	/*
 		// An Ellipsis node stands for the "..." type in a
@@ -2334,6 +2338,11 @@ type Decoration struct {
 	Name    string
 	Use     Code
 	Disable bool // disable this in the fragger / decorator (equivalent to Use = false)
+}
+
+type PathDecoration struct {
+	Name  string
+	Field FieldSpec
 }
 
 type SpecialDecoration struct {

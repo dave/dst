@@ -45,7 +45,9 @@ func TestStdLibAll(t *testing.T) {
 			continue
 		}
 
-		testPackageRestoresCorrectly(t, pkgPath)
+		t.Run(pkgPath, func(t *testing.T) {
+			testPackageRestoresCorrectly(t, pkgPath)
+		})
 
 	}
 }
@@ -63,10 +65,9 @@ func testPackageRestoresCorrectly(t *testing.T, path string) {
 	pi := prog.Package(path)
 	for _, astFile := range pi.Files {
 
-		_, filename := filepath.Split(prog.Fset.File(astFile.Pos()).Name())
-		name := path + ":" + filename
+		_, fname := filepath.Split(prog.Fset.File(astFile.Pos()).Name())
 
-		t.Run(name, func(t *testing.T) {
+		t.Run(fname, func(t *testing.T) {
 			expected := &bytes.Buffer{}
 			if err := format.Node(expected, prog.Fset, astFile); err != nil {
 				t.Fatal(err)
@@ -82,7 +83,7 @@ func testPackageRestoresCorrectly(t *testing.T, path string) {
 			}
 
 			if expected.String() != output.String() {
-				t.Errorf("%s: %s", name, diff.LineDiff(expected.String(), output.String()))
+				t.Error(diff.LineDiff(expected.String(), output.String()))
 			}
 		})
 

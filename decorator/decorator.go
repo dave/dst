@@ -3,118 +3,68 @@ package decorator
 import (
 	"fmt"
 	"go/ast"
-	"go/parser"
 	"go/token"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator/resolver"
+	"github.com/dave/dst/decorator/resolver/gotypes"
+	"golang.org/x/tools/go/packages"
 )
 
-// Parse uses parser.ParseFile to parse and decorate a Go source file. The src parameter should
-// be string, []byte, or io.Reader.
-func Parse(src interface{}) (*dst.File, error) {
-	fset := token.NewFileSet()
-
-	// If ParseFile returns an error and also a non-nil file, the errors were just parse errors so
-	// we should continue decorating the file and return the error.
-	f, err := parser.ParseFile(fset, "", src, parser.ParseComments)
-	if err != nil && f == nil {
-		return nil, err
-	}
-
-	return Decorate(fset, f).(*dst.File), err
-}
-
-// ParseFile uses parser.ParseFile to parse and decorate a Go source file.
-func ParseFile(fset *token.FileSet, filename string, src interface{}, mode parser.Mode) (*dst.File, error) {
-	f, err := parser.ParseFile(fset, filename, src, mode)
-	if err != nil {
-		return nil, err
-	}
-	return Decorate(fset, f).(*dst.File), nil
-}
-
-// ParseExpr uses parser.ParseExpr to parse and decorate a Go expression. It should be noted that
-// this is of limited use because comments are not parsed by parser.ParseExpr.
-func ParseExpr(x string) (dst.Expr, error) {
-	expr, err := parser.ParseExpr(x)
-	if err != nil {
-		return nil, err
-	}
-	return Decorate(nil, expr).(dst.Expr), nil
-}
-
-// ParseDir uses parser.ParseDir to parse and decorate a directory containing Go source.
-func ParseDir(fset *token.FileSet, path string, filter func(os.FileInfo) bool, mode parser.Mode) (map[string]*dst.Package, error) {
-	pkgs, err := parser.ParseDir(fset, path, filter, mode)
-	if err != nil {
-		return nil, err
-	}
-	d := New(fset)
-	out := map[string]*dst.Package{}
-	for k, v := range pkgs {
-		out[k] = d.Decorate(v).(*dst.Package)
-	}
-	return out, nil
-}
-
-// ParseExprFrom uses parser.ParseExprFrom to parse and decorate a Go expression. It should be noted
-// that this is of limited use because comments are not parsed by parser.ParseExprFrom.
-func ParseExprFrom(fset *token.FileSet, filename string, src interface{}, mode parser.Mode) (dst.Expr, error) {
-	expr, err := parser.ParseExprFrom(fset, filename, src, mode)
-	if err != nil {
-		return nil, err
-	}
-	return Decorate(fset, expr).(dst.Expr), nil
-}
-
-// Decorate decorates an ast.Node and returns a dst.Node.
-func Decorate(fset *token.FileSet, n ast.Node) dst.Node {
-	return New(fset).Decorate(n)
-}
-
-// Decorate decorates a *ast.File and returns a *dst.File.
-func DecorateFile(fset *token.FileSet, f *ast.File) *dst.File {
-	return New(fset).Decorate(f).(*dst.File)
-}
-
-// New returns a new decorator.
+// New returns a new package decorator
 func New(fset *token.FileSet) *Decorator {
 	return &Decorator{
-		Fset: fset,
-		Map: Map{
-			Ast: AstMap{
-				Nodes:   map[dst.Node]ast.Node{},
-				Scopes:  map[*dst.Scope]*ast.Scope{},
-				Objects: map[*dst.Object]*ast.Object{},
-			},
-			Dst: DstMap{
-				Nodes:   map[ast.Node]dst.Node{},
-				Scopes:  map[*ast.Scope]*dst.Scope{},
-				Objects: map[*ast.Object]*dst.Object{},
-			},
-		},
+		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
+		Fset:      fset,
+	}
+}
+
+// NewWithImports returns a new package decorator with import management attributes set.
+func NewWithImports(pkg *packages.Package) *Decorator {
+	return &Decorator{
+		Map:       newMap(),
+		Filenames: map[*dst.File]string{},
+		Fset:      pkg.Fset,
+		Path:      pkg.PkgPath,
+		Resolver: &gotypes.IdentResolver{
+			Info: pkg.TypesInfo,
+		},
 	}
 }
 
 type Decorator struct {
 	Map
-	Fset      *token.FileSet
 	Filenames map[*dst.File]string // Source file names
+	Fset      *token.FileSet
+	Path      string // local package path, used to ensure the local path is not set in idents
+
+	// If a Resolver is provided, it is used to resolve Ident nodes. During decoration, remote
+	// identifiers (e.g. usually part of a qualified identifier SelectorExpr, but sometimes on
+	// their own for dot-imported packages) are updated with the path of the package they are
+	// imported from.
+	Resolver resolver.IdentResolver
+}
+
+func (d *Decorator) DecorateFile(f *ast.File) *dst.File {
+	return d.DecorateNode(f).(*dst.File)
 }
 
 // Decorate decorates an ast.Node and returns a dst.Node
-func (d *Decorator) Decorate(n ast.Node) dst.Node {
+func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
-	fd := newFileDecorator(d)
+	fd := d.newFileDecorator()
+	if f, ok := n.(*ast.File); ok {
+		fd.file = f
+	}
 	fd.fragment(n)
 	fd.link()
-	out := fd.decorateNode(n)
 
-	//fmt.Println("\Fragments:")
+	out := fd.decorateNode(nil, n)
+
+	//fmt.Println("\nFragments:")
 	//fd.debug(os.Stdout)
 
 	//fmt.Println("\nDecorator:")
@@ -133,9 +83,45 @@ func (d *Decorator) Decorate(n ast.Node) dst.Node {
 	return out
 }
 
+func (pd *Decorator) newFileDecorator() *fileDecorator {
+	return &fileDecorator{
+		Decorator:    pd,
+		startIndents: map[ast.Node]int{},
+		endIndents:   map[ast.Node]int{},
+		space:        map[ast.Node]dst.SpaceType{},
+		after:        map[ast.Node]dst.SpaceType{},
+		decorations:  map[ast.Node]map[string][]string{},
+	}
+}
+
+type fileDecorator struct {
+	*Decorator
+	file         *ast.File // file we're decorating in for import name resolution - can be nil if we're just decorating an isolated node
+	cursor       int
+	fragments    []fragment
+	startIndents map[ast.Node]int
+	endIndents   map[ast.Node]int
+	space, after map[ast.Node]dst.SpaceType
+	decorations  map[ast.Node]map[string][]string
+}
+
 type decorationInfo struct {
 	name string
 	decs []string
+}
+
+func (f *fileDecorator) resolvePath(parent ast.Node, id *ast.Ident) string {
+	if f.Resolver == nil {
+		return ""
+	}
+	path, err := f.Resolver.ResolveIdent(f.file, parent, id)
+	if err != nil {
+		panic(err)
+	}
+	if path == f.Path {
+		return ""
+	}
+	return path
 }
 
 func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {
@@ -174,7 +160,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {
 	case *ast.Scope:
 		out.Decl = f.decorateScope(decl)
 	case ast.Node:
-		out.Decl = f.decorateNode(decl)
+		out.Decl = f.decorateNode(nil, decl)
 	case nil:
 	default:
 		panic(fmt.Sprintf("o.Decl is %T", o.Decl))
@@ -187,7 +173,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {
 	case *ast.Scope:
 		out.Data = f.decorateScope(data)
 	case ast.Node:
-		out.Data = f.decorateNode(data)
+		out.Data = f.decorateNode(nil, data)
 	case nil:
 	default:
 		panic(fmt.Sprintf("o.Data is %T", o.Data))

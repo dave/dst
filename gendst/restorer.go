@@ -19,7 +19,7 @@ func generateRestorer(names []string) error {
 	// 		panic(...)
 	// 	}
 	// }
-	f.Func().Params(Id("r").Op("*").Id("fileRestorer")).Id("restoreNode").Params(
+	f.Func().Params(Id("r").Op("*").Id("FileRestorer")).Id("restoreNode").Params(
 		Id("n").Qual(DSTPATH, "Node"),
 		Id("allowDuplicate").Bool(),
 	).Qual("go/ast", "Node").BlockFunc(func(g *Group) {
@@ -130,6 +130,8 @@ func generateRestorer(names []string) error {
 						case data.Object:
 							g.Line().Commentf("Object: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Id("r").Dot("restoreObject").Call(frag.Field.Get("n"))
+						case data.PathDecoration:
+							// nothing
 						default:
 							panic(fmt.Sprintf("unknown fragment type %T", frag))
 						}

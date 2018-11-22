@@ -7,7 +7,7 @@ import (
 	"go/token"
 )
 
-func (r *fileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
+func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 	if an, ok := r.Ast.Nodes[n]; ok {
 		if allowDuplicate {
 			return an

@@ -234,11 +234,12 @@ func TestFragment(t *testing.T) {
 			}
 
 			d := New(fset)
-			p := newFileDecorator(d)
-			p.fragment(f)
+
+			fd := d.newFileDecorator()
+			fd.fragment(f)
 
 			buf := &bytes.Buffer{}
-			p.debug(buf)
+			fd.debug(buf)
 
 			if test.expect == "" {
 				t.Error(buf.String())

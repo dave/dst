@@ -73,6 +73,9 @@ func generateClone(names []string) error {
 						case data.Bad:
 							g.Line().Comment("Bad")
 							g.Add(frag.LengthField.Get("out")).Op("=").Add(frag.LengthField.Get("n"))
+						case data.PathDecoration:
+							g.Line().Commentf("Path: %s", frag.Name)
+							g.Add(frag.Field.Get("out")).Op("=").Add(frag.Field.Get("n"))
 						case data.SpecialDecoration:
 							// ignore
 						default:

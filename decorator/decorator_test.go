@@ -21,6 +21,28 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "import-blocks",
+			code: `package main
+
+				// first-import-block
+            	import (
+					"root/a"
+					"root/b"
+				)
+
+				// second-import-block
+				import (
+					"root/c"
+					"root/d"
+				)`,
+			expect: `GenDecl [Empty line space] [Start "// first-import-block"] [Empty line after]
+ImportSpec [New line space] [New line after]
+ImportSpec [New line space] [New line after]
+GenDecl [Empty line space] [Start "// second-import-block"]
+ImportSpec [New line space] [New line after]
+ImportSpec [New line space] [New line after]`,
+		},
+		{
 			name: "comment-alignment",
 			code: `package a
 

@@ -786,6 +786,9 @@ func Clone(n Node) Node {
 		// Object: Obj
 		out.Obj = CloneObject(n.Obj)
 
+		// Path: Path
+		out.Path = n.Path
+
 		out.Decs.After = n.Decs.After
 
 		return out
