@@ -118,10 +118,30 @@ func (f *fileDecorator) resolvePath(parent ast.Node, id *ast.Ident) string {
 	if err != nil {
 		panic(err)
 	}
-	if path == f.Path {
+	if path == stripVendor(f.Path) {
 		return ""
 	}
 	return path
+}
+
+func stripVendor(path string) string {
+	findVendor := func(path string) (index int, ok bool) {
+		// Two cases, depending on internal at start of string or not.
+		// The order matters: we must return the index of the final element,
+		// because the final one is where the effective import path starts.
+		switch {
+		case strings.Contains(path, "/vendor/"):
+			return strings.LastIndex(path, "/vendor/") + 1, true
+		case strings.HasPrefix(path, "vendor/"):
+			return 0, true
+		}
+		return 0, false
+	}
+	i, ok := findVendor(path)
+	if !ok {
+		return path
+	}
+	return path[i+len("vendor/"):]
 }
 
 func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {
