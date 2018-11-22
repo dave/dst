@@ -14,8 +14,8 @@ import (
 )
 
 // New returns a new package decorator
-func New(fset *token.FileSet) *PackageDecorator {
-	return &PackageDecorator{
+func New(fset *token.FileSet) *Decorator {
+	return &Decorator{
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
 		Fset:      fset,
@@ -23,8 +23,8 @@ func New(fset *token.FileSet) *PackageDecorator {
 }
 
 // NewWithImports returns a new package decorator with import management attributes set.
-func NewWithImports(pkg *packages.Package) *PackageDecorator {
-	return &PackageDecorator{
+func NewWithImports(pkg *packages.Package) *Decorator {
+	return &Decorator{
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
 		Fset:      pkg.Fset,
@@ -35,7 +35,7 @@ func NewWithImports(pkg *packages.Package) *PackageDecorator {
 	}
 }
 
-type PackageDecorator struct {
+type Decorator struct {
 	Map
 	Filenames map[*dst.File]string // Source file names
 	Fset      *token.FileSet
@@ -48,12 +48,12 @@ type PackageDecorator struct {
 	Resolver resolver.IdentResolver
 }
 
-func (d *PackageDecorator) DecorateFile(f *ast.File) *dst.File {
+func (d *Decorator) DecorateFile(f *ast.File) *dst.File {
 	return d.DecorateNode(f).(*dst.File)
 }
 
 // Decorate decorates an ast.Node and returns a dst.Node
-func (d *PackageDecorator) DecorateNode(n ast.Node) dst.Node {
+func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
 	fd := d.newFileDecorator()
 	if f, ok := n.(*ast.File); ok {
@@ -83,19 +83,19 @@ func (d *PackageDecorator) DecorateNode(n ast.Node) dst.Node {
 	return out
 }
 
-func (pd *PackageDecorator) newFileDecorator() *fileDecorator {
+func (pd *Decorator) newFileDecorator() *fileDecorator {
 	return &fileDecorator{
-		PackageDecorator: pd,
-		startIndents:     map[ast.Node]int{},
-		endIndents:       map[ast.Node]int{},
-		space:            map[ast.Node]dst.SpaceType{},
-		after:            map[ast.Node]dst.SpaceType{},
-		decorations:      map[ast.Node]map[string][]string{},
+		Decorator:    pd,
+		startIndents: map[ast.Node]int{},
+		endIndents:   map[ast.Node]int{},
+		space:        map[ast.Node]dst.SpaceType{},
+		after:        map[ast.Node]dst.SpaceType{},
+		decorations:  map[ast.Node]map[string][]string{},
 	}
 }
 
 type fileDecorator struct {
-	*PackageDecorator
+	*Decorator
 	file         *ast.File // file we're decorating in for import name resolution - can be nil if we're just decorating an isolated node
 	cursor       int
 	fragments    []fragment

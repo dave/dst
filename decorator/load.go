@@ -64,7 +64,7 @@ func Load(cfg *packages.Config, patterns ...string) ([]*Package, error) {
 type Package struct {
 	*packages.Package
 	Dir       string
-	Decorator *PackageDecorator
+	Decorator *Decorator
 	Files     []*dst.File
 }
 

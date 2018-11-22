@@ -18,16 +18,16 @@ import (
 )
 
 // NewRestorer returns a restorer.
-func NewRestorer() *PackageRestorer {
-	return &PackageRestorer{
+func NewRestorer() *Restorer {
+	return &Restorer{
 		Map:  newMap(),
 		Fset: token.NewFileSet(),
 	}
 }
 
 // NewRestorerWithImports returns a restorer with import management attributes set.
-func NewRestorerWithImports(path, dir string) *PackageRestorer {
-	return &PackageRestorer{
+func NewRestorerWithImports(path, dir string) *Restorer {
+	return &Restorer{
 		Map:  newMap(),
 		Fset: token.NewFileSet(),
 		Path: path,
@@ -37,7 +37,7 @@ func NewRestorerWithImports(path, dir string) *PackageRestorer {
 	}
 }
 
-type PackageRestorer struct {
+type Restorer struct {
 	Map
 	Fset *token.FileSet // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
 	Path string         // local package path for identifier resolution
@@ -50,35 +50,35 @@ type PackageRestorer struct {
 }
 
 // Print uses format.Node to print a *dst.File to stdout
-func (pr *PackageRestorer) Print(f *dst.File) error {
+func (pr *Restorer) Print(f *dst.File) error {
 	return pr.Fprint(os.Stdout, f)
 }
 
 // Fprint uses format.Node to print a *dst.File to a writer
-func (pr *PackageRestorer) Fprint(w io.Writer, f *dst.File) error {
+func (pr *Restorer) Fprint(w io.Writer, f *dst.File) error {
 	af := pr.RestoreFile("", f)
 	return format.Node(w, pr.Fset, af)
 }
 
-func (pr *PackageRestorer) FileRestorer(name string, file *dst.File) *FileRestorer {
+func (pr *Restorer) FileRestorer(name string, file *dst.File) *FileRestorer {
 	return &FileRestorer{
-		PackageRestorer: pr,
-		Alias:           map[string]string{},
-		name:            name,
-		file:            file,
-		lines:           []int{0}, // initialise with the first line at Pos 0
-		nodeDecl:        map[*ast.Object]dst.Node{},
-		nodeData:        map[*ast.Object]dst.Node{},
+		Restorer: pr,
+		Alias:    map[string]string{},
+		name:     name,
+		file:     file,
+		lines:    []int{0}, // initialise with the first line at Pos 0
+		nodeDecl: map[*ast.Object]dst.Node{},
+		nodeData: map[*ast.Object]dst.Node{},
 	}
 }
 
 // RestoreFile restores a *dst.File to an *ast.File
-func (pr *PackageRestorer) RestoreFile(name string, file *dst.File) *ast.File {
+func (pr *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
 	return pr.FileRestorer(name, file).Restore()
 }
 
 type FileRestorer struct {
-	*PackageRestorer
+	*Restorer
 	Alias           map[string]string // map of package path -> package alias for imports
 	name            string
 	file            *dst.File
