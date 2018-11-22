@@ -35,8 +35,10 @@ func ExampleImports() {
 	f := p.Files[0]
 
 	// Add a call expression. Note we don't have to use a SelectorExpr - just adding an Ident with
-	// the imported package Path will do. The restorer will add SelectorExpr where appropriate when
-	// converting back to ast.
+	// the imported package path will do. The restorer will add SelectorExpr where appropriate when
+	// converting back to ast. Note the new Path field on *dst.Ident. Set this to the package path
+	// of the imported package, and the restorer will automatically add the import to the import
+	// block.
 	b := f.Decls[0].(*dst.FuncDecl).Body
 	b.List = append(b.List, &dst.ExprStmt{
 		X: &dst.CallExpr{
