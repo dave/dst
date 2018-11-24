@@ -17,12 +17,13 @@ func Parse(src interface{}) (*dst.File, error) {
 	return ParseFile(token.NewFileSet(), "", src, parser.ParseComments)
 }
 
-// ParseFile uses parser.ParseFile to parse and decorate a Go source file.
+// ParseFile uses parser.ParseFile to parse and decorate a Go source file. The ParseComments flag is
+// added to mode if it doesn't exist.
 func ParseFile(fset *token.FileSet, filename string, src interface{}, mode parser.Mode) (*dst.File, error) {
 
 	// If ParseFile returns an error and also a non-nil file, the errors were just parse errors so
 	// we should continue decorating the file and return the error.
-	f, err := parser.ParseFile(fset, filename, src, mode)
+	f, err := parser.ParseFile(fset, filename, src, mode|parser.ParseComments)
 	if err != nil && f == nil {
 		return nil, err
 	}
@@ -30,9 +31,10 @@ func ParseFile(fset *token.FileSet, filename string, src interface{}, mode parse
 	return New(fset).DecorateFile(f), err
 }
 
-// ParseDir uses parser.ParseDir to parse and decorate a directory containing Go source.
+// ParseDir uses parser.ParseDir to parse and decorate a directory containing Go source. The
+// ParseComments flag is added to mode if it doesn't exist.
 func ParseDir(fset *token.FileSet, dir string, filter func(os.FileInfo) bool, mode parser.Mode) (map[string]*dst.Package, error) {
-	pkgs, err := parser.ParseDir(fset, dir, filter, mode)
+	pkgs, err := parser.ParseDir(fset, dir, filter, mode|parser.ParseComments)
 	if err != nil {
 		return nil, err
 	}

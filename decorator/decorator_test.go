@@ -480,6 +480,30 @@ BlockStmt [Lbrace "\n"]`,
 	}
 }
 
+func ExampleParseCommentsFlag() {
+
+	code := `package a
+
+		// a
+		func main(){}`
+
+	f, err := ParseFile(token.NewFileSet(), "", code, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := Print(f); err != nil {
+		panic(err)
+	}
+
+	//Output:
+	//package a
+	//
+	//// a
+	//func main() {}
+
+}
+
 var multiSpaces = regexp.MustCompile(" {2,}")
 
 func normalize(s string) string {
