@@ -2,10 +2,10 @@ package dst
 
 // NodeDecs holds the decorations that are common to all nodes (except Package).
 type NodeDecs struct {
-	Space SpaceType
-	Start Decorations
-	End   Decorations
-	After SpaceType
+	Before SpaceType
+	Start  Decorations
+	End    Decorations
+	After  SpaceType
 }
 
 // Decorations is a slice of strings which are rendered with the node. Decorations can be comments (starting "//" or "/*") or newlines ("\n").
@@ -36,7 +36,7 @@ func (d *Decorations) All() []string {
 	return *d
 }
 
-// SpaceType reprasents the line spacing before or after a node. When the start of one node is
+// SpaceType represents the line spacing before or after a node. When the start of one node is
 // adjacent to the end of another node, the SpaceType values are not additive (e.g. two NewLines
 // will render a NewLine and not an EmptyLine).
 type SpaceType int

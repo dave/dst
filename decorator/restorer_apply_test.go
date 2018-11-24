@@ -35,7 +35,7 @@ type T func(a int) (b int)
 					Name: dst.NewIdent("foo"),
 					Type: ft,
 					Body: &dst.BlockStmt{},
-					Decs: dst.FuncDeclDecorations{NodeDecs: dst.NodeDecs{Space: dst.EmptyLine}},
+					Decs: dst.FuncDeclDecorations{NodeDecs: dst.NodeDecs{Before: dst.EmptyLine}},
 				}
 				f.Decls = nil
 				f.Decls = append(f.Decls, fd)
@@ -52,7 +52,7 @@ func /*Func*/ foo(a int) /*Params*/ (b int)/*End*/ {}`,
 var i /*a*/ int`,
 			f: func(f *dst.File) {
 				gd := dst.Clone(f.Decls[0]).(*dst.GenDecl)
-				gd.Decs.Space = dst.NewLine
+				gd.Decs.Before = dst.NewLine
 				gd.Specs[0].(*dst.ValueSpec).Names[0].Name = "j"
 				gd.Specs[0].(*dst.ValueSpec).Names[0].Decs.End.Replace("/*b*/")
 				f.Decls = append(f.Decls, gd)

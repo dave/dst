@@ -338,15 +338,15 @@ func (f *fileDecorator) link() {
 
 			// If the newline is directly before / after a node, we can set the Before / After spacing
 			// of the node decoration instead of adding the newline as a decoration.
-			nodeSpace, _, foundSpace := f.findNode(i, 1)
+			nodeBefore, _, foundBefore := f.findNode(i, 1)
 			nodeAfter, _, foundAfter := f.findNode(i, -1)
-			if foundSpace || foundAfter {
+			if foundBefore || foundAfter {
 				spaceType := dst.NewLine
 				if frag.Empty {
 					spaceType = dst.EmptyLine
 				}
-				if foundSpace {
-					f.space[nodeSpace] = spaceType
+				if foundBefore {
+					f.before[nodeBefore] = spaceType
 				}
 				if foundAfter {
 					f.after[nodeAfter] = spaceType

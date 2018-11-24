@@ -43,7 +43,7 @@ markers. When adding a line comment, a newline is automatically rendered.
 
 #### Line spacing
 
-The `Space` property marks the node as having a line space (new line or empty line) before the node. 
+The `Before` property marks the node as having a line space (new line or empty line) before the node. 
 These spaces are rendered before any decorations attached to the `Start` decoration point. The `After`
 property is similar but rendered after the node (and after any `End` decorations).
 
@@ -51,14 +51,14 @@ property is similar but rendered after the node (and after any `End` decorations
 
 #### Common properties
 
-The common decoration properties (`Start`, `End`, `Space` and `After`) occur on all nodes, and can be 
+The common decoration properties (`Start`, `End`, `Before` and `After`) occur on all nodes, and can be 
 accessed with the `Decorations()` method on the `Node` interface:
 
 {{ "ExampleDecorated" | example }}
 
 #### Newlines as decorations
 
-The `Space` and `After` properties cover the majority of cases, but occasionally a newline needs to 
+The `Before` and `After` properties cover the majority of cases, but occasionally a newline needs to 
 be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
 
 #### Clone

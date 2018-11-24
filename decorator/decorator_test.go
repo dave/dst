@@ -35,12 +35,12 @@ func TestDecorator(t *testing.T) {
 					"root/c"
 					"root/d"
 				)`,
-			expect: `GenDecl [Empty line space] [Start "// first-import-block"] [Empty line after]
-ImportSpec [New line space] [New line after]
-ImportSpec [New line space] [New line after]
-GenDecl [Empty line space] [Start "// second-import-block"]
-ImportSpec [New line space] [New line after]
-ImportSpec [New line space] [New line after]`,
+			expect: `GenDecl [Empty line before] [Start "// first-import-block"] [Empty line after]
+ImportSpec [New line before] [New line after]
+ImportSpec [New line before] [New line after]
+GenDecl [Empty line before] [Start "// second-import-block"]
+ImportSpec [New line before] [New line after]
+ImportSpec [New line before] [New line after]`,
 		},
 		{
 			name: "comment-alignment",
@@ -50,9 +50,9 @@ const (
 	a = 1 // a
 	b     // b
 )`,
-			expect: `GenDecl [Empty line space]
-ValueSpec [New line space] [End "// a"] [New line after]
-ValueSpec [New line space] [End "// b"] [New line after]`,
+			expect: `GenDecl [Empty line before]
+ValueSpec [New line before] [End "// a"] [New line after]
+ValueSpec [New line before] [End "// b"] [New line after]`,
 		},
 		{
 			name: "labelled-statement-hanging-indent",
@@ -66,10 +66,10 @@ A:
 	// b
 	var b int
 }`,
-			expect: `FuncDecl [Empty line space]
-LabeledStmt [New line space] [End "\n" "// a"] [Empty line after]
-DeclStmt [New line space]
-DeclStmt [Empty line space] [Start "// b"] [New line after]`,
+			expect: `FuncDecl [Empty line before]
+LabeledStmt [New line before] [End "\n" "// a"] [Empty line after]
+DeclStmt [New line before]
+DeclStmt [Empty line before] [Start "// b"] [New line after]`,
 		},
 		{
 			name: "hanging-indent-same-line",
@@ -83,10 +83,10 @@ func a() {
 	case false:
 	}
 }`,
-			expect: `FuncDecl [Empty line space]
-SwitchStmt [New line space] [New line after]
-CaseClause [New line space] [End "// a" "// b"] [New line after]
-CaseClause [New line space] [Start "// c"] [New line after]`,
+			expect: `FuncDecl [Empty line before]
+SwitchStmt [New line before] [New line after]
+CaseClause [New line before] [End "// a" "// b"] [New line after]
+CaseClause [New line before] [Start "// c"] [New line after]`,
 		},
 		{
 			name: "hanging-indent",
@@ -107,12 +107,12 @@ const c = 1 +
 // d2
 const d = 1
 `,
-			expect: `GenDecl [Empty line space] [End "\n" "// a1" "\n" "// a2"] [New line after]
-BasicLit [New line space]
-GenDecl [New line space] [Empty line after]
-GenDecl [Empty line space] [Empty line after]
-BasicLit [New line space]
-GenDecl [Empty line space] [Start "// d1" "\n" "// d2"]`,
+			expect: `GenDecl [Empty line before] [End "\n" "// a1" "\n" "// a2"] [New line after]
+BasicLit [New line before]
+GenDecl [New line before] [Empty line after]
+GenDecl [Empty line before] [Empty line after]
+BasicLit [New line before]
+GenDecl [Empty line before] [Start "// d1" "\n" "// d2"]`,
 		},
 		{
 			name: "net-hook",
@@ -124,10 +124,10 @@ GenDecl [Empty line space] [Start "// d1" "\n" "// d2"]`,
 				) int {
 					return 1
 				}`,
-			expect: `GenDecl [Empty line space]
-Field [New line space] [New line after]
-Field [New line space] [New line after]
-ReturnStmt [New line space] [New line after]`,
+			expect: `GenDecl [Empty line before]
+Field [New line before] [New line after]
+Field [New line before] [New line after]
+ReturnStmt [New line before] [New line after]`,
 		},
 		{
 			name: "multi-line-string",
@@ -137,8 +137,8 @@ ReturnStmt [New line space] [New line after]`,
 					c: ` + "`" + `
 ` + "`" + `,
 				}`,
-			expect: `GenDecl [Empty line space]
-KeyValueExpr [New line space] [New line after]`,
+			expect: `GenDecl [Empty line before]
+KeyValueExpr [New line before] [New line after]`,
 		},
 		{
 			name: "case clause",
@@ -154,11 +154,11 @@ KeyValueExpr [New line space] [New line after]`,
 					case 3:
 					}
 				}`,
-			expect: `FuncDecl [Empty line space]
-SwitchStmt [New line space] [New line after]
-CaseClause [New line space] [End "\n" "// a"] [New line after]
-CaseClause [New line space] [Start "// b"] [New line after]
-CaseClause [New line space] [Start "// c"] [New line after]`,
+			expect: `FuncDecl [Empty line before]
+SwitchStmt [New line before] [New line after]
+CaseClause [New line before] [End "\n" "// a"] [New line after]
+CaseClause [New line before] [Start "// b"] [New line after]
+CaseClause [New line before] [Start "// c"] [New line after]`,
 		},
 		{
 			name: "block comment",
@@ -168,7 +168,7 @@ CaseClause [New line space] [Start "// c"] [New line after]`,
 					foo
 				*/
 				var i int`,
-			expect: `GenDecl [Empty line space] [Start "/*\n\tfoo\n*/" "\n"]`,
+			expect: `GenDecl [Empty line before] [Start "/*\n\tfoo\n*/" "\n"]`,
 		},
 		{
 			name: "case comment",
@@ -183,10 +183,10 @@ CaseClause [New line space] [Start "// c"] [New line after]`,
 						var i int
 					}
 				}`,
-			expect: `FuncDecl [Empty line space]
-SwitchStmt [New line space] [New line after]
-CaseClause [New line space] [Colon "\n" "// b" "// c"] [New line after]
-DeclStmt [Empty line space]`,
+			expect: `FuncDecl [Empty line before]
+SwitchStmt [New line before] [New line after]
+CaseClause [New line before] [Colon "\n" "// b" "// c"] [New line after]
+DeclStmt [Empty line before]`,
 		},
 		{
 			name: "file",
@@ -194,7 +194,7 @@ DeclStmt [Empty line space]`,
 
 			var i int`,
 			expect: `File [Start "/*Start*/"] [Package "/*Package*/"] [Name "/*Name*/"]
-GenDecl [Empty line space]`,
+GenDecl [Empty line before]`,
 		},
 		{
 
@@ -204,8 +204,8 @@ GenDecl [Empty line space]`,
 			// TypeAssertExpr
 			var I interface{}
 			var J = I. /*TypeAssertExprX*/ ( /*TypeAssertExprLparen*/ int /*TypeAssertExprType*/)`,
-			expect: `GenDecl [Empty line space] [Start "// TypeAssertExpr"] [New line after]
-GenDecl [New line space]
+			expect: `GenDecl [Empty line before] [Start "// TypeAssertExpr"] [New line after]
+GenDecl [New line before]
 TypeAssertExpr [X "/*TypeAssertExprX*/"] [Lparen "/*TypeAssertExprLparen*/"] [Type "/*TypeAssertExprType*/"]`,
 		},
 		{
@@ -218,9 +218,9 @@ TypeAssertExpr [X "/*TypeAssertExprX*/"] [Lparen "/*TypeAssertExprLparen*/"] [Ty
 						print(k, v)
 					} /*End*/
 				}`,
-			expect: `FuncDecl [Empty line space]
-RangeStmt [New line space] [Start "/*Start*/" "\n"] [For "/*For*/"] [Key "/*Key*/"] [Value "/*Value*/"] [Range "/*Range*/"] [X "/*X*/"] [End "/*End*/"] [New line after]
-ExprStmt [New line space] [New line after]`,
+			expect: `FuncDecl [Empty line before]
+RangeStmt [New line before] [Start "/*Start*/" "\n"] [For "/*For*/"] [Key "/*Key*/"] [Value "/*Value*/"] [Range "/*Range*/"] [X "/*X*/"] [End "/*End*/"] [New line after]
+ExprStmt [New line before] [New line after]`,
 		},
 		{
 			name: "value spec",
@@ -229,15 +229,15 @@ ExprStmt [New line space] [New line after]`,
 				func main() {
 					var foo int
 				}`,
-			expect: `FuncDecl [Empty line space]
-DeclStmt [New line space] [New line after]`,
+			expect: `FuncDecl [Empty line before]
+DeclStmt [New line before] [New line after]`,
 		},
 		{
 			name: "chan type",
 			code: `package main
 
 				type Y /*Start*/ chan /*Begin*/ <- /*Arrow*/ int /*End*/`,
-			expect: `GenDecl [Empty line space] [End "/*End*/"]
+			expect: `GenDecl [Empty line before] [End "/*End*/"]
 TypeSpec [Name "/*Start*/"]
 ChanType [Begin "/*Begin*/"] [Arrow "/*Arrow*/"]`,
 		},
@@ -250,8 +250,8 @@ ChanType [Begin "/*Begin*/"] [Arrow "/*Arrow*/"]`,
 						// a
 					}
 				}`,
-			expect: `FuncDecl [Empty line space]
-IfStmt [New line space] [New line after]
+			expect: `FuncDecl [Empty line before]
+IfStmt [New line before] [New line after]
 BlockStmt [Lbrace "\n" "// a"]`,
 		},
 		{
@@ -261,8 +261,8 @@ BlockStmt [Lbrace "\n" "// a"]`,
 			func main() {
 				i // foo
 			}`,
-			expect: `FuncDecl [Empty line space]
-ExprStmt [New line space] [End "// foo"] [New line after]`,
+			expect: `FuncDecl [Empty line before]
+ExprStmt [New line before] [End "// foo"] [New line after]`,
 		},
 		{
 			name: "inline comment inside node",
@@ -271,8 +271,8 @@ ExprStmt [New line space] [End "// foo"] [New line after]`,
 			func main() {
 				i /* foo */ ++
 			}`,
-			expect: `FuncDecl [Empty line space]
-IncDecStmt [New line space] [X "/* foo */"] [New line after]`,
+			expect: `FuncDecl [Empty line before]
+IncDecStmt [New line before] [X "/* foo */"] [New line after]`,
 		},
 		{
 			name: "comment statement spaced",
@@ -284,8 +284,8 @@ IncDecStmt [New line space] [X "/* foo */"] [New line after]`,
 
 				i
 			}`,
-			expect: `FuncDecl [Empty line space]
-ExprStmt [Empty line space] [Start "// foo" "\n"] [New line after]`,
+			expect: `FuncDecl [Empty line before]
+ExprStmt [Empty line before] [Start "// foo" "\n"] [New line after]`,
 		},
 		{
 			name: "comment statement",
@@ -295,8 +295,8 @@ ExprStmt [Empty line space] [Start "// foo" "\n"] [New line after]`,
 				// foo
 				i
 			}`,
-			expect: `FuncDecl [Empty line space]
-ExprStmt [New line space] [Start "// foo"] [New line after]`,
+			expect: `FuncDecl [Empty line before]
+ExprStmt [New line before] [Start "// foo"] [New line after]`,
 		},
 		{
 			name: "comment after lbrace",
@@ -305,9 +305,9 @@ ExprStmt [New line space] [Start "// foo"] [New line after]`,
 			func main() { // foo
 				i
 			}`,
-			expect: `FuncDecl [Empty line space]
+			expect: `FuncDecl [Empty line before]
 BlockStmt [Lbrace "// foo"]
-ExprStmt [New line space] [New line after]`,
+ExprStmt [New line before] [New line after]`,
 		},
 		{
 			name: "comment after func",
@@ -316,8 +316,8 @@ ExprStmt [New line space] [New line after]`,
 			func /* foo */ main() {
 				i
 			}`,
-			expect: `FuncDecl [Empty line space] [Func "/* foo */"]
-ExprStmt [New line space] [New line after]`,
+			expect: `FuncDecl [Empty line before] [Func "/* foo */"]
+ExprStmt [New line before] [New line after]`,
 		},
 		{
 			name: "field",
@@ -326,8 +326,8 @@ ExprStmt [New line space] [New line after]`,
 			type A struct {
 				A /*IdentEnd*/ int /*FieldType*/ ` + "`" + `a:"a"` + "`" + `
 			}`,
-			expect: `GenDecl [Empty line space]
-Field [New line space] [Type "/*FieldType*/"] [New line after]
+			expect: `GenDecl [Empty line before]
+Field [New line before] [Type "/*FieldType*/"] [New line after]
 Ident [End "/*IdentEnd*/"]`,
 		},
 		{
@@ -338,9 +338,9 @@ Ident [End "/*IdentEnd*/"]`,
 				"a": "b",
 				"c": "d", // foo
 			}`,
-			expect: `GenDecl [Empty line space]
-KeyValueExpr [New line space] [New line after]
-KeyValueExpr [New line space] [End "// foo"] [New line after]`,
+			expect: `GenDecl [Empty line before]
+KeyValueExpr [New line before] [New line after]
+KeyValueExpr [New line before] [End "// foo"] [New line after]`,
 		},
 		{
 			name: "composite literal 1",
@@ -351,9 +351,9 @@ KeyValueExpr [New line space] [End "// foo"] [New line after]`,
 				// foo
 				"c": "d",
 			}`,
-			expect: `GenDecl [Empty line space]
-KeyValueExpr [New line space] [New line after]
-KeyValueExpr [New line space] [Start "// foo"] [New line after]`,
+			expect: `GenDecl [Empty line before]
+KeyValueExpr [New line before] [New line after]
+KeyValueExpr [New line before] [Start "// foo"] [New line after]`,
 		},
 		{
 			name: "composite literal 2",
@@ -365,9 +365,9 @@ KeyValueExpr [New line space] [Start "// foo"] [New line after]`,
 				// foo
 				"c": "d",
 			}`,
-			expect: `GenDecl [Empty line space]
-KeyValueExpr [New line space] [Empty line after]
-KeyValueExpr [Empty line space] [Start "// foo"] [New line after]`,
+			expect: `GenDecl [Empty line before]
+KeyValueExpr [New line before] [Empty line after]
+KeyValueExpr [Empty line before] [Start "// foo"] [New line after]`,
 		},
 		{
 			name: "composite literal 3",
@@ -380,9 +380,9 @@ KeyValueExpr [Empty line space] [Start "// foo"] [New line after]`,
 
 				"c": "d",
 			}`,
-			expect: `GenDecl [Empty line space]
-KeyValueExpr [New line space] [Empty line after]
-KeyValueExpr [Empty line space] [Start "// foo" "\n"] [New line after]`,
+			expect: `GenDecl [Empty line before]
+KeyValueExpr [New line before] [Empty line after]
+KeyValueExpr [Empty line before] [Start "// foo" "\n"] [New line after]`,
 		},
 		{
 			name: "composite literal 4",
@@ -394,9 +394,9 @@ KeyValueExpr [Empty line space] [Start "// foo" "\n"] [New line after]`,
 
 				"c": "d",
 			}`,
-			expect: `GenDecl [Empty line space]
-KeyValueExpr [New line space] [End "\n" "// foo"] [Empty line after]
-KeyValueExpr [Empty line space] [New line after]`,
+			expect: `GenDecl [Empty line before]
+KeyValueExpr [New line before] [End "\n" "// foo"] [Empty line after]
+KeyValueExpr [Empty line before] [New line after]`,
 		},
 		{
 			name: "composite literal 4a",
@@ -407,9 +407,9 @@ KeyValueExpr [Empty line space] [New line after]`,
 				// foo
 				"c": "d",
 			}`,
-			expect: `GenDecl [Empty line space]
-KeyValueExpr [New line space] [New line after]
-KeyValueExpr [New line space] [Start "// foo"] [New line after]`,
+			expect: `GenDecl [Empty line before]
+KeyValueExpr [New line before] [New line after]
+KeyValueExpr [New line before] [Start "// foo"] [New line after]`,
 		},
 		{
 			name: "composite literal 5",
@@ -419,9 +419,9 @@ KeyValueExpr [New line space] [Start "// foo"] [New line after]`,
 				"a": "b", // foo
 				"c": "d",
 			}`,
-			expect: `GenDecl [Empty line space]
-KeyValueExpr [New line space] [End "// foo"] [New line after]
-KeyValueExpr [New line space] [New line after]`,
+			expect: `GenDecl [Empty line before]
+KeyValueExpr [New line before] [End "// foo"] [New line after]
+KeyValueExpr [New line before] [New line after]`,
 		},
 		{
 			name: "FuncDecl",
@@ -430,7 +430,7 @@ KeyValueExpr [New line space] [New line after]`,
 			// FuncDecl
 			func /*FuncDeclDoc*/ (a *b) /*FuncDeclRecv*/ c /*FuncDeclName*/ (d, e int) /*FuncDeclParams*/ (f, g int) /*FuncDeclType*/ {
 			}`,
-			expect: `FuncDecl [Empty line space] [Start "// FuncDecl"] [Func "/*FuncDeclDoc*/"] [Recv "/*FuncDeclRecv*/"] [Name "/*FuncDeclName*/"] [Params "/*FuncDeclParams*/"] [Results "/*FuncDeclType*/"]
+			expect: `FuncDecl [Empty line before] [Start "// FuncDecl"] [Func "/*FuncDeclDoc*/"] [Recv "/*FuncDeclRecv*/"] [Name "/*FuncDeclName*/"] [Params "/*FuncDeclParams*/"] [Results "/*FuncDeclType*/"]
 BlockStmt [Lbrace "\n"]`,
 		},
 	}

@@ -359,7 +359,7 @@ func (fr *FileRestorer) updateImports() {
 				Tok: token.IMPORT,
 				// make sure it has an empty line before and after
 				Decs: dst.GenDeclDecorations{
-					NodeDecs: dst.NodeDecs{Space: dst.EmptyLine, After: dst.EmptyLine},
+					NodeDecs: dst.NodeDecs{Before: dst.EmptyLine, After: dst.EmptyLine},
 				},
 			}
 			if hasCgoBlock {
@@ -431,13 +431,13 @@ func (fr *FileRestorer) updateImports() {
 			path := mustUnquote(spec.(*dst.ImportSpec).Path.Value)
 			if strings.Contains(path, ".") && !foundDomainImport {
 				// first non-std-lib import -> empty line above
-				spec.Decorations().Space = dst.EmptyLine
+				spec.Decorations().Before = dst.EmptyLine
 				spec.Decorations().After = dst.NewLine
 				foundDomainImport = true
 				continue
 			}
 			// all other specs, just newlines
-			spec.Decorations().Space = dst.NewLine
+			spec.Decorations().Before = dst.NewLine
 			spec.Decorations().After = dst.NewLine
 		}
 
@@ -483,10 +483,10 @@ func (fr *FileRestorer) updateImports() {
 
 				// merge decorations for n, x and sel:
 
-				if n.Decs.Space == dst.EmptyLine || x.Decs.Space == dst.EmptyLine || sel.Decs.Space == dst.EmptyLine {
-					id.Decs.Space = dst.EmptyLine
-				} else if n.Decs.Space == dst.NewLine || x.Decs.Space == dst.NewLine || sel.Decs.Space == dst.NewLine {
-					id.Decs.Space = dst.NewLine
+				if n.Decs.Before == dst.EmptyLine || x.Decs.Before == dst.EmptyLine || sel.Decs.Before == dst.EmptyLine {
+					id.Decs.Before = dst.EmptyLine
+				} else if n.Decs.Before == dst.NewLine || x.Decs.Before == dst.NewLine || sel.Decs.Before == dst.NewLine {
+					id.Decs.Before = dst.NewLine
 				}
 
 				if n.Decs.After == dst.EmptyLine || x.Decs.After == dst.EmptyLine || sel.Decs.After == dst.EmptyLine {
@@ -523,7 +523,7 @@ func (fr *FileRestorer) updateImports() {
 					X:   &dst.Ident{Name: names[n.Path]},
 					Sel: &dst.Ident{Name: n.Name, Path: n.Path, Obj: n.Obj},
 				}
-				sel.Decs.Space = n.Decs.Space
+				sel.Decs.Before = n.Decs.Before
 				sel.Decs.After = n.Decs.After
 				sel.Decs.Start.Append([]string(n.Decs.Start)...)
 				sel.Decs.End.Append([]string(n.Decs.End)...)

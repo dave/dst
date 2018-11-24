@@ -8,7 +8,7 @@ func Clone(n Node) Node {
 	case *ArrayType:
 		out := &ArrayType{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -38,7 +38,7 @@ func Clone(n Node) Node {
 	case *AssignStmt:
 		out := &AssignStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -68,7 +68,7 @@ func Clone(n Node) Node {
 	case *BadDecl:
 		out := &BadDecl{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -85,7 +85,7 @@ func Clone(n Node) Node {
 	case *BadExpr:
 		out := &BadExpr{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -102,7 +102,7 @@ func Clone(n Node) Node {
 	case *BadStmt:
 		out := &BadStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -119,7 +119,7 @@ func Clone(n Node) Node {
 	case *BasicLit:
 		out := &BasicLit{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -139,7 +139,7 @@ func Clone(n Node) Node {
 	case *BinaryExpr:
 		out := &BinaryExpr{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -172,7 +172,7 @@ func Clone(n Node) Node {
 	case *BlockStmt:
 		out := &BlockStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -194,7 +194,7 @@ func Clone(n Node) Node {
 	case *BranchStmt:
 		out := &BranchStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -219,7 +219,7 @@ func Clone(n Node) Node {
 	case *CallExpr:
 		out := &CallExpr{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -252,7 +252,7 @@ func Clone(n Node) Node {
 	case *CaseClause:
 		out := &CaseClause{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -282,7 +282,7 @@ func Clone(n Node) Node {
 	case *ChanType:
 		out := &ChanType{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -310,7 +310,7 @@ func Clone(n Node) Node {
 	case *CommClause:
 		out := &CommClause{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -343,7 +343,7 @@ func Clone(n Node) Node {
 	case *CompositeLit:
 		out := &CompositeLit{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -376,7 +376,7 @@ func Clone(n Node) Node {
 	case *DeclStmt:
 		out := &DeclStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -395,7 +395,7 @@ func Clone(n Node) Node {
 	case *DeferStmt:
 		out := &DeferStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -417,7 +417,7 @@ func Clone(n Node) Node {
 	case *Ellipsis:
 		out := &Ellipsis{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -439,7 +439,7 @@ func Clone(n Node) Node {
 	case *EmptyStmt:
 		out := &EmptyStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -456,7 +456,7 @@ func Clone(n Node) Node {
 	case *ExprStmt:
 		out := &ExprStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -475,7 +475,7 @@ func Clone(n Node) Node {
 	case *Field:
 		out := &Field{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -507,7 +507,7 @@ func Clone(n Node) Node {
 	case *FieldList:
 		out := &FieldList{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -529,7 +529,7 @@ func Clone(n Node) Node {
 	case *File:
 		out := &File{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -562,7 +562,7 @@ func Clone(n Node) Node {
 	case *ForStmt:
 		out := &ForStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -608,7 +608,7 @@ func Clone(n Node) Node {
 	case *FuncDecl:
 		out := &FuncDecl{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Init: Type
 		out.Type = &FuncType{}
@@ -665,7 +665,7 @@ func Clone(n Node) Node {
 	case *FuncLit:
 		out := &FuncLit{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -692,7 +692,7 @@ func Clone(n Node) Node {
 	case *FuncType:
 		out := &FuncType{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -722,7 +722,7 @@ func Clone(n Node) Node {
 	case *GenDecl:
 		out := &GenDecl{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -750,7 +750,7 @@ func Clone(n Node) Node {
 	case *GoStmt:
 		out := &GoStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -772,7 +772,7 @@ func Clone(n Node) Node {
 	case *Ident:
 		out := &Ident{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -795,7 +795,7 @@ func Clone(n Node) Node {
 	case *IfStmt:
 		out := &IfStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -841,7 +841,7 @@ func Clone(n Node) Node {
 	case *ImportSpec:
 		out := &ImportSpec{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -868,7 +868,7 @@ func Clone(n Node) Node {
 	case *IncDecStmt:
 		out := &IncDecStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -893,7 +893,7 @@ func Clone(n Node) Node {
 	case *IndexExpr:
 		out := &IndexExpr{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -926,7 +926,7 @@ func Clone(n Node) Node {
 	case *InterfaceType:
 		out := &InterfaceType{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -951,7 +951,7 @@ func Clone(n Node) Node {
 	case *KeyValueExpr:
 		out := &KeyValueExpr{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -981,7 +981,7 @@ func Clone(n Node) Node {
 	case *LabeledStmt:
 		out := &LabeledStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1011,7 +1011,7 @@ func Clone(n Node) Node {
 	case *MapType:
 		out := &MapType{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1063,7 +1063,7 @@ func Clone(n Node) Node {
 	case *ParenExpr:
 		out := &ParenExpr{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1088,7 +1088,7 @@ func Clone(n Node) Node {
 	case *RangeStmt:
 		out := &RangeStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1140,7 +1140,7 @@ func Clone(n Node) Node {
 	case *ReturnStmt:
 		out := &ReturnStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1162,7 +1162,7 @@ func Clone(n Node) Node {
 	case *SelectStmt:
 		out := &SelectStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1184,7 +1184,7 @@ func Clone(n Node) Node {
 	case *SelectorExpr:
 		out := &SelectorExpr{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1211,7 +1211,7 @@ func Clone(n Node) Node {
 	case *SendStmt:
 		out := &SendStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1241,7 +1241,7 @@ func Clone(n Node) Node {
 	case *SliceExpr:
 		out := &SliceExpr{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1293,7 +1293,7 @@ func Clone(n Node) Node {
 	case *StarExpr:
 		out := &StarExpr{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1315,7 +1315,7 @@ func Clone(n Node) Node {
 	case *StructType:
 		out := &StructType{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1340,7 +1340,7 @@ func Clone(n Node) Node {
 	case *SwitchStmt:
 		out := &SwitchStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1378,7 +1378,7 @@ func Clone(n Node) Node {
 	case *TypeAssertExpr:
 		out := &TypeAssertExpr{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1411,7 +1411,7 @@ func Clone(n Node) Node {
 	case *TypeSpec:
 		out := &TypeSpec{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1438,7 +1438,7 @@ func Clone(n Node) Node {
 	case *TypeSwitchStmt:
 		out := &TypeSwitchStmt{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1476,7 +1476,7 @@ func Clone(n Node) Node {
 	case *UnaryExpr:
 		out := &UnaryExpr{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
@@ -1501,7 +1501,7 @@ func Clone(n Node) Node {
 	case *ValueSpec:
 		out := &ValueSpec{}
 
-		out.Decs.Space = n.Decs.Space
+		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)

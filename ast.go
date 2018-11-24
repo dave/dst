@@ -32,7 +32,7 @@ import (
 
 // Node is satisfied by all nodes types.
 type Node interface {
-	// Decorations returns the common Node decorations (Space, After, Start, End). This returns nil for Package nodes.
+	// Decorations returns the common Node decorations (Before, After, Start, End). This returns nil for Package nodes.
 	Decorations() *NodeDecs
 }
 

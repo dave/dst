@@ -2,9 +2,10 @@ package decorator
 
 import (
 	"fmt"
-	"github.com/dave/dst"
 	"go/ast"
 	"go/token"
+
+	"github.com/dave/dst"
 )
 
 func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
@@ -20,7 +21,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.ArrayType{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -57,7 +58,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.AssignStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -89,7 +90,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.BadDecl{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -108,7 +109,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.BadExpr{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -127,7 +128,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.BadStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -146,7 +147,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.BasicLit{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -169,7 +170,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.BinaryExpr{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -204,7 +205,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.BlockStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -234,7 +235,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.BranchStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -261,7 +262,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.CallExpr{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -308,7 +309,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.CaseClause{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -352,7 +353,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.ChanType{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -401,7 +402,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.CommClause{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -448,7 +449,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.CompositeLit{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -489,7 +490,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.DeclStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -508,7 +509,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.DeferStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -534,7 +535,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.Ellipsis{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -560,7 +561,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.EmptyStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -583,7 +584,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.ExprStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -602,7 +603,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.Field{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -634,7 +635,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.FieldList{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -668,7 +669,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.File{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -705,7 +706,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.ForStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -765,7 +766,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.FuncDecl{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Init: Type
 		out.Type = &ast.FuncType{}
@@ -840,7 +841,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.FuncLit{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -867,7 +868,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.FuncType{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -903,7 +904,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.GenDecl{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -945,7 +946,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.GoStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -971,7 +972,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.Ident{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -993,7 +994,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.IfStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1048,7 +1049,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.ImportSpec{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1075,7 +1076,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.IncDecStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1102,7 +1103,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.IndexExpr{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1143,7 +1144,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.InterfaceType{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1172,7 +1173,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.KeyValueExpr{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1206,7 +1207,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.LabeledStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1240,7 +1241,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.MapType{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1304,7 +1305,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.ParenExpr{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1337,7 +1338,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.RangeStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1405,7 +1406,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.ReturnStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1431,7 +1432,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.SelectStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1457,7 +1458,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.SelectorExpr{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1487,7 +1488,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.SendStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1521,7 +1522,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.SliceExpr{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1589,7 +1590,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.StarExpr{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1615,7 +1616,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.StructType{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1644,7 +1645,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.SwitchStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1686,7 +1687,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.TypeAssertExpr{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1735,7 +1736,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.TypeSpec{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1768,7 +1769,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.TypeSwitchStmt{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1810,7 +1811,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.UnaryExpr{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)
@@ -1837,7 +1838,7 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		out := &ast.ValueSpec{}
 		r.Ast.Nodes[n] = out
 		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Space)
+		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
 		r.applyDecorations(out, n.Decs.Start, false)

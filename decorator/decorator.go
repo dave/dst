@@ -88,7 +88,7 @@ func (pd *Decorator) newFileDecorator() *fileDecorator {
 		Decorator:    pd,
 		startIndents: map[ast.Node]int{},
 		endIndents:   map[ast.Node]int{},
-		space:        map[ast.Node]dst.SpaceType{},
+		before:       map[ast.Node]dst.SpaceType{},
 		after:        map[ast.Node]dst.SpaceType{},
 		decorations:  map[ast.Node]map[string][]string{},
 	}
@@ -96,13 +96,13 @@ func (pd *Decorator) newFileDecorator() *fileDecorator {
 
 type fileDecorator struct {
 	*Decorator
-	file         *ast.File // file we're decorating in for import name resolution - can be nil if we're just decorating an isolated node
-	cursor       int
-	fragments    []fragment
-	startIndents map[ast.Node]int
-	endIndents   map[ast.Node]int
-	space, after map[ast.Node]dst.SpaceType
-	decorations  map[ast.Node]map[string][]string
+	file          *ast.File // file we're decorating in for import name resolution - can be nil if we're just decorating an isolated node
+	cursor        int
+	fragments     []fragment
+	startIndents  map[ast.Node]int
+	endIndents    map[ast.Node]int
+	before, after map[ast.Node]dst.SpaceType
+	decorations   map[ast.Node]map[string][]string
 }
 
 type decorationInfo struct {
@@ -243,12 +243,12 @@ func debug(w io.Writer, file dst.Node) {
 			return false
 		}
 		var out string
-		space, after, infos := getDecorationInfo(n)
-		switch space {
+		before, after, infos := getDecorationInfo(n)
+		switch before {
 		case dst.NewLine:
-			out += " [New line space]"
+			out += " [New line before]"
 		case dst.EmptyLine:
-			out += " [Empty line space]"
+			out += " [Empty line before]"
 		}
 		for _, info := range infos {
 			if len(info.decs) > 0 {

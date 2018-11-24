@@ -19,7 +19,7 @@ func generateClone(names []string) error {
 
 					if nodeName != "Package" {
 						g.Line()
-						g.Id("out").Dot("Decs").Dot("Space").Op("=").Id("n").Dot("Decs").Dot("Space")
+						g.Id("out").Dot("Decs").Dot("Before").Op("=").Id("n").Dot("Decs").Dot("Before")
 					}
 
 					for _, frag := range data.Info[nodeName] {

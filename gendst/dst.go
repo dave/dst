@@ -22,7 +22,7 @@ func generateDst(names []string) error {
 		if name == "Package" {
 			f.Comment("Decorations is nil for Package nodes.")
 		} else {
-			f.Comment("Decorations returns the decorations that are common to all nodes (Space, Start, End, After).")
+			f.Comment("Decorations returns the decorations that are common to all nodes (Before, Start, End, After).")
 		}
 		f.Func().Params(Id("n").Op("*").Id(name)).Id("Decorations").Params().Op("*").Id("NodeDecs").BlockFunc(func(g *Group) {
 			if name == "Package" {

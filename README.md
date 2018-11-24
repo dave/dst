@@ -128,7 +128,7 @@ if err := decorator.Print(f); err != nil {
 
 #### Line spacing
 
-The `Space` property marks the node as having a line space (new line or empty line) before the node. 
+The `Before` property marks the node as having a line space (new line or empty line) before the node. 
 These spaces are rendered before any decorations attached to the `Start` decoration point. The `After`
 property is similar but rendered after the node (and after any `End` decorations).
 
@@ -145,12 +145,12 @@ if err != nil {
 
 call := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
 
-call.Decs.Space = dst.EmptyLine
+call.Decs.Before = dst.EmptyLine
 call.Decs.After = dst.EmptyLine
 
 for _, v := range call.Args {
 	v := v.(*dst.Ident)
-	v.Decs.Space = dst.NewLine
+	v.Decs.Before = dst.NewLine
 	v.Decs.After = dst.NewLine
 }
 
@@ -174,7 +174,7 @@ if err := decorator.Print(f); err != nil {
 
 #### Common properties
 
-The common decoration properties (`Start`, `End`, `Space` and `After`) occur on all nodes, and can be 
+The common decoration properties (`Start`, `End`, `Before` and `After`) occur on all nodes, and can be 
 accessed with the `Decorations()` method on the `Node` interface:
 
 ```go
@@ -192,9 +192,9 @@ if err != nil {
 
 list := f.Decls[0].(*dst.FuncDecl).Body.List
 
-list[0].Decorations().Space = dst.EmptyLine
+list[0].Decorations().Before = dst.EmptyLine
 list[0].Decorations().End.Append("// the Decorations method allows access to the common")
-list[1].Decorations().End.Append("// decoration properties (Space, Start, End and After)")
+list[1].Decorations().End.Append("// decoration properties (Before, Start, End and After)")
 list[2].Decorations().End.Append("// for all nodes.")
 list[2].Decorations().After = dst.EmptyLine
 
@@ -208,7 +208,7 @@ if err := decorator.Print(f); err != nil {
 //func main() {
 //
 //	var i int  // the Decorations method allows access to the common
-//	i++        // decoration properties (Space, Start, End and After)
+//	i++        // decoration properties (Before, Start, End and After)
 //	println(i) // for all nodes.
 //
 //}
@@ -216,7 +216,7 @@ if err := decorator.Print(f); err != nil {
 
 #### Newlines as decorations
 
-The `Space` and `After` properties cover the majority of cases, but occasionally a newline needs to 
+The `Before` and `After` properties cover the majority of cases, but occasionally a newline needs to 
 be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
 
 #### Clone
@@ -236,7 +236,7 @@ if err != nil {
 
 cloned := dst.Clone(f.Decls[0]).(*dst.GenDecl)
 
-cloned.Decs.Space = dst.NewLine
+cloned.Decs.Before = dst.NewLine
 cloned.Specs[0].(*dst.ValueSpec).Names[0].Name = "j"
 cloned.Specs[0].(*dst.ValueSpec).Names[0].Decs.End.Replace("/* b */")
 

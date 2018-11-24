@@ -38,7 +38,7 @@ func generateRestorer(names []string) error {
 					g.Id("r").Dot("Dst").Dot("Nodes").Index(Id("out")).Op("=").Id("n")
 
 					if nodeName != "Package" {
-						g.Id("r").Dot("applySpace").Call(Id("n").Dot("Decs").Dot("Space"))
+						g.Id("r").Dot("applySpace").Call(Id("n").Dot("Decs").Dot("Before"))
 					}
 
 					for _, frag := range data.Info[nodeName] {

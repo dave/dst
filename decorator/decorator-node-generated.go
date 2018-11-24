@@ -16,7 +16,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Lbrack
@@ -54,7 +54,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// List: Lhs
@@ -88,7 +88,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Bad
@@ -109,7 +109,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Bad
@@ -130,7 +130,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Bad
@@ -151,7 +151,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// String: Value
@@ -175,7 +175,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: X
@@ -212,7 +212,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Lbrace
@@ -242,7 +242,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Tok
@@ -271,7 +271,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: Fun
@@ -315,7 +315,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Case
@@ -353,7 +353,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Begin
@@ -391,7 +391,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Case
@@ -432,7 +432,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: Type
@@ -473,7 +473,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: Decl
@@ -496,7 +496,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Defer
@@ -524,7 +524,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Ellipsis
@@ -552,7 +552,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Semicolon
@@ -575,7 +575,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: X
@@ -598,7 +598,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// List: Names
@@ -634,7 +634,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Opening
@@ -666,7 +666,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Package
@@ -705,7 +705,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: For
@@ -761,7 +761,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Init: Type
@@ -825,7 +825,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: Type
@@ -856,7 +856,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Func
@@ -893,7 +893,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Tok
@@ -931,7 +931,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Go
@@ -959,7 +959,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// String: Name
@@ -986,7 +986,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: If
@@ -1040,7 +1040,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: Name
@@ -1071,7 +1071,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: X
@@ -1100,7 +1100,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: X
@@ -1141,7 +1141,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Interface
@@ -1172,7 +1172,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: Key
@@ -1208,7 +1208,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: Label
@@ -1244,7 +1244,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Map
@@ -1308,7 +1308,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Lparen
@@ -1341,7 +1341,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: For
@@ -1403,7 +1403,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Return
@@ -1431,7 +1431,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Select
@@ -1459,7 +1459,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: X
@@ -1492,7 +1492,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: Chan
@@ -1528,7 +1528,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: X
@@ -1592,7 +1592,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Star
@@ -1620,7 +1620,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Struct
@@ -1651,7 +1651,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Switch
@@ -1695,7 +1695,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: X
@@ -1740,7 +1740,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Node: Name
@@ -1774,7 +1774,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Switch
@@ -1818,7 +1818,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// Token: Op
@@ -1847,7 +1847,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, n ast.Node) dst.Node {
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
-		out.Decs.Space = f.space[n]
+		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// List: Names

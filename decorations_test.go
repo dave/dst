@@ -76,7 +76,7 @@ func ExampleClone() {
 
 	cloned := dst.Clone(f.Decls[0]).(*dst.GenDecl)
 
-	cloned.Decs.Space = dst.NewLine
+	cloned.Decs.Before = dst.NewLine
 	cloned.Specs[0].(*dst.ValueSpec).Names[0].Name = "j"
 	cloned.Specs[0].(*dst.ValueSpec).Names[0].Decs.End.Replace("/* b */")
 
@@ -186,9 +186,9 @@ func ExampleDecorated() {
 
 	list := f.Decls[0].(*dst.FuncDecl).Body.List
 
-	list[0].Decorations().Space = dst.EmptyLine
+	list[0].Decorations().Before = dst.EmptyLine
 	list[0].Decorations().End.Append("// the Decorations method allows access to the common")
-	list[1].Decorations().End.Append("// decoration properties (Space, Start, End and After)")
+	list[1].Decorations().End.Append("// decoration properties (Before, Start, End and After)")
 	list[2].Decorations().End.Append("// for all nodes.")
 	list[2].Decorations().After = dst.EmptyLine
 
@@ -202,7 +202,7 @@ func ExampleDecorated() {
 	//func main() {
 	//
 	//	var i int  // the Decorations method allows access to the common
-	//	i++        // decoration properties (Space, Start, End and After)
+	//	i++        // decoration properties (Before, Start, End and After)
 	//	println(i) // for all nodes.
 	//
 	//}
@@ -221,12 +221,12 @@ func ExampleSpace() {
 
 	call := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr)
 
-	call.Decs.Space = dst.EmptyLine
+	call.Decs.Before = dst.EmptyLine
 	call.Decs.After = dst.EmptyLine
 
 	for _, v := range call.Args {
 		v := v.(*dst.Ident)
-		v.Decs.Space = dst.NewLine
+		v.Decs.Before = dst.NewLine
 		v.Decs.After = dst.NewLine
 	}
 
@@ -293,14 +293,14 @@ func ExampleDecorations() {
 
 	body := f.Decls[0].(*dst.FuncDecl).Body
 	for i, stmt := range body.List {
-		stmt.Decorations().Space = dst.EmptyLine
+		stmt.Decorations().Before = dst.EmptyLine
 		stmt.Decorations().Start.Append(fmt.Sprintf("// foo %d", i))
 	}
 
 	call := body.List[2].(*dst.ExprStmt).X.(*dst.CallExpr)
 	call.Args = append(call.Args, dst.NewIdent("b"), dst.NewIdent("c"))
 	for i, expr := range call.Args {
-		expr.Decorations().Space = dst.NewLine
+		expr.Decorations().Before = dst.NewLine
 		expr.Decorations().After = dst.NewLine
 		expr.Decorations().Start.Append(fmt.Sprintf("/* bar %d */", i))
 		expr.Decorations().End.Append(fmt.Sprintf("// baz %d", i))
