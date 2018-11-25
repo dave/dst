@@ -31,7 +31,10 @@ func TestPositions(t *testing.T) {
 		}
 	}
 
-	file := Decorate(prog.Fset, astFile)
+	file, err := Decorate(prog.Fset, astFile)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	r1 := regexp.MustCompile(`// ([a-zA-Z]+)\(([0-9])\)`)
 	r2 := regexp.MustCompile(`// ([a-zA-Z]+)`)

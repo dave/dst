@@ -1018,7 +1018,11 @@ func TestRestorerResolver(t *testing.T) {
 				var file *dst.File
 				for _, sf := range pkg.Syntax {
 					if _, name := filepath.Split(pkg.Fset.File(sf.Pos()).Name()); name == "main.go" {
-						file = d.DecorateFile(sf)
+						var err error
+						file, err = d.DecorateFile(sf)
+						if err != nil {
+							t.Fatal(err)
+						}
 						break
 					}
 				}

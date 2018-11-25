@@ -48,7 +48,11 @@ func Load(cfg *packages.Config, patterns ...string) ([]*Package, error) {
 				if !goFiles[fpath] {
 					continue
 				}
-				p.Files = append(p.Files, p.Decorator.DecorateFile(f))
+				file, err := p.Decorator.DecorateFile(f)
+				if err != nil {
+					return nil, err
+				}
+				p.Files = append(p.Files, file)
 			}
 
 			dir, _ := filepath.Split(pkg.Fset.File(pkg.Syntax[0].Pos()).Name())

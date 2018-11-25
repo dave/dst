@@ -18,9 +18,12 @@ func generateDecorator(names []string) error {
 		Id("parent").Qual("go/ast", "Node"),
 		Id("typ").String(),
 		Id("n").Qual("go/ast", "Node"),
-	).Qual(DSTPATH, "Node").BlockFunc(func(g *Group) {
+	).Params(
+		Qual(DSTPATH, "Node"),
+		Error(),
+	).BlockFunc(func(g *Group) {
 		g.If(List(Id("dn"), Id("ok")).Op(":=").Id("f").Dot("Dst").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
-			Return(Id("dn")),
+			Return(Id("dn"), Nil()),
 		)
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
@@ -58,50 +61,43 @@ func generateDecorator(names []string) error {
 							}
 						case data.List:
 							g.Line().Commentf("List: %s", frag.Name)
-							/*
-								for _, v := range n.<name> {
-									out.<name> = append(out.<name>, d.decorateNode(n, v).(<type>))
-								}
-							*/
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
+								List(Id("child"), Err()).Op(":=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Elem.Name), Id("v")),
+								If(Err().Op("!=").Nil()).Block(
+									Return(Nil(), Err()),
+								),
 								frag.Field.Get("out").Op("=").Append(
 									frag.Field.Get("out"),
-									Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Elem.Name), Id("v")).Assert(frag.Elem.Literal(DSTPATH)),
+									Id("child").Assert(frag.Elem.Literal(DSTPATH)),
 								),
 							)
 						case data.Map:
 							g.Line().Commentf("Map: %s", frag.Name)
-							/*
-								out.<name> = map[string]<type>{}
-								for k, v := range n.<name> {
-									out.<name>[k] = d.decorateNode(n, v).(<type>)
-								}
-
-								or:
-
-								out.<name> = map[string]<type>{}
-								for k, v := range n.<name> {
-									out.<name>[k] = d.DecorateObject(v)
-								}
-							*/
 							g.Add(frag.Field.Get("out")).Op("=").Map(String()).Add(frag.Elem.Literal(DSTPATH)).Values()
 							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).BlockFunc(func(g *Group) {
 								if frag.Elem.Name == "Object" {
 									// Special case for Package.Imports
-									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("f").Dot("decorateObject").Call(Id("v"))
+									g.List(Id("ob"), Err()).Op(":=").Id("f").Dot("decorateObject").Call(Id("v"))
+									g.If(Err().Op("!=").Nil()).Block(
+										Return(Nil(), Err()),
+									)
+									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("ob")
 								} else {
-									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Elem.Name), Id("v")).Assert(frag.Elem.Literal(DSTPATH))
+									g.List(Id("child"), Err()).Op(":=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Elem.Name), Id("v"))
+									g.If(Err().Op("!=").Nil()).Block(
+										Return(Nil(), Err()),
+									)
+									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("child").Assert(frag.Elem.Literal(DSTPATH))
 								}
 							})
 						case data.Node:
 							g.Line().Commentf("Node: %s", frag.Name)
-							/*
-								if n.<name> != nil {
-									out.<name> = d.decorateNode(n, n.<name>).(<type>)
-								}
-							*/
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
-								frag.Field.Get("out").Op("=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Type.Name), frag.Field.Get("n")).Assert(frag.Type.Literal(DSTPATH)),
+								List(Id("child"), Err()).Op(":=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Type.Name), frag.Field.Get("n")),
+								If(Err().Op("!=").Nil()).Block(
+									Return(Nil(), Err()),
+								),
+								frag.Field.Get("out").Op("=").Id("child").Assert(frag.Type.Literal(DSTPATH)),
 							)
 						case data.Bad:
 							g.Line().Comment("Bad")
@@ -115,13 +111,25 @@ func generateDecorator(names []string) error {
 							}
 						case data.Scope:
 							g.Line().Commentf("Scope: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Id("f").Dot("decorateScope").Call(frag.Field.Get("n"))
+							g.List(Id("scope"), Err()).Op(":=").Id("f").Dot("decorateScope").Call(frag.Field.Get("n"))
+							g.If(Err().Op("!=").Nil()).Block(
+								Return(Nil(), Err()),
+							)
+							g.Add(frag.Field.Get("out")).Op("=").Id("scope")
 						case data.Object:
 							g.Line().Commentf("Object: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Id("f").Dot("decorateObject").Call(frag.Field.Get("n"))
+							g.List(Id("ob"), Err()).Op(":=").Id("f").Dot("decorateObject").Call(frag.Field.Get("n"))
+							g.If(Err().Op("!=").Nil()).Block(
+								Return(Nil(), Err()),
+							)
+							g.Add(frag.Field.Get("out")).Op("=").Id("ob")
 						case data.PathDecoration:
 							g.Line().Commentf("Path: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Id("f").Dot("resolvePath").Call(Id("parent"), Id("typ"), Id("n"))
+							g.List(Id("path"), Err()).Op(":=").Id("f").Dot("resolvePath").Call(Id("parent"), Id("typ"), Id("n"))
+							g.If(Err().Op("!=").Nil()).Block(
+								Return(Nil(), Err()),
+							)
+							g.Add(frag.Field.Get("out")).Op("=").Id("path")
 						case data.SpecialDecoration:
 							// ignore
 						default:
@@ -147,12 +155,12 @@ func generateDecorator(names []string) error {
 					}
 
 					g.Line()
-					g.Return(Id("out"))
+					g.Return(Id("out"), Nil())
 
 				})
 			}
 		})
-		g.Return(Nil())
+		g.Return(Nil(), Nil())
 
 	})
 

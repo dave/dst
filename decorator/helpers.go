@@ -30,12 +30,12 @@ func ParseDir(fset *token.FileSet, dir string, filter func(os.FileInfo) bool, mo
 }
 
 // Decorate decorates an ast.Node and returns a dst.Node.
-func Decorate(fset *token.FileSet, n ast.Node) dst.Node {
+func Decorate(fset *token.FileSet, n ast.Node) (dst.Node, error) {
 	return New(fset).DecorateNode(n)
 }
 
 // Decorate decorates a *ast.File and returns a *dst.File.
-func DecorateFile(fset *token.FileSet, f *ast.File) *dst.File {
+func DecorateFile(fset *token.FileSet, f *ast.File) (*dst.File, error) {
 	return New(fset).DecorateFile(f)
 }
 

@@ -465,7 +465,10 @@ BlockStmt [Lbrace "\n"]`,
 			if err != nil {
 				t.Fatal(err)
 			}
-			file := Decorate(fset, f)
+			file, err := Decorate(fset, f)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			buf := &bytes.Buffer{}
 			debug(buf, file)

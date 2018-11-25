@@ -405,7 +405,10 @@ if _, err := conf.Check("", fset, []*ast.File{astFile}, &typesInfo); err != nil 
 dec := decorator.New(fset)
 
 // Decorate the *ast.File to give us a *dst.File
-f := dec.DecorateFile(astFile)
+f, err := dec.DecorateFile(astFile)
+if err != nil {
+	panic(err)
+}
 
 // Find the *dst.Ident for the definition of "i"
 dstDef := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.DeclStmt).Decl.(*dst.GenDecl).Specs[0].(*dst.ValueSpec).Names[0]

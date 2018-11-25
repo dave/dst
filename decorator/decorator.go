@@ -64,12 +64,17 @@ func (d *Decorator) ParseFile(filename string, src interface{}, mode parser.Mode
 
 	// If ParseFile returns an error and also a non-nil file, the errors were just parse errors so
 	// we should continue decorating the file and return the error.
-	f, err := parser.ParseFile(d.Fset, filename, src, mode|parser.ParseComments)
-	if err != nil && f == nil {
+	f, perr := parser.ParseFile(d.Fset, filename, src, mode|parser.ParseComments)
+	if perr != nil && f == nil {
+		return nil, perr
+	}
+
+	file, err := d.DecorateFile(f)
+	if err != nil {
 		return nil, err
 	}
 
-	return d.DecorateFile(f), err
+	return file, perr
 }
 
 // ParseDir uses parser.ParseDir to parse and decorate a directory containing Go source. The
@@ -81,17 +86,25 @@ func (d *Decorator) ParseDir(dir string, filter func(os.FileInfo) bool, mode par
 	}
 	out := map[string]*dst.Package{}
 	for k, v := range pkgs {
-		out[k] = d.DecorateNode(v).(*dst.Package)
+		pkg, err := d.DecorateNode(v)
+		if err != nil {
+			return nil, err
+		}
+		out[k] = pkg.(*dst.Package)
 	}
 	return out, nil
 }
 
-func (d *Decorator) DecorateFile(f *ast.File) *dst.File {
-	return d.DecorateNode(f).(*dst.File)
+func (d *Decorator) DecorateFile(f *ast.File) (*dst.File, error) {
+	file, err := d.DecorateNode(f)
+	if err != nil {
+		return nil, err
+	}
+	return file.(*dst.File), nil
 }
 
 // Decorate decorates an ast.Node and returns a dst.Node
-func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
+func (d *Decorator) DecorateNode(n ast.Node) (dst.Node, error) {
 
 	d.canonical = stripVendor(d.Path)
 
@@ -102,7 +115,10 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 	fd.fragment(n)
 	fd.link()
 
-	out := fd.decorateNode(nil, "", n)
+	out, err := fd.decorateNode(nil, "", n)
+	if err != nil {
+		return nil, err
+	}
 
 	//fmt.Println("\nFragments:")
 	//fd.debug(os.Stdout)
@@ -120,7 +136,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 		d.Filenames[out.(*dst.File)] = d.Fset.File(n.Pos()).Name()
 	}
 
-	return out
+	return out, nil
 }
 
 func (pd *Decorator) newFileDecorator() *fileDecorator {
@@ -150,10 +166,10 @@ type decorationInfo struct {
 	decs []string
 }
 
-func (f *fileDecorator) resolvePath(parent ast.Node, typ string, id *ast.Ident) string {
+func (f *fileDecorator) resolvePath(parent ast.Node, typ string, id *ast.Ident) (string, error) {
 
 	if f.Resolver == nil {
-		return ""
+		return "", nil
 	}
 
 	// The parent field type (typ) for all idents is either "Ident" or "Expr".
@@ -165,19 +181,19 @@ func (f *fileDecorator) resolvePath(parent ast.Node, typ string, id *ast.Ident) 
 	// Inside SelectorExpr is a special case where the logic is reversed. We avoid setting Path for
 	// X (Expr) but set it for Sel (Ident).
 	if _, sel := parent.(*ast.SelectorExpr); (typ == "Ident" && !sel) || (typ == "Expr" && sel) {
-		return ""
+		return "", nil
 	}
 
 	path, err := f.Resolver.ResolveIdent(f.file, parent, id)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	if path == f.canonical {
-		return ""
+		return "", nil
 	}
 
-	return path
+	return path, nil
 }
 
 func stripVendor(path string) string {
@@ -200,12 +216,12 @@ func stripVendor(path string) string {
 	return path[i+len("vendor/"):]
 }
 
-func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {
+func (f *fileDecorator) decorateObject(o *ast.Object) (*dst.Object, error) {
 	if o == nil {
-		return nil
+		return nil, nil
 	}
 	if do, ok := f.Dst.Objects[o]; ok {
-		return do
+		return do, nil
 	}
 	/*
 		// An Object describes a named language entity such as a package,
@@ -234,36 +250,51 @@ func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {
 
 	switch decl := o.Decl.(type) {
 	case *ast.Scope:
-		out.Decl = f.decorateScope(decl)
+		s, err := f.decorateScope(decl)
+		if err != nil {
+			return nil, err
+		}
+		out.Decl = s
 	case ast.Node:
-		out.Decl = f.decorateNode(nil, "", decl)
+		n, err := f.decorateNode(nil, "", decl)
+		if err != nil {
+			return nil, err
+		}
+		out.Decl = n
 	case nil:
 	default:
-		panic(fmt.Sprintf("o.Decl is %T", o.Decl))
+		return nil, fmt.Errorf("o.Decl is %T", o.Data)
 	}
 
-	// TODO: I believe Data is either a *Scope or an int. We will support both and panic if something else if found.
 	switch data := o.Data.(type) {
 	case int:
 		out.Data = data
 	case *ast.Scope:
-		out.Data = f.decorateScope(data)
+		s, err := f.decorateScope(data)
+		if err != nil {
+			return nil, err
+		}
+		out.Data = s
 	case ast.Node:
-		out.Data = f.decorateNode(nil, "", data)
+		n, err := f.decorateNode(nil, "", data)
+		if err != nil {
+			return nil, err
+		}
+		out.Data = n
 	case nil:
 	default:
-		panic(fmt.Sprintf("o.Data is %T", o.Data))
+		return nil, fmt.Errorf("o.Data is %T", o.Data)
 	}
 
-	return out
+	return out, nil
 }
 
-func (f *fileDecorator) decorateScope(s *ast.Scope) *dst.Scope {
+func (f *fileDecorator) decorateScope(s *ast.Scope) (*dst.Scope, error) {
 	if s == nil {
-		return nil
+		return nil, nil
 	}
 	if ds, ok := f.Dst.Scopes[s]; ok {
-		return ds
+		return ds, nil
 	}
 	/*
 		// A Scope maintains the set of named language entities declared
@@ -280,13 +311,21 @@ func (f *fileDecorator) decorateScope(s *ast.Scope) *dst.Scope {
 	f.Dst.Scopes[s] = out
 	f.Ast.Scopes[out] = s
 
-	out.Outer = f.decorateScope(s.Outer)
+	outer, err := f.decorateScope(s.Outer)
+	if err != nil {
+		return nil, err
+	}
+	out.Outer = outer
 	out.Objects = map[string]*dst.Object{}
 	for k, v := range s.Objects {
-		out.Objects[k] = f.decorateObject(v)
+		ob, err := f.decorateObject(v)
+		if err != nil {
+			return nil, err
+		}
+		out.Objects[k] = ob
 	}
 
-	return out
+	return out, nil
 }
 
 func debug(w io.Writer, file dst.Node) {
