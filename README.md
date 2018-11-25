@@ -265,7 +265,7 @@ The decorator can automatically manage the `import` block, which is a non-trivia
 
 Use [NewWithImports](https://godoc.org/github.com/dave/dst/decorator#NewWithImports) and 
 [NewRestorerWithImports](https://godoc.org/github.com/dave/dst/decorator#NewRestorerWithImports) to 
-create an import aware decorator / restorer with recommended settings.
+create an import aware decorator / restorer with default settings.
 
 When adding a qualified identifier node, there is no need to use `SelectorExpr` - just add an 
 `Ident` and set the [Path](https://godoc.org/github.com/dave/dst#Ident) property to the imported 
