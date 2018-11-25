@@ -12,10 +12,58 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/dave/dst/decorator/resolver/goast"
+	"github.com/dave/dst/decorator/resolver/guess"
+
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"golang.org/x/tools/go/packages"
 )
+
+func ExampleManualImports() {
+
+	code := `package main
+
+		import "fmt"
+
+		func main() {
+			fmt.Println("a")
+		}`
+
+	dec := decorator.New(token.NewFileSet())
+	dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
+
+	f, err := dec.Parse(code)
+	if err != nil {
+		panic(err)
+	}
+
+	f.Decls[1].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Args = []dst.Expr{
+		&dst.CallExpr{
+			Fun: &dst.Ident{Name: "A", Path: "foo.bar/baz"},
+		},
+	}
+
+	res := decorator.NewRestorer()
+	res.Resolver = &guess.PackageResolver{}
+	if err := res.Print(f); err != nil {
+		panic(err)
+	}
+
+	//Output:
+	//package main
+	//
+	//import (
+	//	"fmt"
+	//
+	//	"foo.bar/baz"
+	//)
+	//
+	//func main() {
+	//	fmt.Println(baz.A())
+	//}
+
+}
 
 func ExampleImports() {
 
@@ -339,7 +387,7 @@ func ExampleAstBroken() {
 	}
 	`
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "a.go", code, parser.ParseComments)
+	f, err := parser.ParseFile(fset, "", code, parser.ParseComments)
 	if err != nil {
 		panic(err)
 	}

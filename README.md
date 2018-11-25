@@ -8,8 +8,8 @@ comments and line spacing) remain attached to the correct nodes as the tree is m
 ### Where does `go/ast` break?
 
 The `go/ast` package wasn't created with source manipulation as an intended use-case. Comments are 
-stored by their byte offset instead of attached to nodes. Because of this, re-arranging nodes breaks 
-the output. See [this golang issue](https://github.com/golang/go/issues/20744) for more information.
+stored by their byte offset instead of attached to nodes, so re-arranging nodes breaks the output. 
+See [this Go issue](https://github.com/golang/go/issues/20744) for more information.
 
 Consider this example where we want to reverse the order of the two statements. As you can see the 
 comments don't remain attached to the correct nodes:
@@ -23,7 +23,7 @@ func main(){
 }
 `
 fset := token.NewFileSet()
-f, err := parser.ParseFile(fset, "a.go", code, parser.ParseComments)
+f, err := parser.ParseFile(fset, "", code, parser.ParseComments)
 if err != nil {
 	panic(err)
 }
@@ -85,12 +85,13 @@ package.
 
 For more fine-grained control you can use [Decorator](https://godoc.org/github.com/dave/dst/decorator#Decorator) 
 to convert from `ast` to `dst`, and [Restorer](https://godoc.org/github.com/dave/dst/decorator#Restorer) 
-to convert back again. See the `go/types` section below for a demonstration.  
+to convert back again. 
 
 #### Comments
 
-Comments are added at decoration attachment points. See [decorations-types-generated.go](https://github.com/dave/dst/blob/master/decorations-types-generated.go) 
-for a full list of these points, along with demonstration code of where they are rendered in the output.
+Comments are added at decoration attachment points. [See here](https://github.com/dave/dst/blob/master/decorations-types-generated.go) 
+for a full list of these points, along with demonstration code of where they are rendered in the 
+output.
 
 The decoration attachment points have convenience functions `Append`, `Prepend`, `Replace`, `Clear` 
 and `All` to accomplish common tasks. Use the full text of your comment including the `//` or `/**/` 
@@ -266,10 +267,10 @@ Use [NewWithImports](https://godoc.org/github.com/dave/dst/decorator#NewWithImpo
 [NewRestorerWithImports](https://godoc.org/github.com/dave/dst/decorator#NewRestorerWithImports) to 
 create an import aware decorator / restorer with recommended settings.
 
-When adding a qualified identifier node, there is no need to use SelectorExpr - just add an Ident 
-and set the [Path](https://godoc.org/github.com/dave/dst#Ident) field to the imported package path. 
-The restorer will wrap it in a SelectorExpr where appropriate when converting back to ast, and also 
-update the import block.
+When adding a qualified identifier node, there is no need to use `SelectorExpr` - just add an 
+`Ident` and set the [Path](https://godoc.org/github.com/dave/dst#Ident) property to the imported 
+package path. The restorer will wrap it in a `SelectorExpr` where appropriate when converting back 
+to ast, and also update the import block.
 
 The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience function uses 
 `go/packages` to load packages and decorate all loaded ast files:
@@ -324,13 +325,55 @@ The default resolvers that enable import management may not be suitable for all 
 more control is needed, custom resolvers can be used for both the `Decorator` and `Restorer`. More 
 details and several alternative implementations can be found [here](https://github.com/dave/dst/tree/master/decorator/resolver).
 
-#### Integrating with go/types
+Here's an example of manually supplying alternative resolvers for the decorator and resolver:
 
-Adapting the `go/types` package to use `dst` as input is non-trivial because `go/types` uses 
-position information in several places. A work-around is to convert from `ast` to `dst` using
-[Decorator](https://godoc.org/github.com/dave/dst/decorator#Decorator). After conversion, this 
-exposes `Dst.Nodes` and `Ast.Nodes` which map between `ast.Node` and `dst.Node`. This way, the 
-`go/types` package can be used:
+```go
+code := `package main
+
+	import "fmt"
+
+	func main() {
+		fmt.Println("a")
+	}`
+
+dec := decorator.New(token.NewFileSet())
+dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
+
+f, err := dec.Parse(code)
+if err != nil {
+	panic(err)
+}
+
+f.Decls[1].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Args = []dst.Expr{
+	&dst.CallExpr{
+		Fun: &dst.Ident{Name: "A", Path: "foo.bar/baz"},
+	},
+}
+
+res := decorator.NewRestorer()
+res.Resolver = &guess.PackageResolver{}
+if err := res.Print(f); err != nil {
+	panic(err)
+}
+
+//Output:
+//package main
+//
+//import (
+//	"fmt"
+//
+//	"foo.bar/baz"
+//)
+//
+//func main() {
+//	fmt.Println(baz.A())
+//}
+```
+
+#### Mappings between ast and dst nodes
+
+The decorator exposes `Dst.Nodes` and `Ast.Nodes` which map between `ast.Node` and `dst.Node`. This 
+enables systems that refer to `ast` nodes (such as `go/types`) to be used:
 
 ```go
 code := `package main
@@ -408,9 +451,6 @@ if err := decorator.Print(f); err != nil {
 //	println(foo)
 //}
 ```
-
-If you would like to help create a fully `dst` compatible version of `go/types`, feel free to 
-continue my work in the [types branch](https://github.com/dave/dst/tree/types).
 
 ### Status
 
