@@ -320,10 +320,9 @@ if err := r.Print(p.Files[0]); err != nil {
 //func main() { fmt.Println("Hello, World!") }
 ```
 
-If more low-level control is needed, set `Decorator.Resolver` and `Restorer.Resolver`. By default, 
-the restorer resolver (which resolves a package name given a package path) uses an implementation 
-based on `go/packages`. This may be unsuitable in certain circumstances, so several alternative 
-implementations can be found [here](https://github.com/dave/dst/tree/master/decorator/resolver).
+The default resolvers that enable import management may not be suitable for all environments. If 
+more control is needed, custom resolvers can be used for both the `Decorator` and `Restorer`. More 
+details and several alternative implementations can be found [here](https://github.com/dave/dst/tree/master/decorator/resolver).
 
 #### Integrating with go/types
 
