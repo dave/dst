@@ -46,12 +46,19 @@ func Print(f *dst.File) error {
 
 // Fprint uses format.Node to print a *dst.File to a writer
 func Fprint(w io.Writer, f *dst.File) error {
-	fset, af := Restore(f)
+	fset, af, err := Restore(f)
+	if err != nil {
+		return err
+	}
 	return format.Node(w, fset, af)
 }
 
 // Restore restores a *dst.File to a *token.FileSet and a *ast.File
-func Restore(file *dst.File) (*token.FileSet, *ast.File) {
+func Restore(file *dst.File) (*token.FileSet, *ast.File, error) {
 	r := NewRestorer()
-	return r.Fset, r.RestoreFile("", file)
+	f, err := r.RestoreFile("", file)
+	if err != nil {
+		return nil, nil, err
+	}
+	return r.Fset, f, nil
 }

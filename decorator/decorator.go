@@ -263,7 +263,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) (*dst.Object, error) {
 		out.Decl = n
 	case nil:
 	default:
-		return nil, fmt.Errorf("o.Decl is %T", o.Data)
+		panic(fmt.Sprintf("o.Decl is %T", o.Data))
 	}
 
 	switch data := o.Data.(type) {
@@ -283,7 +283,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) (*dst.Object, error) {
 		out.Data = n
 	case nil:
 	default:
-		return nil, fmt.Errorf("o.Data is %T", o.Data)
+		panic(fmt.Sprintf("o.Data is %T", o.Data))
 	}
 
 	return out, nil

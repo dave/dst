@@ -54,7 +54,10 @@ func (pr *Restorer) Print(f *dst.File) error {
 
 // Fprint uses format.Node to print a *dst.File to a writer
 func (pr *Restorer) Fprint(w io.Writer, f *dst.File) error {
-	af := pr.RestoreFile("", f)
+	af, err := pr.RestoreFile("", f)
+	if err != nil {
+		return err
+	}
 	return format.Node(w, pr.Fset, af)
 }
 
@@ -71,7 +74,7 @@ func (pr *Restorer) FileRestorer(name string, file *dst.File) *FileRestorer {
 }
 
 // RestoreFile restores a *dst.File to an *ast.File
-func (pr *Restorer) RestoreFile(name string, file *dst.File) *ast.File {
+func (pr *Restorer) RestoreFile(name string, file *dst.File) (*ast.File, error) {
 	return pr.FileRestorer(name, file).Restore()
 }
 
@@ -89,7 +92,7 @@ type FileRestorer struct {
 	cursorAtNewLine token.Pos                // The cursor position directly after adding a newline decoration (or a line comment which ends in a "\n"). If we're still at this cursor position when we add a line space, reduce the "\n" by one.
 }
 
-func (fr *FileRestorer) Restore() *ast.File {
+func (fr *FileRestorer) Restore() (*ast.File, error) {
 
 	if fr.Fset == nil {
 		fr.Fset = token.NewFileSet()
@@ -98,7 +101,9 @@ func (fr *FileRestorer) Restore() *ast.File {
 	fr.base = fr.Fset.Base() // base is the pos that the file will start at in the fset
 	fr.cursor = token.Pos(fr.base)
 
-	fr.updateImports()
+	if err := fr.updateImports(); err != nil {
+		return nil, err
+	}
 
 	// restore the file, populate comments and lines
 	f := fr.restoreNode(fr.file, false).(*ast.File)
@@ -111,7 +116,7 @@ func (fr *FileRestorer) Restore() *ast.File {
 
 	ff := fr.Fset.AddFile(fr.name, fr.base, size)
 	if !ff.SetLines(fr.lines) {
-		panic("SetLines failed")
+		panic("ff.SetLines failed")
 	}
 
 	// Sometimes new nodes are created here (e.g. in RangeStmt the "Object" is an AssignStmt which
@@ -125,13 +130,13 @@ func (fr *FileRestorer) Restore() *ast.File {
 		o.Data = fr.restoreNode(dn, true)
 	}
 
-	return f
+	return f, nil
 }
 
-func (fr *FileRestorer) updateImports() {
+func (fr *FileRestorer) updateImports() error {
 
 	if fr.Resolver == nil {
-		return
+		return nil
 	}
 
 	// list of the import block(s)
@@ -187,7 +192,7 @@ func (fr *FileRestorer) updateImports() {
 	for path := range packages {
 		name, err := fr.Resolver.ResolvePackage(path)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		resolved[path] = name
 	}
@@ -531,6 +536,7 @@ func (fr *FileRestorer) updateImports() {
 		return true
 	}, nil)
 
+	return nil
 }
 
 func packagePathOrderLess(pi, pj string) bool {
@@ -737,7 +743,6 @@ func (r *FileRestorer) restoreObject(o *dst.Object) *ast.Object {
 		panic(fmt.Sprintf("o.Decl is %T", o.Decl))
 	}
 
-	// TODO: I believe Data is either a *Scope or an int. We will support both and panic if something else if found.
 	switch data := o.Data.(type) {
 	case int:
 		out.Data = data

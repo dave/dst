@@ -223,7 +223,10 @@ func TestRewrite(t *testing.T) {
 					t.Fatal(err)
 				}
 				dstFile = dstutil.Apply(dstFile, test.pre, test.post).(*dst.File)
-				restoredFset, restoredFile := decorator.Restore(dstFile)
+				restoredFset, restoredFile, err := decorator.Restore(dstFile)
+				if err != nil {
+					t.Fatal(err)
+				}
 				var buf bytes.Buffer
 				if err := format.Node(&buf, restoredFset, restoredFile); err != nil {
 					t.Fatal(err)

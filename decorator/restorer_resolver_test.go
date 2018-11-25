@@ -1038,7 +1038,10 @@ func TestRestorerResolver(t *testing.T) {
 					c.restorer(fr)
 				}
 
-				restoredFile := fr.Restore()
+				restoredFile, err := fr.Restore()
+				if err != nil {
+					t.Fatal(err)
+				}
 
 				buf := &bytes.Buffer{}
 				if err := format.Node(buf, fr.Fset, restoredFile); err != nil {

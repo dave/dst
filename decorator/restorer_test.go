@@ -654,7 +654,10 @@ const d = 1
 				t.Fatal(err)
 			}
 
-			restoredFset, restoredFile := Restore(file)
+			restoredFset, restoredFile, err := Restore(file)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			buf := &bytes.Buffer{}
 			if err := format.Node(buf, restoredFset, restoredFile); err != nil {
