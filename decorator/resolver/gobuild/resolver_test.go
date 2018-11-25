@@ -1,9 +1,8 @@
 package gobuild_test
 
 import (
-	"testing"
-
 	"path/filepath"
+	"testing"
 
 	"github.com/dave/dst/decorator/resolver"
 	"github.com/dave/dst/decorator/resolver/gobuild"

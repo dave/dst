@@ -2,9 +2,8 @@ package gopackages_test
 
 import (
 	"os"
-	"testing"
-
 	"path/filepath"
+	"testing"
 
 	"github.com/dave/dst/decorator/resolver"
 	"github.com/dave/dst/decorator/resolver/gopackages"

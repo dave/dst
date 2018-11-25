@@ -8,7 +8,8 @@ import (
 )
 
 type IdentResolver struct {
-	Info *types.Info
+	Path string      // Local package path
+	Info *types.Info // Types info - must include Uses
 }
 
 func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
@@ -39,14 +40,23 @@ func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Id
 	if !ok {
 		return "", nil // not found in uses -> not a remote identifier
 	}
+
 	if v, ok := obj.(*types.Var); ok && v.IsField() {
 		return "", nil // field ident -> doesn't need qualified ident
 	}
+
 	pkg := obj.Pkg()
 	if pkg == nil {
 		return "", nil // pre-defined idents in the universe scope - e.g. "byte"
 	}
-	return stripVendor(pkg.Path()), nil
+
+	unvendored := stripVendor(pkg.Path())
+
+	if unvendored == stripVendor(r.Path) {
+		return "", nil // ident in the local package
+	}
+
+	return unvendored, nil
 }
 
 func stripVendor(path string) string {

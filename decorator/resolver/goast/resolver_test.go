@@ -5,9 +5,8 @@ import (
 	"testing"
 
 	"github.com/dave/dst"
-
 	"github.com/dave/dst/decorator"
-	"github.com/dave/dst/decorator/resolver"
+	"github.com/dave/dst/decorator/resolver/guess"
 )
 
 func TestGoAstIdentResolver(t *testing.T) {
@@ -71,7 +70,7 @@ func TestGoAstIdentResolver(t *testing.T) {
 			d := decorator.New(token.NewFileSet())
 			d.Path = "root"
 			d.Resolver = &IdentResolver{
-				PackageResolver: &resolver.Guess{},
+				PackageResolver: &guess.PackageResolver{},
 			}
 
 			f, err := d.Parse(test.src)

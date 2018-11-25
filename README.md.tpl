@@ -73,6 +73,29 @@ use the `Clone` function to make a deep copy of the node before re-use:
 The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package is a fork of `golang.org/x/tools/go/ast/astutil`, 
 and provides the `Apply` function with similar semantics.     
 
+#### Imports
+
+The decorator can automatically manage the `import` block, which is a non-trivial task.
+
+Use [NewWithImports](https://godoc.org/github.com/dave/dst/decorator#NewWithImports) and 
+[NewRestorerWithImports](https://godoc.org/github.com/dave/dst/decorator#NewRestorerWithImports) to 
+create an import aware decorator / restorer with recommended settings.
+
+When adding a qualified identifier node, there is no need to use SelectorExpr - just add an Ident 
+and set the [Path](https://godoc.org/github.com/dave/dst#Ident) field to the imported package path. 
+The restorer will wrap it in a SelectorExpr where appropriate when converting back to ast, and also 
+update the import block.
+
+The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience function uses 
+`go/packages` to load packages and decorate all loaded ast files:
+
+{{ "ExampleImports" | example }}
+
+If more low-level control is needed, set `Decorator.Resolver` and `Restorer.Resolver`. By default, 
+the restorer resolver (which resolves a package name given a package path) uses an implementation 
+based on `go/packages`. This may be unsuitable in certain circumstances, so several alternative 
+implementations can be found [here](https://github.com/dave/dst/tree/master/decorator/resolver).
+
 #### Integrating with go/types
 
 Adapting the `go/types` package to use `dst` as input is non-trivial because `go/types` uses 
@@ -85,30 +108,6 @@ exposes `Dst.Nodes` and `Ast.Nodes` which map between `ast.Node` and `dst.Node`.
 
 If you would like to help create a fully `dst` compatible version of `go/types`, feel free to 
 continue my work in the [types branch](https://github.com/dave/dst/tree/types).
-
-
-#### Imports
-
-The decorator can automatically manage the `import` block, which is a non-trivial task. Use 
-[NewWithImports](https://godoc.org/github.com/dave/dst/decorator#NewWithImports) and 
-[NewRestorerWithImports](https://godoc.org/github.com/dave/dst/decorator#NewRestorerWithImports) to 
-create an import aware decorator / restorer.
-
-When adding a qualified identifier node, there is no need to use SelectorExpr - just add an Ident 
-and set the [Path](https://godoc.org/github.com/dave/dst#Ident) field to the imported package path. 
-The restorer will wrap it in a SelectorExpr where appropriate when converting back to ast, and also 
-update the import block.
-
-The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience function uses 
-`go/packages` to load packages and decorate all loaded ast files:
-
-{{ "ExampleImports" | example }}
-
-If more low-level control is needed, set `Decorator.Path`, `Decorator.Resolver`, `Restorer.Path`, 
-and `Restorer.Resolver`. By default, the restorer resolver (which resolves a package name given a 
-package path) uses an implementation based on `go/packages`. This may be unsuitable in certain 
-circumstances, so several alternative implementations can be found 
-[here](https://github.com/dave/dst/tree/master/decorator/resolver).
 
 ### Status
 

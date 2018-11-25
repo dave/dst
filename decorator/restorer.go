@@ -30,7 +30,6 @@ func NewRestorerWithImports(path, dir string) *Restorer {
 	return &Restorer{
 		Map:  newMap(),
 		Fset: token.NewFileSet(),
-		Path: path,
 		Resolver: &gopackages.PackageResolver{
 			Dir: dir,
 		},
@@ -40,7 +39,6 @@ func NewRestorerWithImports(path, dir string) *Restorer {
 type Restorer struct {
 	Map
 	Fset *token.FileSet // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
-	Path string         // local package path for identifier resolution
 
 	// If a Resolver is provided, the names of all imported packages are resolved, and the imports
 	// block is updated. All remote identifiers are updated (sometimes this involves changing

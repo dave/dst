@@ -1,9 +1,10 @@
-package resolver_test
+package simple_test
 
 import (
 	"testing"
 
 	"github.com/dave/dst/decorator/resolver"
+	"github.com/dave/dst/decorator/resolver/simple"
 )
 
 func TestPackageResolver(t *testing.T) {
@@ -15,22 +16,9 @@ func TestPackageResolver(t *testing.T) {
 		cases      []tc
 	}{
 		{
-			name: "resolver.Guess",
+			name: "simple.PackageResolver",
 			resolve: func() (end func(), r resolver.PackageResolver) {
-				r = resolver.Guess{
-					"a/b/c": "d",
-				}
-				return
-			},
-			cases: []tc{
-				{"a/b/c", "d"},
-				{"d/e/f", "f"},
-			},
-		},
-		{
-			name: "resolver.Map",
-			resolve: func() (end func(), r resolver.PackageResolver) {
-				r = resolver.Map{
+				r = simple.PackageResolver{
 					"a/b/c": "d",
 				}
 				return

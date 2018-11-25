@@ -1,12 +1,10 @@
 package gotypes_test
 
 import (
-	"os"
-	"testing"
-
-	"path/filepath"
-
 	"go/ast"
+	"os"
+	"path/filepath"
+	"testing"
 
 	"github.com/dave/dst/decorator/resolver/gotypes"
 	"github.com/dave/dst/dstutil/dummy"

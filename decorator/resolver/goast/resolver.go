@@ -1,6 +1,7 @@
 package goast
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/token"
@@ -11,9 +12,11 @@ import (
 )
 
 // IdentResolver is a simple ident resolver that parses the imports block of the file and resolves
-// qualified identifiers using resolved package names. It is not possible to resolve identifiers
-// in dot-imported packages without their export data, so this resolver will panic if it encounters
-// a dot-import.
+// qualified identifiers using resolved package names.
+//
+// It is not possible to resolve identifiers in dot-imported packages without the full export data
+// of the imported package, so this resolver will panic if it encounters a dot-import. See
+// gotypes.IdentResolver for a dot-imports capable ident resolver.
 type IdentResolver struct {
 	PackageResolver resolver.PackageResolver
 	filesM          sync.Mutex
@@ -23,6 +26,10 @@ type IdentResolver struct {
 func (r *IdentResolver) imports(file *ast.File) (map[string]string, error) {
 	r.filesM.Lock()
 	defer r.filesM.Unlock()
+
+	if r.files == nil {
+		r.files = map[*ast.File]map[string]string{}
+	}
 
 	imports, ok := r.files[file]
 	if ok {
@@ -87,10 +94,17 @@ func (r *IdentResolver) imports(file *ast.File) (map[string]string, error) {
 		return nil, outer
 	}
 
+	r.files[file] = imports
+
 	return imports, nil
 }
 
 func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
+
+	if r.PackageResolver == nil {
+		return "", errors.New("goast.IdentResolver should have PackageResolver set")
+	}
+
 	imports, err := r.imports(file)
 	if err != nil {
 		return "", err

@@ -258,6 +258,73 @@ if err := decorator.Print(f); err != nil {
 The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package is a fork of `golang.org/x/tools/go/ast/astutil`, 
 and provides the `Apply` function with similar semantics.     
 
+#### Imports
+
+The decorator can automatically manage the `import` block, which is a non-trivial task.
+
+Use [NewWithImports](https://godoc.org/github.com/dave/dst/decorator#NewWithImports) and 
+[NewRestorerWithImports](https://godoc.org/github.com/dave/dst/decorator#NewRestorerWithImports) to 
+create an import aware decorator / restorer with recommended settings.
+
+When adding a qualified identifier node, there is no need to use SelectorExpr - just add an Ident 
+and set the [Path](https://godoc.org/github.com/dave/dst#Ident) field to the imported package path. 
+The restorer will wrap it in a SelectorExpr where appropriate when converting back to ast, and also 
+update the import block.
+
+The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience function uses 
+`go/packages` to load packages and decorate all loaded ast files:
+
+```go
+// Create a simple module in a temporary directory
+dir, _ := ioutil.TempDir("", "")
+defer os.RemoveAll(dir)
+ioutil.WriteFile(filepath.Join(dir, "go.mod"), []byte("module root"), 0666)
+ioutil.WriteFile(filepath.Join(dir, "main.go"), []byte("package main \n\n func main() {}"), 0666)
+
+// Use the Load convenience function that calls go/packages to load the package. All loaded
+// ast files are decorated to dst.
+pkgs, err := decorator.Load(&packages.Config{Dir: dir, Mode: packages.LoadSyntax}, "root")
+if err != nil {
+	panic(err)
+}
+p := pkgs[0]
+f := p.Files[0]
+
+// Add a call expression. Note we don't have to use a SelectorExpr - just adding an Ident with
+// the imported package path will do. The restorer will add SelectorExpr where appropriate when
+// converting back to ast. Note the new Path field on *dst.Ident. Set this to the package path
+// of the imported package, and the restorer will automatically add the import to the import
+// block.
+b := f.Decls[0].(*dst.FuncDecl).Body
+b.List = append(b.List, &dst.ExprStmt{
+	X: &dst.CallExpr{
+		Fun:	&dst.Ident{Path: "fmt", Name: "Println"},
+		Args: []dst.Expr{
+			&dst.BasicLit{Kind: token.STRING, Value: strconv.Quote("Hello, World!")},
+		},
+	},
+})
+
+// Create a restorer with the import manager enabled, and print the result. As you can see, the
+// import block is automatically managed, and the Println ident is converted to a SelectorExpr:
+r := decorator.NewRestorerWithImports("root", dir)
+if err := r.Print(p.Files[0]); err != nil {
+	panic(err)
+}
+
+//Output:
+//package main
+//
+//import "fmt"
+//
+//func main() { fmt.Println("Hello, World!") }
+```
+
+If more low-level control is needed, set `Decorator.Resolver` and `Restorer.Resolver`. By default, 
+the restorer resolver (which resolves a package name given a package path) uses an implementation 
+based on `go/packages`. This may be unsuitable in certain circumstances, so several alternative 
+implementations can be found [here](https://github.com/dave/dst/tree/master/decorator/resolver).
+
 #### Integrating with go/types
 
 Adapting the `go/types` package to use `dst` as input is non-trivial because `go/types` uses 
@@ -345,74 +412,6 @@ if err := decorator.Print(f); err != nil {
 
 If you would like to help create a fully `dst` compatible version of `go/types`, feel free to 
 continue my work in the [types branch](https://github.com/dave/dst/tree/types).
-
-
-#### Imports
-
-The decorator can automatically manage the `import` block, which is a non-trivial task. Use 
-[NewWithImports](https://godoc.org/github.com/dave/dst/decorator#NewWithImports) and 
-[NewRestorerWithImports](https://godoc.org/github.com/dave/dst/decorator#NewRestorerWithImports) to 
-create an import aware decorator / restorer.
-
-When adding a qualified identifier node, there is no need to use SelectorExpr - just add an Ident 
-and set the [Path](https://godoc.org/github.com/dave/dst#Ident) field to the imported package path. 
-The restorer will wrap it in a SelectorExpr where appropriate when converting back to ast, and also 
-update the import block.
-
-The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience function uses 
-`go/packages` to load packages and decorate all loaded ast files:
-
-```go
-// Create a simple module in a temporary directory
-dir, _ := ioutil.TempDir("", "")
-defer os.RemoveAll(dir)
-ioutil.WriteFile(filepath.Join(dir, "go.mod"), []byte("module root"), 0666)
-ioutil.WriteFile(filepath.Join(dir, "main.go"), []byte("package main \n\n func main() {}"), 0666)
-
-// Use the Load convenience function that calls go/packages to load the package. All loaded
-// ast files are decorated to dst.
-pkgs, err := decorator.Load(&packages.Config{Dir: dir, Mode: packages.LoadSyntax}, "root")
-if err != nil {
-	panic(err)
-}
-p := pkgs[0]
-f := p.Files[0]
-
-// Add a call expression. Note we don't have to use a SelectorExpr - just adding an Ident with
-// the imported package path will do. The restorer will add SelectorExpr where appropriate when
-// converting back to ast. Note the new Path field on *dst.Ident. Set this to the package path
-// of the imported package, and the restorer will automatically add the import to the import
-// block.
-b := f.Decls[0].(*dst.FuncDecl).Body
-b.List = append(b.List, &dst.ExprStmt{
-	X: &dst.CallExpr{
-		Fun:	&dst.Ident{Path: "fmt", Name: "Println"},
-		Args: []dst.Expr{
-			&dst.BasicLit{Kind: token.STRING, Value: strconv.Quote("Hello, World!")},
-		},
-	},
-})
-
-// Create a restorer with the import manager enabled, and print the result. As you can see, the
-// import block is automatically managed, and the Println ident is converted to a SelectorExpr:
-r := decorator.NewRestorerWithImports("root", dir)
-if err := r.Print(p.Files[0]); err != nil {
-	panic(err)
-}
-
-//Output:
-//package main
-//
-//import "fmt"
-//
-//func main() { fmt.Println("Hello, World!") }
-```
-
-If more low-level control is needed, set `Decorator.Path`, `Decorator.Resolver`, `Restorer.Path`, 
-and `Restorer.Resolver`. By default, the restorer resolver (which resolves a package name given a 
-package path) uses an implementation based on `go/packages`. This may be unsuitable in certain 
-circumstances, so several alternative implementations can be found 
-[here](https://github.com/dave/dst/tree/master/decorator/resolver).
 
 ### Status
 
