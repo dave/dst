@@ -16,6 +16,7 @@ func generateDecorator(names []string) error {
 
 	f.Func().Params(Id("f").Op("*").Id("fileDecorator")).Id("decorateNode").Params(
 		Id("parent").Qual("go/ast", "Node"),
+		Id("typ").String(),
 		Id("n").Qual("go/ast", "Node"),
 	).Qual(DSTPATH, "Node").BlockFunc(func(g *Group) {
 		g.If(List(Id("dn"), Id("ok")).Op(":=").Id("f").Dot("Dst").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
@@ -65,7 +66,7 @@ func generateDecorator(names []string) error {
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 								frag.Field.Get("out").Op("=").Append(
 									frag.Field.Get("out"),
-									Id("f").Dot("decorateNode").Call(Id("n"), Id("v")).Assert(frag.Elem.Literal(DSTPATH)),
+									Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Elem.Name), Id("v")).Assert(frag.Elem.Literal(DSTPATH)),
 								),
 							)
 						case data.Map:
@@ -89,7 +90,7 @@ func generateDecorator(names []string) error {
 									// Special case for Package.Imports
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("f").Dot("decorateObject").Call(Id("v"))
 								} else {
-									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("f").Dot("decorateNode").Call(Id("n"), Id("v")).Assert(frag.Elem.Literal(DSTPATH))
+									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Elem.Name), Id("v")).Assert(frag.Elem.Literal(DSTPATH))
 								}
 							})
 						case data.Node:
@@ -100,7 +101,7 @@ func generateDecorator(names []string) error {
 								}
 							*/
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
-								frag.Field.Get("out").Op("=").Id("f").Dot("decorateNode").Call(Id("n"), frag.Field.Get("n")).Assert(frag.Type.Literal(DSTPATH)),
+								frag.Field.Get("out").Op("=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Type.Name), frag.Field.Get("n")).Assert(frag.Type.Literal(DSTPATH)),
 							)
 						case data.Bad:
 							g.Line().Comment("Bad")
@@ -120,7 +121,7 @@ func generateDecorator(names []string) error {
 							g.Add(frag.Field.Get("out")).Op("=").Id("f").Dot("decorateObject").Call(frag.Field.Get("n"))
 						case data.PathDecoration:
 							g.Line().Commentf("Path: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Id("f").Dot("resolvePath").Call(Id("parent"), Id("n"))
+							g.Add(frag.Field.Get("out")).Op("=").Id("f").Dot("resolvePath").Call(Id("parent"), Id("typ"), Id("n"))
 						case data.SpecialDecoration:
 							// ignore
 						default:

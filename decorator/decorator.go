@@ -3,8 +3,10 @@ package decorator
 import (
 	"fmt"
 	"go/ast"
+	"go/parser"
 	"go/token"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/dave/dst"
@@ -39,13 +41,49 @@ type Decorator struct {
 	Map
 	Filenames map[*dst.File]string // Source file names
 	Fset      *token.FileSet
+
 	Path      string // local package path, used to ensure the local path is not set in idents
+	canonical string // local package path, de-vendored, set in DecorateNode
 
 	// If a Resolver is provided, it is used to resolve Ident nodes. During decoration, remote
 	// identifiers (e.g. usually part of a qualified identifier SelectorExpr, but sometimes on
 	// their own for dot-imported packages) are updated with the path of the package they are
 	// imported from.
 	Resolver resolver.IdentResolver
+}
+
+// Parse uses parser.ParseFile to parse and decorate a Go source file. The src parameter should
+// be string, []byte, or io.Reader.
+func (d *Decorator) Parse(src interface{}) (*dst.File, error) {
+	return d.ParseFile("", src, parser.ParseComments)
+}
+
+// ParseFile uses parser.ParseFile to parse and decorate a Go source file. The ParseComments flag is
+// added to mode if it doesn't exist.
+func (d *Decorator) ParseFile(filename string, src interface{}, mode parser.Mode) (*dst.File, error) {
+
+	// If ParseFile returns an error and also a non-nil file, the errors were just parse errors so
+	// we should continue decorating the file and return the error.
+	f, err := parser.ParseFile(d.Fset, filename, src, mode|parser.ParseComments)
+	if err != nil && f == nil {
+		return nil, err
+	}
+
+	return d.DecorateFile(f), err
+}
+
+// ParseDir uses parser.ParseDir to parse and decorate a directory containing Go source. The
+// ParseComments flag is added to mode if it doesn't exist.
+func (d *Decorator) ParseDir(dir string, filter func(os.FileInfo) bool, mode parser.Mode) (map[string]*dst.Package, error) {
+	pkgs, err := parser.ParseDir(d.Fset, dir, filter, mode|parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+	out := map[string]*dst.Package{}
+	for k, v := range pkgs {
+		out[k] = d.DecorateNode(v).(*dst.Package)
+	}
+	return out, nil
 }
 
 func (d *Decorator) DecorateFile(f *ast.File) *dst.File {
@@ -55,6 +93,8 @@ func (d *Decorator) DecorateFile(f *ast.File) *dst.File {
 // Decorate decorates an ast.Node and returns a dst.Node
 func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 
+	d.canonical = stripVendor(d.Path)
+
 	fd := d.newFileDecorator()
 	if f, ok := n.(*ast.File); ok {
 		fd.file = f
@@ -62,7 +102,7 @@ func (d *Decorator) DecorateNode(n ast.Node) dst.Node {
 	fd.fragment(n)
 	fd.link()
 
-	out := fd.decorateNode(nil, n)
+	out := fd.decorateNode(nil, "", n)
 
 	//fmt.Println("\nFragments:")
 	//fd.debug(os.Stdout)
@@ -110,17 +150,33 @@ type decorationInfo struct {
 	decs []string
 }
 
-func (f *fileDecorator) resolvePath(parent ast.Node, id *ast.Ident) string {
+func (f *fileDecorator) resolvePath(parent ast.Node, typ string, id *ast.Ident) string {
+
 	if f.Resolver == nil {
 		return ""
 	}
+
+	// The parent field type (typ) for all idents is either "Ident" or "Expr".
+	//
+	// If the parent field type is Ident, there is no possibility of this field holding a
+	// SelectorExpr, so this ident cannot possibly be a qualified identifier. We avoid resolving
+	// the Path for these idents.
+	//
+	// Inside SelectorExpr is a special case where the logic is reversed. We avoid setting Path for
+	// X (Expr) but set it for Sel (Ident).
+	if _, sel := parent.(*ast.SelectorExpr); (typ == "Ident" && !sel) || (typ == "Expr" && sel) {
+		return ""
+	}
+
 	path, err := f.Resolver.ResolveIdent(f.file, parent, id)
 	if err != nil {
 		panic(err)
 	}
-	if path == stripVendor(f.Path) {
+
+	if path == f.canonical {
 		return ""
 	}
+
 	return path
 }
 
@@ -180,7 +236,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {
 	case *ast.Scope:
 		out.Decl = f.decorateScope(decl)
 	case ast.Node:
-		out.Decl = f.decorateNode(nil, decl)
+		out.Decl = f.decorateNode(nil, "", decl)
 	case nil:
 	default:
 		panic(fmt.Sprintf("o.Decl is %T", o.Decl))
@@ -193,7 +249,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) *dst.Object {
 	case *ast.Scope:
 		out.Data = f.decorateScope(data)
 	case ast.Node:
-		out.Data = f.decorateNode(nil, data)
+		out.Data = f.decorateNode(nil, "", data)
 	case nil:
 	default:
 		panic(fmt.Sprintf("o.Data is %T", o.Data))

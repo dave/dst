@@ -13,8 +13,8 @@ type IdentResolver struct {
 
 func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
 
-	if r.Info == nil || r.Info.Uses == nil || r.Info.Selections == nil {
-		return "", errors.New("gotypes.IdentResolver needs Uses and Selections in types info")
+	if r.Info == nil || r.Info.Uses == nil {
+		return "", errors.New("gotypes.IdentResolver needs Uses in types info")
 	}
 
 	se, ok := parent.(*ast.SelectorExpr)
