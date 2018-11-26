@@ -18,6 +18,10 @@ func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Id
 		return "", errors.New("gotypes.IdentResolver needs Uses in types info")
 	}
 
+	if r.Path == "" {
+		return "", errors.New("gotypes.IdentResolver needs Path")
+	}
+
 	se, ok := parent.(*ast.SelectorExpr)
 	if ok {
 		// if the parent is a SelectorExpr, only return the path if X is an ident and a package
@@ -50,13 +54,13 @@ func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Id
 		return "", nil // pre-defined idents in the universe scope - e.g. "byte"
 	}
 
-	unvendored := stripVendor(pkg.Path())
+	path := stripVendor(pkg.Path())
 
-	if unvendored == stripVendor(r.Path) {
+	if path == stripVendor(r.Path) {
 		return "", nil // ident in the local package
 	}
 
-	return unvendored, nil
+	return path, nil
 }
 
 func stripVendor(path string) string {

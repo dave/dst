@@ -15,7 +15,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// New returns a new package decorator
+// New returns a new decorator
 func New(fset *token.FileSet) *Decorator {
 	return &Decorator{
 		Map:       newMap(),
@@ -30,8 +30,8 @@ func NewWithImports(pkg *packages.Package) *Decorator {
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
 		Fset:      pkg.Fset,
-		Path:      pkg.PkgPath,
 		Resolver: &gotypes.IdentResolver{
+			Path: pkg.PkgPath,
 			Info: pkg.TypesInfo,
 		},
 	}
@@ -41,9 +41,6 @@ type Decorator struct {
 	Map
 	Filenames map[*dst.File]string // Source file names
 	Fset      *token.FileSet
-
-	Path      string // local package path, used to ensure the local path is not set in idents
-	canonical string // local package path, de-vendored, set in DecorateNode
 
 	// If a Resolver is provided, it is used to resolve Ident nodes. During decoration, remote
 	// identifiers (e.g. usually part of a qualified identifier SelectorExpr, but sometimes on
@@ -105,8 +102,6 @@ func (d *Decorator) DecorateFile(f *ast.File) (*dst.File, error) {
 
 // Decorate decorates an ast.Node and returns a dst.Node
 func (d *Decorator) DecorateNode(n ast.Node) (dst.Node, error) {
-
-	d.canonical = stripVendor(d.Path)
 
 	fd := d.newFileDecorator()
 	if f, ok := n.(*ast.File); ok {
@@ -187,10 +182,6 @@ func (f *fileDecorator) resolvePath(parent ast.Node, typ string, id *ast.Ident) 
 	path, err := f.Resolver.ResolveIdent(f.file, parent, id)
 	if err != nil {
 		return "", err
-	}
-
-	if path == f.canonical {
-		return "", nil
 	}
 
 	return path, nil

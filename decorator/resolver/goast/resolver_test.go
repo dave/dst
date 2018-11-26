@@ -68,7 +68,6 @@ func TestGoAstIdentResolver(t *testing.T) {
 			}
 
 			d := decorator.New(token.NewFileSet())
-			d.Path = "root"
 			d.Resolver = &IdentResolver{
 				PackageResolver: &guess.PackageResolver{},
 			}
