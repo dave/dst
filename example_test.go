@@ -34,9 +34,7 @@ var X = f(3.14)*2 + c
 		switch x := n.(type) {
 		case *dst.BasicLit:
 			s = x.Value
-		case *dst.Ref:
-			s = x.Name
-		case *dst.Def:
+		case *dst.Ident:
 			s = x.Name
 		}
 		if s != "" {

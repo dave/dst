@@ -29,6 +29,7 @@ func TestFragment(t *testing.T) {
             File "package" 1:1
             File Package 1:8
             Ident Start 1:9
+			Ident X 1:9
             Ident "a" 1:9
             Ident End 1:10
             File Name 1:10
@@ -40,9 +41,11 @@ func TestFragment(t *testing.T) {
             GenDecl Tok 6:4
             ValueSpec Start 6:5
             Ident Start 6:5
+			Ident X 6:5
             Ident "i" 6:5
             Ident End 6:6
             Ident Start 6:7
+			Ident X 6:7
             Ident "int" 6:7
             Ident End 6:10
             ValueSpec End 6:10
@@ -65,6 +68,7 @@ func TestFragment(t *testing.T) {
             File "package" 1:1
             File Package 1:8
             Ident Start 1:9
+			Ident X 1:9
             Ident "a" 1:9
             Ident End 1:10
             File Name 1:10
@@ -73,6 +77,7 @@ func TestFragment(t *testing.T) {
             FuncDecl "func" 3:1
             FuncDecl Func 3:5
             Ident Start 3:6
+			Ident X 3:6
             Ident "main" 3:6
             Ident End 3:10
             FuncDecl Name 3:10
@@ -109,9 +114,11 @@ func TestFragment(t *testing.T) {
             GenDecl Tok 9:6
             ValueSpec Start 9:7
             Ident Start 9:7
+			Ident X 9:7
             Ident "i" 9:7
             Ident End 9:8
             Ident Start 9:9
+			Ident X 9:9
             Ident "int" 9:9
             Ident End 9:12
             ValueSpec End 9:12
@@ -141,6 +148,7 @@ func TestFragment(t *testing.T) {
             File "package" 1:1
             File Package 1:8
             Ident Start 1:9
+			Ident X 1:9
             Ident "a" 1:9
             Ident End 1:10
             File Name 1:10
@@ -149,6 +157,7 @@ func TestFragment(t *testing.T) {
             FuncDecl "func" 3:1
             FuncDecl Func 3:5
             Ident Start 3:6
+			Ident X 3:6
             Ident "b" 3:6
             Ident End 3:7
             FuncDecl Name 3:7
@@ -168,9 +177,11 @@ func TestFragment(t *testing.T) {
             GenDecl Tok 4:5
             ValueSpec Start 4:6
             Ident Start 4:6
+			Ident X 4:6
             Ident "d" 4:6
             Ident End 4:7
             Ident Start 4:8
+			Ident X 4:8
             Ident "int" 4:8
             Ident End 4:11
             ValueSpec End 4:11
@@ -185,9 +196,11 @@ func TestFragment(t *testing.T) {
             GenDecl Tok 6:5
             ValueSpec Start 6:6
             Ident Start 6:6
+			Ident X 6:6
             Ident "e" 6:6
             Ident End 6:7
             Ident Start 6:8
+			Ident X 6:8
             Ident "int" 6:8
             Ident End 6:11
             ValueSpec End 6:11

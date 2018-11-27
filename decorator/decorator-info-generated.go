@@ -98,11 +98,6 @@ func getDecorationInfo(n dst.Node) (before, after dst.SpaceType, info []decorati
 		after = n.Decs.After
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
 		info = append(info, decorationInfo{"End", n.Decs.End})
-	case *dst.Def:
-		before = n.Decs.Before
-		after = n.Decs.After
-		info = append(info, decorationInfo{"Start", n.Decs.Start})
-		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.DeferStmt:
 		before = n.Decs.Before
 		after = n.Decs.After
@@ -189,6 +184,12 @@ func getDecorationInfo(n dst.Node) (before, after dst.SpaceType, info []decorati
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
 		info = append(info, decorationInfo{"Go", n.Decs.Go})
 		info = append(info, decorationInfo{"End", n.Decs.End})
+	case *dst.Ident:
+		before = n.Decs.Before
+		after = n.Decs.After
+		info = append(info, decorationInfo{"Start", n.Decs.Start})
+		info = append(info, decorationInfo{"X", n.Decs.X})
+		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.IfStmt:
 		before = n.Decs.Before
 		after = n.Decs.After
@@ -261,12 +262,6 @@ func getDecorationInfo(n dst.Node) (before, after dst.SpaceType, info []decorati
 		info = append(info, decorationInfo{"Key", n.Decs.Key})
 		info = append(info, decorationInfo{"Value", n.Decs.Value})
 		info = append(info, decorationInfo{"Range", n.Decs.Range})
-		info = append(info, decorationInfo{"X", n.Decs.X})
-		info = append(info, decorationInfo{"End", n.Decs.End})
-	case *dst.Ref:
-		before = n.Decs.Before
-		after = n.Decs.After
-		info = append(info, decorationInfo{"Start", n.Decs.Start})
 		info = append(info, decorationInfo{"X", n.Decs.X})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.ReturnStmt:

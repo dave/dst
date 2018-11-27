@@ -15,7 +15,7 @@ type Visitor interface {
 
 // Helper functions for common node lists. They may be empty.
 
-func walkDefList(v Visitor, list []*Def) {
+func walkIdentList(v Visitor, list []*Ident) {
 	for _, x := range list {
 		Walk(v, x)
 	}
@@ -58,7 +58,7 @@ func Walk(v Visitor, node Node) {
 	// of the corresponding node types in ast.go)
 	switch n := node.(type) {
 	case *Field:
-		walkDefList(v, n.Names)
+		walkIdentList(v, n.Names)
 		Walk(v, n.Type)
 		if n.Tag != nil {
 			Walk(v, n.Tag)
@@ -69,11 +69,8 @@ func Walk(v Visitor, node Node) {
 			Walk(v, f)
 		}
 
-	case *Def:
-		// nothing to do
-
 	// Expressions
-	case *BadExpr, *Ref, *BasicLit:
+	case *BadExpr, *Ident, *BasicLit:
 		// nothing to do
 
 	case *Ellipsis:
@@ -280,7 +277,7 @@ func Walk(v Visitor, node Node) {
 		Walk(v, n.Path)
 
 	case *ValueSpec:
-		walkDefList(v, n.Names)
+		walkIdentList(v, n.Names)
 		if n.Type != nil {
 			Walk(v, n.Type)
 		}

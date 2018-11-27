@@ -150,7 +150,7 @@ call.Decs.Before = dst.EmptyLine
 call.Decs.After = dst.EmptyLine
 
 for _, v := range call.Args {
-	v := v.(*dst.Ref)
+	v := v.(*dst.Ident)
 	v.Decs.Before = dst.NewLine
 	v.Decs.After = dst.NewLine
 }
@@ -267,10 +267,12 @@ Use [NewWithImports](https://godoc.org/github.com/dave/dst/decorator#NewWithImpo
 [NewRestorerWithImports](https://godoc.org/github.com/dave/dst/decorator#NewRestorerWithImports) to 
 create an import aware decorator / restorer with default settings.
 
+During decoration, remote identifiers are normalised: `*ast.SelectorExpr` qualified identifiers are 
+replaced with `*dst.Ident` with the `Path` field set to the path of the imported package. 
+
 When adding a qualified identifier node, there is no need to use `SelectorExpr` - just add an 
-`Ident` and set the [Path](https://godoc.org/github.com/dave/dst#Ident) property to the imported 
-package path. The restorer will wrap it in a `SelectorExpr` where appropriate when converting back 
-to ast, and also update the import block.
+`Ident` and set `Path` to the imported package path. The restorer will wrap it in a `SelectorExpr` 
+where appropriate when converting back to ast, and also update the import block.
 
 The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience function uses 
 `go/packages` to load packages and decorate all loaded ast files:
@@ -299,7 +301,7 @@ f := p.Files[0]
 b := f.Decls[0].(*dst.FuncDecl).Body
 b.List = append(b.List, &dst.ExprStmt{
 	X: &dst.CallExpr{
-		Fun:	&dst.Ref{Path: "fmt", Name: "Println"},
+		Fun:	&dst.Ident{Path: "fmt", Name: "Println"},
 		Args: []dst.Expr{
 			&dst.BasicLit{Kind: token.STRING, Value: strconv.Quote("Hello, World!")},
 		},
@@ -337,7 +339,7 @@ code := `package main
 	}`
 
 dec := decorator.New(token.NewFileSet())
-dec.Resolver = &goast.RefResolver{PackageResolver: &guess.PackageResolver{}}
+dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
 
 f, err := dec.Parse(code)
 if err != nil {
@@ -346,7 +348,7 @@ if err != nil {
 
 f.Decls[1].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Args = []dst.Expr{
 	&dst.CallExpr{
-		Fun: &dst.Ref{Name: "A", Path: "foo.bar/baz"},
+		Fun: &dst.Ident{Name: "A", Path: "foo.bar/baz"},
 	},
 }
 
@@ -428,15 +430,15 @@ for id, ob := range typesInfo.Uses {
 	astUses = append(astUses, id)
 }
 
-// Find each *dst.Ref in the Dst.Nodes mapping
-var dstRefs []*dst.Ref
+// Find each *dst.Ident in the Dst.Nodes mapping
+var dstUses []*dst.Ident
 for _, id := range astUses {
-	dstRefs = append(dstRefs, dec.Dst.Nodes[id].(*dst.Ref))
+	dstUses = append(dstUses, dec.Dst.Nodes[id].(*dst.Ident))
 }
 
 // Change the name of the original definition and all uses
 dstDef.Name = "foo"
-for _, id := range dstRefs {
+for _, id := range dstUses {
 	id.Name = "foo"
 }
 

@@ -32,7 +32,7 @@ type T func(a int) (b int)
 				ft.Decs.Params.Replace("/*Params*/")
 				ft.Decs.End.Replace("/*End*/")
 				fd := &dst.FuncDecl{
-					Name: dst.NewDef("foo"),
+					Name: dst.NewIdent("foo"),
 					Type: ft,
 					Body: &dst.BlockStmt{},
 					Decs: dst.FuncDeclDecorations{NodeDecs: dst.NodeDecs{Before: dst.EmptyLine}},
@@ -69,7 +69,7 @@ var j /*b*/ int`,
 				var i int`,
 			pre: func(c *dstutil.Cursor) bool {
 				switch n := c.Node().(type) {
-				case *dst.Def:
+				case *dst.Ident:
 					if n.Name == "i" {
 						n.Name = "j"
 					}

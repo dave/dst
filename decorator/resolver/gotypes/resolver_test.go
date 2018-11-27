@@ -11,11 +11,8 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func TestRefResolver(t *testing.T) {
-	type tc struct {
-		id, expect string
-		local      bool
-	}
+func TestIdentResolver(t *testing.T) {
+	type tc struct{ id, expect string }
 	tests := []struct {
 		skip, solo bool
 		name       string
@@ -41,7 +38,7 @@ func TestRefResolver(t *testing.T) {
 				"go.mod": dummy.Src("module root"),
 			},
 			cases: []tc{
-				{"A", "root/a", false},
+				{"A", "root/a"},
 			},
 		},
 		{
@@ -65,7 +62,7 @@ func TestRefResolver(t *testing.T) {
 				"go.mod": dummy.Src("module root"),
 			},
 			cases: []tc{
-				{"A", "", false},
+				{"A", ""},
 			},
 		},
 		{
@@ -89,7 +86,7 @@ func TestRefResolver(t *testing.T) {
 				"go.mod": dummy.Src("module root"),
 			},
 			cases: []tc{
-				{"B", "", false},
+				{"B", ""},
 			},
 		},
 		{
@@ -116,9 +113,9 @@ func TestRefResolver(t *testing.T) {
 				"go.mod": dummy.Src("module root"),
 			},
 			cases: []tc{
-				{"A", "root/a", false},
-				{"B", "root/b", false},
-				{"C", "", true},
+				{"A", "root/a"},
+				{"B", "root/b"},
+				{"C", ""},
 			},
 		},
 	}
@@ -156,7 +153,7 @@ func TestRefResolver(t *testing.T) {
 			}
 			pkg := pkgs[0]
 
-			res := &gotypes.RefResolver{
+			res := &gotypes.IdentResolver{
 				Path: "root/main",
 				Info: pkg.TypesInfo,
 			}
@@ -186,15 +183,12 @@ func TestRefResolver(t *testing.T) {
 			for _, c := range test.cases {
 				//ast.Print(pkg.Fset, parents[c.id])
 				//ast.Print(pkg.Fset, nodes[c.id])
-				local, path, err := res.ResolveIdent(nil, parents[c.id], nodes[c.id])
+				path, err := res.ResolveIdent(nil, parents[c.id], nodes[c.id])
 				if err != nil {
 					t.Error(err)
 				}
 				if path != c.expect {
 					t.Errorf("expect %q, found %q", c.expect, path)
-				}
-				if local != c.local {
-					t.Errorf("expect local=%v, found %v", c.local, local)
 				}
 			}
 

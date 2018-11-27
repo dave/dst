@@ -324,11 +324,11 @@ ExprStmt [New line before] [New line after]`,
 			code: `package main
 
 			type A struct {
-				A /*DefEnd*/ int /*FieldType*/ ` + "`" + `a:"a"` + "`" + `
+				A /*IdentEnd*/ int /*FieldType*/ ` + "`" + `a:"a"` + "`" + `
 			}`,
 			expect: `GenDecl [Empty line before]
 Field [New line before] [Type "/*FieldType*/"] [New line after]
-Def [End "/*DefEnd*/"]`,
+Ident [End "/*IdentEnd*/"]`,
 		},
 		{
 			name: "composite literal",

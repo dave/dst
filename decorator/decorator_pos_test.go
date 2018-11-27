@@ -34,7 +34,7 @@ func TestPositions(t *testing.T) {
 	}
 
 	dec := New(prog.Fset)
-	dec.Resolver = &goast.RefResolver{PackageResolver: &guess.PackageResolver{}}
+	dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
 
 	file, err := dec.DecorateFile(astFile)
 	if err != nil {

@@ -207,7 +207,7 @@ func Clone(n Node) Node {
 
 		// Node: Label
 		if n.Label != nil {
-			out.Label = Clone(n.Label).(*Ref)
+			out.Label = Clone(n.Label).(*Ident)
 		}
 
 		// Decoration: End
@@ -392,26 +392,6 @@ func Clone(n Node) Node {
 		out.Decs.After = n.Decs.After
 
 		return out
-	case *Def:
-		out := &Def{}
-
-		out.Decs.Before = n.Decs.Before
-
-		// Decoration: Start
-		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
-
-		// String: Name
-		out.Name = n.Name
-
-		// Decoration: End
-		out.Decs.End = append(out.Decs.End, n.Decs.End...)
-
-		// Object: Obj
-		out.Obj = CloneObject(n.Obj)
-
-		out.Decs.After = n.Decs.After
-
-		return out
 	case *DeferStmt:
 		out := &DeferStmt{}
 
@@ -502,7 +482,7 @@ func Clone(n Node) Node {
 
 		// List: Names
 		for _, v := range n.Names {
-			out.Names = append(out.Names, Clone(v).(*Def))
+			out.Names = append(out.Names, Clone(v).(*Ident))
 		}
 
 		// Node: Type
@@ -559,7 +539,7 @@ func Clone(n Node) Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = Clone(n.Name).(*Def)
+			out.Name = Clone(n.Name).(*Ident)
 		}
 
 		// Decoration: Name
@@ -649,7 +629,7 @@ func Clone(n Node) Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = Clone(n.Name).(*Def)
+			out.Name = Clone(n.Name).(*Ident)
 		}
 
 		// Decoration: Name
@@ -789,6 +769,32 @@ func Clone(n Node) Node {
 		out.Decs.After = n.Decs.After
 
 		return out
+	case *Ident:
+		out := &Ident{}
+
+		out.Decs.Before = n.Decs.Before
+
+		// Decoration: Start
+		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
+
+		// Decoration: X
+		out.Decs.X = append(out.Decs.X, n.Decs.X...)
+
+		// String: Name
+		out.Name = n.Name
+
+		// Decoration: End
+		out.Decs.End = append(out.Decs.End, n.Decs.End...)
+
+		// Object: Obj
+		out.Obj = CloneObject(n.Obj)
+
+		// Path: Path
+		out.Path = n.Path
+
+		out.Decs.After = n.Decs.After
+
+		return out
 	case *IfStmt:
 		out := &IfStmt{}
 
@@ -845,7 +851,7 @@ func Clone(n Node) Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = Clone(n.Name).(*Def)
+			out.Name = Clone(n.Name).(*Ident)
 		}
 
 		// Decoration: Name
@@ -985,7 +991,7 @@ func Clone(n Node) Node {
 
 		// Node: Label
 		if n.Label != nil {
-			out.Label = Clone(n.Label).(*Def)
+			out.Label = Clone(n.Label).(*Ident)
 		}
 
 		// Decoration: Label
@@ -1134,32 +1140,6 @@ func Clone(n Node) Node {
 		out.Decs.After = n.Decs.After
 
 		return out
-	case *Ref:
-		out := &Ref{}
-
-		out.Decs.Before = n.Decs.Before
-
-		// Decoration: Start
-		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
-
-		// Decoration: X
-		out.Decs.X = append(out.Decs.X, n.Decs.X...)
-
-		// String: Name
-		out.Name = n.Name
-
-		// Path: Path
-		out.Path = n.Path
-
-		// Decoration: End
-		out.Decs.End = append(out.Decs.End, n.Decs.End...)
-
-		// Object: Obj
-		out.Obj = CloneObject(n.Obj)
-
-		out.Decs.After = n.Decs.After
-
-		return out
 	case *ReturnStmt:
 		out := &ReturnStmt{}
 
@@ -1222,7 +1202,7 @@ func Clone(n Node) Node {
 
 		// Node: Sel
 		if n.Sel != nil {
-			out.Sel = Clone(n.Sel).(*Ref)
+			out.Sel = Clone(n.Sel).(*Ident)
 		}
 
 		// Decoration: End
@@ -1441,7 +1421,7 @@ func Clone(n Node) Node {
 
 		// Node: Name
 		if n.Name != nil {
-			out.Name = Clone(n.Name).(*Def)
+			out.Name = Clone(n.Name).(*Ident)
 		}
 
 		// Decoration: Name
@@ -1531,7 +1511,7 @@ func Clone(n Node) Node {
 
 		// List: Names
 		for _, v := range n.Names {
-			out.Names = append(out.Names, Clone(v).(*Def))
+			out.Names = append(out.Names, Clone(v).(*Ident))
 		}
 
 		// Node: Type

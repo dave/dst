@@ -15,9 +15,6 @@ func generateFragger(names []string) error {
 		),
 		Switch(Id("n").Op(":=").Id("n").Assert(Type())).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
-				if data.DstOnly[nodeName] {
-					continue
-				}
 				g.Case(Op("*").Qual("go/ast", nodeName)).BlockFunc(func(g *Group) {
 					for _, frag := range data.Info[nodeName] {
 						switch frag := frag.(type) {
@@ -56,7 +53,7 @@ func generateFragger(names []string) error {
 							)
 						case data.Map:
 							g.Line().Commentf("Map: %s", frag.Name)
-							if frag.Elem.TypeName(DSTPATH) != "Object" {
+							if frag.Elem.TypeName() != "Object" {
 								g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 									Id("f").Dot("addNodeFragments").Call(Id("v")),
 								)

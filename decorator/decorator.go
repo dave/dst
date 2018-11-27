@@ -30,7 +30,7 @@ func NewWithImports(pkg *packages.Package) *Decorator {
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
 		Fset:      pkg.Fset,
-		Resolver: &gotypes.RefResolver{
+		Resolver: &gotypes.IdentResolver{
 			Path: pkg.PkgPath,
 			Info: pkg.TypesInfo,
 		},
@@ -42,11 +42,11 @@ type Decorator struct {
 	Filenames map[*dst.File]string // Source file names
 	Fset      *token.FileSet
 
-	// If a Resolver is provided, it is used to resolve remote references from *ast.SelectorExpr
-	// and *ast.Ident nodes. Usually a remote reference is a qualified identifier *ast.SelectorExpr,
-	// but in the case of dot-imports they can be simply *ast.Ident. During decoration, remote
-	// references are replaced with *dst.Ref with Path set to the path of imported package.
-	Resolver resolver.RefResolver
+	// If a Resolver is provided, it is used to resolve remote identifiers from *ast.Ident and
+	// *ast.SelectorExpr nodes. Usually a remote identifier is a SelectorExpr qualified identifier,
+	// but in the case of dot-imports they can be simply Ident nodes. During decoration, remote
+	// identifiers are replaced with *dst.Ident with Path set to the path of imported package.
+	Resolver resolver.IdentResolver
 }
 
 // Parse uses parser.ParseFile to parse and decorate a Go source file. The src parameter should
@@ -110,7 +110,7 @@ func (d *Decorator) DecorateNode(n ast.Node) (dst.Node, error) {
 	fd.fragment(n)
 	fd.link()
 
-	out, err := fd.decorateNode(nil, "", n)
+	out, err := fd.decorateNode(nil, "", "", "", n)
 	if err != nil {
 		return nil, err
 	}
@@ -161,65 +161,29 @@ type decorationInfo struct {
 	decs []string
 }
 
-func (f *fileDecorator) decorateIdent(parent ast.Node, typ string, n *ast.Ident) (dst.Node, error) {
-
-	if typ == "Def" {
-		// continue to default logic in decorateNode
-		return nil, nil
-	}
-
-	if typ != "Ref" && typ != "Expr" {
-		panic(fmt.Sprintf("decorateIdent: unsupported typ %s", typ))
-	}
-
-	// replace with *dst.Ref
-	out := &dst.Ref{}
-	f.Dst.Nodes[n] = out
-	f.Ast.Nodes[out] = n
-
-	out.Decs.Before = f.before[n]
-	out.Decs.After = f.after[n]
-
-	// String: Name
-	out.Name = n.Name
-
-	// Object: Obj
-	ob, err := f.decorateObject(n.Obj)
-	if err != nil {
-		return nil, err
-	}
-	out.Obj = ob
-
-	// Path: Path
-	if f.Resolver != nil {
-		_, path, err := f.resolvePath(parent, typ, n)
-		if err != nil {
-			return nil, err
-		}
-		out.Path = path
-	}
-
-	if nd, ok := f.decorations[n]; ok {
-		if decs, ok := nd["Start"]; ok {
-			out.Decs.Start = decs
-		}
-		if decs, ok := nd["X"]; ok {
-			out.Decs.Start.Append(decs...)
-		}
-		if decs, ok := nd["End"]; ok {
-			out.Decs.End = decs
-		}
-	}
-
-	return out, nil
-
+// Never need to resolve idents that are in these fields (decorateSelectorExpr will force
+// SelectorExpr.Sel to be resolved)
+var avoid = map[string]bool{
+	"Field.Names":       true,
+	"LabeledStmt.Label": true,
+	"BranchStmt.Label":  true,
+	"ImportSpec.Name":   true,
+	"ValueSpec.Names":   true,
+	"TypeSpec.Name":     true,
+	"FuncDecl.Name":     true,
+	"File.Name":         true,
+	"SelectorExpr.Sel":  true,
 }
 
-func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, typ string, n *ast.SelectorExpr) (dst.Node, error) {
+var decorateAvoid = map[string]bool{
+	"SelectorExpr.X": true, // we avoid this in the decorator, but not the restorer
+}
+
+func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, parentName, parentField, parentFieldType string, n *ast.SelectorExpr) (dst.Node, error) {
 
 	var path string
 	if f.Resolver != nil {
-		_, p, err := f.resolvePath(n, "Ref", n.Sel)
+		p, err := f.resolvePath(true, n, "", "", "", n.Sel)
 		if err != nil {
 			return nil, err
 		}
@@ -231,8 +195,8 @@ func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, typ string, n *ast
 		return nil, nil
 	}
 
-	// replace with *dst.Ref and merge decorations
-	out := &dst.Ref{}
+	// replace *ast.SelectorExpr with *dst.Ident and merge decorations
+	out := &dst.Ident{}
 	f.Dst.Nodes[n] = out
 	f.Dst.Nodes[n.X] = out
 	f.Dst.Nodes[n.Sel] = out
@@ -298,34 +262,29 @@ func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, typ string, n *ast
 
 }
 
-func (f *fileDecorator) resolvePath(parent ast.Node, typ string, id *ast.Ident) (bool, string, error) {
+func (f *fileDecorator) resolvePath(force bool, parent ast.Node, parentName, parentField, parentFieldType string, id *ast.Ident) (string, error) {
 
-	if f.Resolver == nil {
-		panic("resolvePath needs a Resolver")
+	if !force {
+		if f.Resolver == nil {
+			panic("resolvePath needs a Resolver")
+		}
+
+		key := parentName + "." + parentField
+		if avoid[key] || decorateAvoid[key] {
+			return "", nil
+		}
+
+		if parentFieldType != "Expr" {
+			panic(fmt.Sprintf("decorateIdent: unsupported parentName %s, parentField %s, parentFieldType %s", parentName, parentField, parentFieldType))
+		}
 	}
 
-	_, sel := parent.(*ast.SelectorExpr)
-	_, branch := parent.(*ast.BranchStmt)
-
-	switch {
-	case branch && typ == "Ref":
-		// BranchStmt.Label is *Ref but always local, so no need to resolve
-		return false, "", nil
-	case sel && typ == "Expr":
-		// SelectorExpr.X is Expr but no need to resolve
-		return false, "", nil
-	case sel && typ == "Ref", typ == "Expr":
-		// continue to resolve package
-	default:
-		panic(fmt.Sprintf("resolvePath: unexpected parent = %T, typ = %s", parent, typ))
-	}
-
-	local, path, err := f.Resolver.ResolveIdent(f.file, parent, id)
+	path, err := f.Resolver.ResolveIdent(f.file, parent, id)
 	if err != nil {
-		return false, "", err
+		return "", err
 	}
 
-	return local, path, nil
+	return path, nil
 }
 
 func stripVendor(path string) string {
@@ -388,7 +347,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) (*dst.Object, error) {
 		}
 		out.Decl = s
 	case ast.Node:
-		n, err := f.decorateNode(nil, "", decl)
+		n, err := f.decorateNode(nil, "", "", "", decl)
 		if err != nil {
 			return nil, err
 		}
@@ -408,7 +367,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) (*dst.Object, error) {
 		}
 		out.Data = s
 	case ast.Node:
-		n, err := f.decorateNode(nil, "", data)
+		n, err := f.decorateNode(nil, "", "", "", data)
 		if err != nil {
 			return nil, err
 		}

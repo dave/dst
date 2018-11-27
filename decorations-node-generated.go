@@ -76,11 +76,6 @@ func (n *DeclStmt) Decorations() *NodeDecs {
 }
 
 // Decorations returns the decorations that are common to all nodes (Before, Start, End, After).
-func (n *Def) Decorations() *NodeDecs {
-	return &n.Decs.NodeDecs
-}
-
-// Decorations returns the decorations that are common to all nodes (Before, Start, End, After).
 func (n *DeferStmt) Decorations() *NodeDecs {
 	return &n.Decs.NodeDecs
 }
@@ -146,6 +141,11 @@ func (n *GoStmt) Decorations() *NodeDecs {
 }
 
 // Decorations returns the decorations that are common to all nodes (Before, Start, End, After).
+func (n *Ident) Decorations() *NodeDecs {
+	return &n.Decs.NodeDecs
+}
+
+// Decorations returns the decorations that are common to all nodes (Before, Start, End, After).
 func (n *IfStmt) Decorations() *NodeDecs {
 	return &n.Decs.NodeDecs
 }
@@ -197,11 +197,6 @@ func (n *ParenExpr) Decorations() *NodeDecs {
 
 // Decorations returns the decorations that are common to all nodes (Before, Start, End, After).
 func (n *RangeStmt) Decorations() *NodeDecs {
-	return &n.Decs.NodeDecs
-}
-
-// Decorations returns the decorations that are common to all nodes (Before, Start, End, After).
-func (n *Ref) Decorations() *NodeDecs {
 	return &n.Decs.NodeDecs
 }
 

@@ -145,14 +145,6 @@ type DeclStmtDecorations struct {
 	NodeDecs
 }
 
-// DefDecorations holds decorations for Def:
-//
-// 	var /*Start*/ F /*End*/ func()
-//
-type DefDecorations struct {
-	NodeDecs
-}
-
 // DeferStmtDecorations holds decorations for DeferStmt:
 //
 // 	/*Start*/
@@ -314,6 +306,19 @@ type GoStmtDecorations struct {
 	Go Decorations
 }
 
+// IdentDecorations holds decorations for Ident:
+//
+// 	/*Start*/
+// 	i /*End*/ ++
+//
+// 	/*Start*/
+// 	fmt. /*X*/ Print /*End*/ ()
+//
+type IdentDecorations struct {
+	NodeDecs
+	X Decorations
+}
+
 // IfStmtDecorations holds decorations for IfStmt:
 //
 // 	/*Start*/
@@ -447,19 +452,6 @@ type RangeStmtDecorations struct {
 	Value Decorations
 	Range Decorations
 	X     Decorations
-}
-
-// RefDecorations holds decorations for Ref:
-//
-// 	/*Start*/
-// 	F /*End*/ ()
-//
-// 	/*Start*/
-// 	fmt. /*X*/ Print /*End*/ ()
-//
-type RefDecorations struct {
-	NodeDecs
-	X Decorations
 }
 
 // ReturnStmtDecorations holds decorations for ReturnStmt:

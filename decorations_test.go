@@ -31,7 +31,7 @@ func ExampleManualImports() {
 		}`
 
 	dec := decorator.New(token.NewFileSet())
-	dec.Resolver = &goast.RefResolver{PackageResolver: &guess.PackageResolver{}}
+	dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
 
 	f, err := dec.Parse(code)
 	if err != nil {
@@ -40,7 +40,7 @@ func ExampleManualImports() {
 
 	f.Decls[1].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Args = []dst.Expr{
 		&dst.CallExpr{
-			Fun: &dst.Ref{Name: "A", Path: "foo.bar/baz"},
+			Fun: &dst.Ident{Name: "A", Path: "foo.bar/baz"},
 		},
 	}
 
@@ -90,7 +90,7 @@ func ExampleImports() {
 	b := f.Decls[0].(*dst.FuncDecl).Body
 	b.List = append(b.List, &dst.ExprStmt{
 		X: &dst.CallExpr{
-			Fun: &dst.Ref{Path: "fmt", Name: "Println"},
+			Fun: &dst.Ident{Path: "fmt", Name: "Println"},
 			Args: []dst.Expr{
 				&dst.BasicLit{Kind: token.STRING, Value: strconv.Quote("Hello, World!")},
 			},
@@ -194,15 +194,15 @@ func ExampleTypes() {
 		astUses = append(astUses, id)
 	}
 
-	// Find each *dst.Ref in the Dst.Nodes mapping
-	var dstRefs []*dst.Ref
+	// Find each *dst.Ident in the Dst.Nodes mapping
+	var dstUses []*dst.Ident
 	for _, id := range astUses {
-		dstRefs = append(dstRefs, dec.Dst.Nodes[id].(*dst.Ref))
+		dstUses = append(dstUses, dec.Dst.Nodes[id].(*dst.Ident))
 	}
 
 	// Change the name of the original definition and all uses
 	dstDef.Name = "foo"
-	for _, id := range dstRefs {
+	for _, id := range dstUses {
 		id.Name = "foo"
 	}
 
@@ -276,7 +276,7 @@ func ExampleSpace() {
 	call.Decs.After = dst.EmptyLine
 
 	for _, v := range call.Args {
-		v := v.(*dst.Ref)
+		v := v.(*dst.Ident)
 		v.Decs.Before = dst.NewLine
 		v.Decs.After = dst.NewLine
 	}
@@ -349,7 +349,7 @@ func ExampleDecorations() {
 	}
 
 	call := body.List[2].(*dst.ExprStmt).X.(*dst.CallExpr)
-	call.Args = append(call.Args, dst.NewRef("b", ""), dst.NewRef("c", ""))
+	call.Args = append(call.Args, dst.NewIdent("b"), dst.NewIdent("c"))
 	for i, expr := range call.Args {
 		expr.Decorations().Before = dst.NewLine
 		expr.Decorations().After = dst.NewLine

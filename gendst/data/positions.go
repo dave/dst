@@ -122,14 +122,11 @@ A /*Label*/ : /*Colon*/
 	/*Start*/
 	goto /*Tok*/ A /*End*/
 
-	// Def
-	var /*Start*/ F /*End*/ func()
-
-	// Ref(0)
+	// Ident(0)
 	/*Start*/
-	F /*End*/ ()
+	i /*End*/ ++
 
-	// Ref(1)
+	// Ident(1)
 	/*Start*/
 	fmt. /*X*/ Print /*End*/ ()
 

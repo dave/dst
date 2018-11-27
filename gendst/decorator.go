@@ -16,7 +16,9 @@ func generateDecorator(names []string) error {
 
 	f.Func().Params(Id("f").Op("*").Id("fileDecorator")).Id("decorateNode").Params(
 		Id("parent").Qual("go/ast", "Node"),
-		Id("typ").String(),
+		Id("parentName"),
+		Id("parentField"),
+		Id("parentFieldType").String(),
 		Id("n").Qual("go/ast", "Node"),
 	).Params(
 		Qual(DSTPATH, "Node"),
@@ -27,43 +29,23 @@ func generateDecorator(names []string) error {
 		)
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
-				if data.DstOnly[nodeName] {
-					continue
-				}
 				g.Case(Op("*").Qual("go/ast", nodeName)).BlockFunc(func(g *Group) {
 
 					switch nodeName {
-					case "Ident":
-						g.Line()
-						g.Comment("Special case for *ast.Ident - replace with Ref if needed")
-						g.List(Id("ref"), Err()).Op(":=").Id("f").Dot("decorateIdent").Call(Id("parent"), Id("typ"), Id("n"))
-						g.If(Err().Op("!=").Nil()).Block(
-							Return(Nil(), Err()),
-						)
-						g.If(Id("ref").Op("!=").Nil()).Block(
-							Return(Id("ref"), Nil()),
-						)
-						g.Line()
 					case "SelectorExpr":
 						g.Line()
-						g.Comment("Special case for *ast.SelectorExpr - replace with Ref if needed")
-						g.List(Id("ref"), Err()).Op(":=").Id("f").Dot("decorateSelectorExpr").Call(Id("parent"), Id("typ"), Id("n"))
+						g.Comment("Special case for *ast.SelectorExpr - replace with Ident if needed")
+						g.List(Id("id"), Err()).Op(":=").Id("f").Dot("decorateSelectorExpr").Call(Id("parent"), Id("parentName"), Id("parentField"), Id("parentFieldType"), Id("n"))
 						g.If(Err().Op("!=").Nil()).Block(
 							Return(Nil(), Err()),
 						)
-						g.If(Id("ref").Op("!=").Nil()).Block(
-							Return(Id("ref"), Nil()),
+						g.If(Id("id").Op("!=").Nil()).Block(
+							Return(Id("id"), Nil()),
 						)
 						g.Line()
 					}
 
-					outType := nodeName
-					if nodeName == "Ident" {
-						// special case for converting Ident -> Def
-						outType = "Def"
-					}
-
-					g.Id("out").Op(":=").Op("&").Qual(DSTPATH, outType).Values()
+					g.Id("out").Op(":=").Op("&").Qual(DSTPATH, nodeName).Values()
 
 					g.Id("f").Dot("Dst").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
 					g.Id("f").Dot("Ast").Dot("Nodes").Index(Id("out")).Op("=").Id("n")
@@ -77,7 +59,7 @@ func generateDecorator(names []string) error {
 						switch frag := frag.(type) {
 						case data.Init:
 							g.Line().Commentf("Init: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Op("&").Qual(DSTPATH, frag.Type.TypeName(DSTPATH)).Values()
+							g.Add(frag.Field.Get("out")).Op("=").Op("&").Qual(DSTPATH, frag.Type.TypeName()).Values()
 						case data.Decoration:
 							// nothing here
 						case data.String:
@@ -96,7 +78,7 @@ func generateDecorator(names []string) error {
 						case data.List:
 							g.Line().Commentf("List: %s", frag.Name)
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
-								List(Id("child"), Err()).Op(":=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Elem.TypeName(DSTPATH)), Id("v")),
+								List(Id("child"), Err()).Op(":=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(nodeName), Lit(frag.Field.FieldName()), Lit(frag.Elem.TypeName()), Id("v")),
 								If(Err().Op("!=").Nil()).Block(
 									Return(Nil(), Err()),
 								),
@@ -109,7 +91,7 @@ func generateDecorator(names []string) error {
 							g.Line().Commentf("Map: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Map(String()).Add(frag.Elem.Literal(DSTPATH)).Values()
 							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).BlockFunc(func(g *Group) {
-								if frag.Elem.TypeName(DSTPATH) == "Object" {
+								if frag.Elem.TypeName() == "Object" {
 									// Special case for Package.Imports
 									g.List(Id("ob"), Err()).Op(":=").Id("f").Dot("decorateObject").Call(Id("v"))
 									g.If(Err().Op("!=").Nil()).Block(
@@ -117,7 +99,7 @@ func generateDecorator(names []string) error {
 									)
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("ob")
 								} else {
-									g.List(Id("child"), Err()).Op(":=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Elem.TypeName(DSTPATH)), Id("v"))
+									g.List(Id("child"), Err()).Op(":=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(nodeName), Lit(frag.Field.FieldName()), Lit(frag.Elem.TypeName()), Id("v"))
 									g.If(Err().Op("!=").Nil()).Block(
 										Return(Nil(), Err()),
 									)
@@ -127,7 +109,7 @@ func generateDecorator(names []string) error {
 						case data.Node:
 							g.Line().Commentf("Node: %s", frag.Name)
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
-								List(Id("child"), Err()).Op(":=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(frag.Type.TypeName(DSTPATH)), frag.Field.Get("n")),
+								List(Id("child"), Err()).Op(":=").Id("f").Dot("decorateNode").Call(Id("n"), Lit(nodeName), Lit(frag.Field.FieldName()), Lit(frag.Type.TypeName()), frag.Field.Get("n")),
 								If(Err().Op("!=").Nil()).Block(
 									Return(Nil(), Err()),
 								),
@@ -159,11 +141,13 @@ func generateDecorator(names []string) error {
 							g.Add(frag.Field.Get("out")).Op("=").Id("ob")
 						case data.PathDecoration:
 							g.Line().Commentf("Path: %s", frag.Name)
-							g.List(Id("path"), Err()).Op(":=").Id("f").Dot("resolvePath").Call(Id("parent"), Id("typ"), Id("n"))
-							g.If(Err().Op("!=").Nil()).Block(
-								Return(Nil(), Err()),
+							g.If(Id("f").Dot("Resolver").Op("!=").Nil()).Block(
+								List(Id("path"), Err()).Op(":=").Id("f").Dot("resolvePath").Call(False(), Id("parent"), Id("parentName"), Id("parentField"), Id("parentFieldType"), Id("n")),
+								If(Err().Op("!=").Nil()).Block(
+									Return(Nil(), Err()),
+								),
+								Add(frag.Field.Get("out")).Op("=").Id("path"),
 							)
-							g.Add(frag.Field.Get("out")).Op("=").Id("path")
 						case data.SpecialDecoration:
 							// ignore
 						default:
@@ -207,9 +191,6 @@ func generateDecoratorTestHelper(names []string) error {
 	f.Func().Id("getDecorationInfo").Params(Id("n").Qual(DSTPATH, "Node")).Params(Id("before"), Id("after").Qual(DSTPATH, "SpaceType"), Id("info").Index().Id("decorationInfo")).BlockFunc(func(g *Group) {
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
-				if data.AstOnly[nodeName] {
-					continue
-				}
 				g.Case(Op("*").Qual(DSTPATH, nodeName)).BlockFunc(func(g *Group) {
 					if nodeName != "Package" {
 						g.Id("before").Op("=").Id("n").Dot("Decs").Dot("Before")

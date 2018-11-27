@@ -82,10 +82,12 @@ Use [NewWithImports](https://godoc.org/github.com/dave/dst/decorator#NewWithImpo
 [NewRestorerWithImports](https://godoc.org/github.com/dave/dst/decorator#NewRestorerWithImports) to 
 create an import aware decorator / restorer with default settings.
 
+During decoration, remote identifiers are normalised: `*ast.SelectorExpr` qualified identifiers are 
+replaced with `*dst.Ident` with the `Path` field set to the path of the imported package. 
+
 When adding a qualified identifier node, there is no need to use `SelectorExpr` - just add an 
-`Ident` and set the [Path](https://godoc.org/github.com/dave/dst#Ident) property to the imported 
-package path. The restorer will wrap it in a `SelectorExpr` where appropriate when converting back 
-to ast, and also update the import block.
+`Ident` and set `Path` to the imported package path. The restorer will wrap it in a `SelectorExpr` 
+where appropriate when converting back to ast, and also update the import block.
 
 The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience function uses 
 `go/packages` to load packages and decorate all loaded ast files:

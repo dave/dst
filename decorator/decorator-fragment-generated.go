@@ -752,6 +752,9 @@ func (f *fileDecorator) addNodeFragments(n ast.Node) {
 		// Decoration: Start
 		f.addDecorationFragment(n, "Start", n.Pos())
 
+		// Decoration: X
+		f.addDecorationFragment(n, "X", token.NoPos)
+
 		// String: Name
 		f.addStringFragment(n, n.Name, n.NamePos)
 

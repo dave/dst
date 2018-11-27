@@ -20,7 +20,7 @@ var Info = map[string][]Part{
 		//
 		type Field struct {
 			Doc     *CommentGroup // associated documentation; or nil
-			Names   []*Def        // field/method/parameter names; or nil
+			Names   []*Ident      // field/method/parameter names; or nil
 			Type    Expr          // field/method/parameter type
 			Tag     *BasicLit     // field tag; or nil
 			Comment *CommentGroup // line comments; or nil
@@ -33,7 +33,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Names",
 			Field:     Field{"Names"},
-			Elem:      Structs{"Ident", "Def"},
+			Elem:      Struct{"Ident"},
 			Separator: token.COMMA,
 		},
 		Node{
@@ -143,31 +143,8 @@ var Info = map[string][]Part{
 		Decoration{
 			Name: "Start",
 		},
-		String{
-			Name:          "Name",
-			ValueField:    Field{"Name"},
-			PositionField: Field{"NamePos"},
-			Literal:       false,
-		},
 		Decoration{
-			Name: "End",
-		},
-		Object{
-			Name:  "Obj",
-			Field: Field{"Obj"},
-		},
-	},
-	/*
-		// Def represents a definition ident (*ast.Ident).
-		Def struct {
-			Name string
-			Obj  *Object
-			Decs DefDecorations
-		}
-	*/
-	"Def": {
-		Decoration{
-			Name: "Start",
+			Name: "X", // special case for storing the X decoration from a SelectorExpr
 		},
 		String{
 			Name:          "Name",
@@ -181,40 +158,10 @@ var Info = map[string][]Part{
 		Object{
 			Name:  "Obj",
 			Field: Field{"Obj"},
-		},
-	},
-	/*
-		// Ref represents a reference ident (*ast.Ident or *ast.SelectorExpr).
-		Ref struct {
-			Name string
-			Path string // imported package path (or empty for the local package)
-			Obj  *Object
-			Decs RefDecorations
-		}
-	*/
-	"Ref": {
-		Decoration{
-			Name: "Start",
-		},
-		Decoration{
-			Name: "X",
-		},
-		String{
-			Name:          "Name",
-			ValueField:    Field{"Name"},
-			PositionField: Field{"NamePos"},
-			Literal:       false,
 		},
 		PathDecoration{
 			Name:  "Path",
 			Field: Field{"Path"},
-		},
-		Decoration{
-			Name: "End",
-		},
-		Object{
-			Name:  "Obj",
-			Field: Field{"Obj"},
 		},
 	},
 	/*
@@ -392,8 +339,8 @@ var Info = map[string][]Part{
 	/*
 		// A SelectorExpr node represents an expression followed by a selector.
 		SelectorExpr struct {
-			X   Expr // expression
-			Sel *Ref // field selector
+			X   Expr   // expression
+			Sel *Ident // field selector
 		}
 	*/
 	"SelectorExpr": {
@@ -415,7 +362,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Sel",
 			Field: Field{"Sel"},
-			Type:  Structs{"Ident", "Ref"},
+			Type:  Struct{"Ident"},
 		},
 		Decoration{
 			Name: "End",
@@ -1157,7 +1104,7 @@ var Info = map[string][]Part{
 	/*
 		// A LabeledStmt node represents a labeled statement.
 		LabeledStmt struct {
-			Label *Def
+			Label *Ident
 			Colon token.Pos // position of ":"
 			Stmt  Stmt
 		}
@@ -1169,7 +1116,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Label",
 			Field: Field{"Label"},
-			Type:  Structs{"Ident", "Def"},
+			Type:  Struct{"Ident"},
 		},
 		Decoration{
 			Name: "Label",
@@ -1413,7 +1360,7 @@ var Info = map[string][]Part{
 		BranchStmt struct {
 			TokPos token.Pos   // position of Tok
 			Tok    token.Token // keyword token (BREAK, CONTINUE, GOTO, FALLTHROUGH)
-			Label  *Ref        // label name; or nil
+			Label  *Ident      // label name; or nil
 		}
 	*/
 	"BranchStmt": {
@@ -1433,7 +1380,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Label",
 			Field: Field{"Label"},
-			Type:  Structs{"Ident", "Ref"},
+			Type:  Struct{"Ident"},
 		},
 		Decoration{
 			Name: "End",
@@ -1906,7 +1853,7 @@ var Info = map[string][]Part{
 		// An ImportSpec node represents a single package import.
 		ImportSpec struct {
 			Doc     *CommentGroup // associated documentation; or nil
-			Name    *Def          // local package name (including "."); or nil
+			Name    *Ident        // local package name (including "."); or nil
 			Path    *BasicLit     // import path
 			Comment *CommentGroup // line comments; or nil
 			EndPos  token.Pos     // end of spec (overrides Path.Pos if nonzero)
@@ -1920,7 +1867,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Name",
 			Field: Field{"Name"},
-			Type:  Structs{"Ident", "Def"},
+			Type:  Struct{"Ident"},
 		},
 		Decoration{
 			Name: "Name",
@@ -1941,7 +1888,7 @@ var Info = map[string][]Part{
 		//
 		ValueSpec struct {
 			Doc     *CommentGroup // associated documentation; or nil
-			Names   []*Def        // value names (len(Names) > 0)
+			Names   []*Ident      // value names (len(Names) > 0)
 			Type    Expr          // value type; or nil
 			Values  []Expr        // initial values; or nil
 			Comment *CommentGroup // line comments; or nil
@@ -1954,7 +1901,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Names",
 			Field:     Field{"Names"},
-			Elem:      Structs{"Ident", "Def"},
+			Elem:      Struct{"Ident"},
 			Separator: token.COMMA,
 		},
 		Node{
@@ -1985,9 +1932,9 @@ var Info = map[string][]Part{
 		// A TypeSpec node represents a type declaration (TypeSpec production).
 		TypeSpec struct {
 			Doc     *CommentGroup // associated documentation; or nil
-			Name    *Def          // type name
+			Name    *Ident        // type name
 			Assign  token.Pos     // position of '=', if any
-			Type    Expr          // *Ref, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
+			Type    Expr          // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
 			Comment *CommentGroup // line comments; or nil
 		}
 	*/
@@ -1998,7 +1945,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Name",
 			Field: Field{"Name"},
-			Type:  Structs{"Ident", "Def"},
+			Type:  Struct{"Ident"},
 		},
 		Token{
 			Name:  "Assign",
@@ -2126,7 +2073,7 @@ var Info = map[string][]Part{
 		FuncDecl struct {
 			Doc  *CommentGroup // associated documentation; or nil
 			Recv *FieldList    // receiver (methods); or nil (functions)
-			Name *Def          // function/method name
+			Name *Ident        // function/method name
 			Type *FuncType     // function signature: parameters, results, and position of "func" keyword
 			Body *BlockStmt    // function body; or nil for external (non-Go) function
 		}
@@ -2180,7 +2127,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Name",
 			Field: Field{"Name"},
-			Type:  Structs{"Ident", "Def"},
+			Type:  Struct{"Ident"},
 		},
 		Decoration{
 			Name: "Name",
@@ -2245,11 +2192,11 @@ var Info = map[string][]Part{
 		type File struct {
 			Doc        *CommentGroup   // associated documentation; or nil
 			Package    token.Pos       // position of "package" keyword
-			Name       *Def            // package name
+			Name       *Ident          // package name
 			Decls      []Decl          // top-level declarations; or nil
 			Scope      *Scope          // package scope (this file only)
 			Imports    []*ImportSpec   // imports in this file
-			Unresolved []*Ref          // unresolved references in this file
+			Unresolved []*Ident        // unresolved identifiers in this file
 			Comments   []*CommentGroup // list of all comments in the source file
 		}
 	*/
@@ -2270,7 +2217,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Name",
 			Field: Field{"Name"},
-			Type:  Structs{"Ident", "Def"},
+			Type:  Struct{"Ident"},
 		},
 		Decoration{
 			Name: "Name",
@@ -2325,7 +2272,7 @@ var Info = map[string][]Part{
 
 var Exprs = map[string]bool{
 	"BadExpr":        true,
-	"Ref":            true,
+	"Ident":          true,
 	"Ellipsis":       true,
 	"BasicLit":       true,
 	"FuncLit":        true,
@@ -2346,15 +2293,6 @@ var Exprs = map[string]bool{
 	"InterfaceType":  true,
 	"MapType":        true,
 	"ChanType":       true,
-}
-
-var AstOnly = map[string]bool{
-	"Ident": true,
-}
-
-var DstOnly = map[string]bool{
-	"Def": true,
-	"Ref": true,
 }
 
 var Stmts = map[string]bool{
@@ -2505,7 +2443,7 @@ func (d Double) Get(id string, ast bool) *jen.Statement {
 }
 
 type TypeSpec interface {
-	TypeName(path string) string
+	TypeName() string
 	Literal(path string) *jen.Statement
 }
 
@@ -2517,7 +2455,7 @@ func (i Iface) Literal(path string) *jen.Statement {
 	return jen.Qual(path, i.Name)
 }
 
-func (i Iface) TypeName(path string) string {
+func (i Iface) TypeName() string {
 	return i.Name
 }
 
@@ -2529,31 +2467,13 @@ func (s Struct) Literal(path string) *jen.Statement {
 	return jen.Op("*").Qual(path, s.Name)
 }
 
-func (s Struct) TypeName(path string) string {
+func (s Struct) TypeName() string {
 	return s.Name
-}
-
-type Structs struct {
-	Ast, Dst string
-}
-
-func (s Structs) Literal(path string) *jen.Statement {
-	name := s.Ast
-	if path == DSTPATH {
-		name = s.Dst
-	}
-	return jen.Op("*").Qual(path, name)
-}
-
-func (s Structs) TypeName(path string) string {
-	if path == DSTPATH {
-		return s.Dst
-	}
-	return s.Ast
 }
 
 type FieldSpec interface {
 	Get(id string) *jen.Statement
+	FieldName() string
 }
 
 type Field struct {
@@ -2564,10 +2484,18 @@ func (f Field) Get(id string) *jen.Statement {
 	return jen.Id(id).Dot(f.Name)
 }
 
+func (f Field) FieldName() string {
+	return f.Name
+}
+
 type InnerField struct {
 	Inner, Name string
 }
 
 func (f InnerField) Get(id string) *jen.Statement {
 	return jen.Id(id).Dot(f.Inner).Dot(f.Name)
+}
+
+func (f InnerField) FieldName() string {
+	return f.Name
 }

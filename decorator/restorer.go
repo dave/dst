@@ -110,7 +110,7 @@ func (fr *FileRestorer) Restore() (*ast.File, error) {
 	}
 
 	// restore the file, populate comments and lines
-	f := fr.restoreNode(fr.file, false).(*ast.File)
+	f := fr.restoreNode(fr.file, "", "", "", false).(*ast.File)
 
 	for _, cg := range fr.comments {
 		f.Comments = append(f.Comments, cg)
@@ -128,10 +128,10 @@ func (fr *FileRestorer) Restore() (*ast.File, error) {
 	// doesn't matter?
 	// TODO: Disable all position information on these nodes?
 	for o, dn := range fr.nodeDecl {
-		o.Decl = fr.restoreNode(dn, true)
+		o.Decl = fr.restoreNode(dn, "", "", "", true)
 	}
 	for o, dn := range fr.nodeData {
-		o.Data = fr.restoreNode(dn, true)
+		o.Data = fr.restoreNode(dn, "", "", "", true)
 	}
 
 	return f, nil
@@ -158,7 +158,7 @@ func (fr *FileRestorer) updateImports() error {
 
 	dst.Inspect(fr.file, func(n dst.Node) bool {
 		switch n := n.(type) {
-		case *dst.Ref:
+		case *dst.Ident:
 			if n.Path == "" {
 				return true
 			}
@@ -337,7 +337,7 @@ func (fr *FileRestorer) updateImports() error {
 					spec.Name = nil
 					continue
 				}
-				spec.Name = &dst.Def{Name: aliases[path]}
+				spec.Name = &dst.Ident{Name: aliases[path]}
 			}
 		}
 	}
@@ -349,7 +349,7 @@ func (fr *FileRestorer) updateImports() error {
 			path := mustUnquote(spec.Path.Value)
 			if spec.Name == nil && aliases[path] != "" {
 				// missing alias
-				spec.Name = &dst.Def{Name: aliases[path]}
+				spec.Name = &dst.Ident{Name: aliases[path]}
 			} else if spec.Name != nil && aliases[path] == "" {
 				// alias needs to be removed
 				spec.Name = nil
@@ -388,7 +388,7 @@ func (fr *FileRestorer) updateImports() error {
 				Path: &dst.BasicLit{Kind: token.STRING, Value: fmt.Sprintf("%q", path)},
 			}
 			if aliases[path] != "" {
-				is.Name = &dst.Def{
+				is.Name = &dst.Ident{
 					Name: aliases[path],
 				}
 			}
@@ -474,24 +474,30 @@ func (fr *FileRestorer) updateImports() error {
 	return nil
 }
 
-func (r *FileRestorer) restoreRef(n *dst.Ref, allowDuplicate bool) ast.Node {
+func (r *FileRestorer) restoreIdent(n *dst.Ident, parentName, parentField, parentFieldType string, allowDuplicate bool) ast.Node {
 
 	var name string
-	if r.Resolver != nil {
+	if r.Resolver != nil && n.Path != "" {
+
+		if avoid[parentName+"."+parentField] {
+			panic(fmt.Sprintf("Path %s set on illegal Ident %s: parentName %s, parentField %s, parentFieldType %s", n.Path, n.Name, parentName, parentField, parentFieldType))
+		}
+
 		if n.Path != r.Path {
 			name = r.packageNames[n.Path]
-			if name == "." {
-				name = ""
-			}
+		}
+
+		if name == "." {
+			name = ""
 		}
 	}
 
 	if name == "" {
-		// continue to run standard Ref -> Ident restore
+		// continue to run standard Ident restore
 		return nil
 	}
 
-	// restore a SelectorExpr
+	// restore to a SelectorExpr
 	out := &ast.SelectorExpr{}
 	r.Ast.Nodes[n] = out
 	r.Dst.Nodes[out] = n
@@ -503,7 +509,7 @@ func (r *FileRestorer) restoreRef(n *dst.Ref, allowDuplicate bool) ast.Node {
 	r.applyDecorations(out, n.Decs.Start, false)
 
 	// Node: X
-	out.X = r.restoreNode(dst.NewRef(name, ""), allowDuplicate).(ast.Expr)
+	out.X = r.restoreNode(dst.NewIdent(name), "SelectorExpr", "X", "Expr", allowDuplicate).(ast.Expr)
 
 	// Token: Period
 	r.cursor += token.Pos(len(token.PERIOD.String()))
@@ -512,7 +518,7 @@ func (r *FileRestorer) restoreRef(n *dst.Ref, allowDuplicate bool) ast.Node {
 	r.applyDecorations(out, n.Decs.X, false)
 
 	// Node: Sel
-	out.Sel = r.restoreNode(dst.NewRef(n.Name, ""), allowDuplicate).(*ast.Ident)
+	out.Sel = r.restoreNode(dst.NewIdent(n.Name), "SelectorExpr", "Sel", "Ident", allowDuplicate).(*ast.Ident)
 
 	// Decoration: End
 	r.applyDecorations(out, n.Decs.End, true)
