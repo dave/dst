@@ -32,35 +32,6 @@ func TestRestorerResolver(t *testing.T) {
 		cases []tc
 	}{
 		{
-			name: "binary-bug",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
-
-						import "encoding/binary"
-
-						func main() {
-							_ = binary.LittleEndian.Uint16(nil)
-						}
-					`),
-				},
-				"go.mod": dummy.Src("module root"),
-			},
-			cases: []tc{
-				{
-					name: "noop",
-					expect: `package main
-
-						import "encoding/binary"
-
-						func main() {
-							_ = binary.LittleEndian.Uint16(nil)
-						}
-					`,
-				},
-			},
-		},
-		{
 			name: "simple",
 			root: "a.b",
 			src: dummy.Dir{
@@ -88,9 +59,9 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import _ "a.b/a"
+						import _ "a.b/a"
 
-	            		func main() {}`,
+						func main() {}`,
 				},
 				{
 					name: "add-one",
@@ -101,9 +72,9 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import "a.b/a"
+						import "a.b/a"
 
-	            		func main() { a.A() }`,
+						func main() { a.A() }`,
 				},
 				{
 					name: "add-one-alias",
@@ -117,9 +88,9 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import a1 "a.b/a"
+						import a1 "a.b/a"
 
-	            		func main() { a1.A() }`,
+						func main() { a1.A() }`,
 				},
 				{
 					name: "add-two",
@@ -135,11 +106,11 @@ func TestRestorerResolver(t *testing.T) {
 					expect: `package main
 
 						import (
-    	        			"a.b/a"
-        	    			"a.b/b"
-            			)
+							"a.b/a"
+							"a.b/b"
+						)
 
-            			func main() { a.A(); b.B() }`,
+						func main() { a.A(); b.B() }`,
 				},
 				{
 					name: "conflict",
@@ -155,16 +126,16 @@ func TestRestorerResolver(t *testing.T) {
 						)
 					},
 					expect: `package main
-            
-            			import (
+			
+						import (
 							"fmt"
 
-			            	fmt1 "a.b/fmt/a"
-            				fmt2 "a.b/fmt/b"
-            				fmt3 "a.b/fmt/c"
-            			)
-            
-            			func main() { fmt3.C(); fmt1.A(); fmt2.B(); fmt.Print() }`,
+							fmt1 "a.b/fmt/a"
+							fmt2 "a.b/fmt/b"
+							fmt3 "a.b/fmt/c"
+						)
+			
+						func main() { fmt3.C(); fmt1.A(); fmt2.B(); fmt.Print() }`,
 				},
 				{
 					name: "cgo",
@@ -184,15 +155,15 @@ func TestRestorerResolver(t *testing.T) {
 						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/b", Name: "B"}}})
 					},
 					expect: `package main
-            
-			            import "C"
-            
-            			import (
-            				"a.b/a"
-            				"a.b/b"
-            			)
-            
-            			func main() { a.A(); b.B() }`,
+			
+						import "C"
+			
+						import (
+							"a.b/a"
+							"a.b/b"
+						)
+			
+						func main() { a.A(); b.B() }`,
 				},
 			},
 		},
@@ -203,9 +174,9 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
-            			import "a.b/a"
+						import "a.b/a"
 
-            			func main() { a.A() }
+						func main() { a.A() }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -222,7 +193,7 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			func main() { A() }
+						func main() { A() }
 					`,
 				},
 				{
@@ -235,7 +206,7 @@ func TestRestorerResolver(t *testing.T) {
 
 						import . "a.b/a"
 
-            			func main() { A() }
+						func main() { A() }
 					`,
 				},
 				{
@@ -247,7 +218,7 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			func main() { A() }
+						func main() { A() }
 					`,
 				},
 				{
@@ -263,16 +234,16 @@ func TestRestorerResolver(t *testing.T) {
 						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "bufio", Name: "NewReader"}}})
 					},
 					expect: `package main
-            
-            			import (
-            				"C"
-            				"bufio"
-            
-			            	"a.b/a"
-            				"a.b/b"
-            			)
-            
-            			func main() { a.A(); b.B(); bufio.NewReader() }`,
+			
+						import (
+							"C"
+							"bufio"
+			
+							"a.b/a"
+							"a.b/b"
+						)
+			
+						func main() { a.A(); b.B(); bufio.NewReader() }`,
 				},
 			},
 		},
@@ -282,9 +253,9 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
-            			import "root/a"
+						import "root/a"
 
-            			func main() { a.A() }
+						func main() { a.A() }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -300,12 +271,12 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import (
+						import (
 							"root/a"
 							_ "root/b"
 						)
 
-	            		func main() { a.A() }`,
+						func main() { a.A() }`,
 				},
 				{
 					name: "change-to-anon-remove-use",
@@ -318,10 +289,10 @@ func TestRestorerResolver(t *testing.T) {
 						b.List = nil
 					},
 					expect: `package main
-            
-            			import _ "root/a"
-            
-            			func main() {}`,
+			
+						import _ "root/a"
+			
+						func main() {}`,
 				},
 				{
 					name: "change-to-alias",
@@ -330,10 +301,10 @@ func TestRestorerResolver(t *testing.T) {
 						r.Alias["root/a"] = "a1"
 					},
 					expect: `package main
-            
-            			import a1 "root/a"
-            
-            			func main() { a1.A() }`,
+			
+						import a1 "root/a"
+			
+						func main() { a1.A() }`,
 				},
 				{
 					name: "change-to-anon-still-in-use",
@@ -342,10 +313,10 @@ func TestRestorerResolver(t *testing.T) {
 						r.Alias["root/a"] = "_"
 					},
 					expect: `package main
-            
-            			import "root/a"
-            
-            			func main() { a.A() }`,
+			
+						import "root/a"
+			
+						func main() { a.A() }`,
 				},
 				{
 					name: "add-single-import",
@@ -356,12 +327,12 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import (
-            				"root/a"
-            				"root/b"
-            			)
+						import (
+							"root/a"
+							"root/b"
+						)
 
-            			func main() { a.A(); b.B() }`,
+						func main() { a.A(); b.B() }`,
 				},
 				{
 					name: "delete-all",
@@ -372,7 +343,7 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			func main() {}`,
+						func main() {}`,
 				},
 			},
 		},
@@ -383,9 +354,9 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
-            			import _ "root/a"
+						import _ "root/a"
 
-            			func main() { }
+						func main() { }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -402,12 +373,12 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import (
-            				_ "root/a"
-            				"root/b"
-            			)
+						import (
+							_ "root/a"
+							"root/b"
+						)
 
-            			func main() { b.B() }`,
+						func main() { b.B() }`,
 				},
 				{
 					name: "convert-to-standard",
@@ -418,9 +389,9 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import "root/a"
+						import "root/a"
 
-            			func main() { a.A() }`,
+						func main() { a.A() }`,
 				},
 			},
 		},
@@ -432,14 +403,14 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
-            			import (
+						import (
 							"a.b/a"
 							"a.b/b"
 							"a.b/c"
 							"fmt"
 						)
 
-            			func main() { a.A(); b.B(); c.C(); fmt.Print() }
+						func main() { a.A(); b.B(); c.C(); fmt.Print() }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -458,13 +429,13 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import (
+						import (
 							"a.b/b"
 							"a.b/c"
 							"fmt"
 						)
 
-            			func main() { b.B(); c.C(); fmt.Print() }`,
+						func main() { b.B(); c.C(); fmt.Print() }`,
 				},
 				{
 					name: "no-addition",
@@ -475,7 +446,7 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import (
+						import (
 							"fmt"
 
 							"a.b/a"
@@ -484,7 +455,7 @@ func TestRestorerResolver(t *testing.T) {
 							"a.b/d"
 						)
 
-            			func main() { a.A(); b.B(); c.C(); fmt.Print(); d.D() }`,
+						func main() { a.A(); b.B(); c.C(); fmt.Print(); d.D() }`,
 				},
 			},
 		},
@@ -496,7 +467,7 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
-            			import (
+						import (
 							"a.b/a"
 							"fmt"
 						)
@@ -506,7 +477,7 @@ func TestRestorerResolver(t *testing.T) {
 							"io"
 						)
 
-            			func main() { a.A(); b.B(); io.Copy(nil, nil); fmt.Print() }
+						func main() { a.A(); b.B(); io.Copy(nil, nil); fmt.Print() }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -524,7 +495,7 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import (
+						import (
 							"fmt"
 							
 							"a.b/a"
@@ -536,7 +507,7 @@ func TestRestorerResolver(t *testing.T) {
 							"io"
 						)
 
-            			func main() { a.A(); b.B(); io.Copy(nil, nil); fmt.Print(); c.C() }`,
+						func main() { a.A(); b.B(); io.Copy(nil, nil); fmt.Print(); c.C() }`,
 				},
 			},
 		},
@@ -547,12 +518,12 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
-            			import (
+						import (
 							"root/a"
 							"root/b"
 						)
 
-            			func main() { a.A(); b.B() }
+						func main() { a.A(); b.B() }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -568,10 +539,10 @@ func TestRestorerResolver(t *testing.T) {
 						b.List = b.List[1:2]
 					},
 					expect: `package main
-            
-            			import "root/b"
-            
-            			func main() { b.B() }`,
+			
+						import "root/b"
+			
+						func main() { b.B() }`,
 				},
 			},
 		},
@@ -583,7 +554,7 @@ func TestRestorerResolver(t *testing.T) {
 					"main.go": dummy.Src(`package main
 
 						// first-import-block
-            			import (
+						import (
 							"root/a"
 							"root/b"
 						)
@@ -594,7 +565,7 @@ func TestRestorerResolver(t *testing.T) {
 							"root/d"
 						)
 
-            			func main() { a.A(); b.B(); c.C(); d.D(); }
+						func main() { a.A(); b.B(); c.C(); d.D(); }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -681,7 +652,7 @@ func TestRestorerResolver(t *testing.T) {
 							"fmt" // after fmt
 						)
 
-            			func main() { a.A(); c.C(); fmt.Print() }
+						func main() { a.A(); c.C(); fmt.Print() }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -699,18 +670,18 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import (
+						import (
 							// before fmt
 							"fmt" // after fmt
 
-            				// before a
-            				"a.b/a" // after a
-            				"a.b/b"
-            				// before c
-            				"a.b/c" // after c
-            			)
+							// before a
+							"a.b/a" // after a
+							"a.b/b"
+							// before c
+							"a.b/c" // after c
+						)
 
-            			func main() { a.A(); c.C(); fmt.Print(); b.B() }`,
+						func main() { a.A(); c.C(); fmt.Print(); b.B() }`,
 				},
 			},
 		},
@@ -731,7 +702,7 @@ func TestRestorerResolver(t *testing.T) {
 
 						)
 
-            			func main() { a.A(); fmt.Print(); bytes.Title([]byte{}); }
+						func main() { a.A(); fmt.Print(); bytes.Title([]byte{}); }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -748,17 +719,17 @@ func TestRestorerResolver(t *testing.T) {
 						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "foo.bar/b", Name: "B"}}})
 					},
 					expect: `package main
-            
-            			import (
-            				"bytes"
-            				"fmt"
-            				"io"
-            
-            				"foo.bar/a"
-            				"foo.bar/b"
-            			)
-            
-            			func main() { a.A(); fmt.Print(); bytes.Title([]byte{}); io.Copy(); b.B() }`,
+			
+						import (
+							"bytes"
+							"fmt"
+							"io"
+			
+							"foo.bar/a"
+							"foo.bar/b"
+						)
+			
+						func main() { a.A(); fmt.Print(); bytes.Title([]byte{}); io.Copy(); b.B() }`,
 				},
 				{
 
@@ -770,15 +741,15 @@ func TestRestorerResolver(t *testing.T) {
 						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "foo.bar/b", Name: "B"}}})
 					},
 					expect: `package main
-            
-            			import (
-            				"bytes"
-            				"fmt"
-            
-            				"foo.bar/b"
-            			)
-            
-            			func main() { fmt.Print(); bytes.Title([]byte{}); b.B() }`,
+			
+						import (
+							"bytes"
+							"fmt"
+			
+							"foo.bar/b"
+						)
+			
+						func main() { fmt.Print(); bytes.Title([]byte{}); b.B() }`,
 				},
 			},
 		},
@@ -788,9 +759,9 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
-            			import a1 "root/a"
+						import a1 "root/a"
 
-            			func main() { a1.A() }
+						func main() { a1.A() }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -807,12 +778,12 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import (
-            				a1 "root/a"
-            				"root/b"
-            			)
+						import (
+							a1 "root/a"
+							"root/b"
+						)
 
-            			func main() { a1.A(); b.B() }`,
+						func main() { a1.A(); b.B() }`,
 				},
 				{
 					name: "manually-added-overrides",
@@ -822,9 +793,9 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import a2 "root/a"
+						import a2 "root/a"
 
-            			func main() { a2.A() }`,
+						func main() { a2.A() }`,
 				},
 			},
 		},
@@ -834,9 +805,9 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
-            			import a "root/a"
+						import a "root/a"
 
-            			func main() { a.A() }
+						func main() { a.A() }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -853,12 +824,12 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					expect: `package main
 
-            			import (
-            				a "root/a"
-            				"root/b"
-            			)
+						import (
+							a "root/a"
+							"root/b"
+						)
 
-            			func main() { a.A(); b.B() }`,
+						func main() { a.A(); b.B() }`,
 				},
 			},
 		},
@@ -868,7 +839,7 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
-            			import (
+						import (
 							aa "root/a"
 							bb "root/b"
 						)
@@ -878,7 +849,7 @@ func TestRestorerResolver(t *testing.T) {
 							dd "root/d"
 						)
 
-            			func main() { aa.A(); bb.B(); cc.C(); dd.D(); }
+						func main() { aa.A(); bb.B(); cc.C(); dd.D(); }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -896,18 +867,18 @@ func TestRestorerResolver(t *testing.T) {
 						r.Alias["root/d"] = "ddd"
 					},
 					expect: `package main
-            
-            			import (
-            				aa "root/a"
-            				bbb "root/b"
-            			)
-            
-			            import (
-            				cc "root/c"
-            				ddd "root/d"
-            			)
-            
-            			func main() { aa.A(); bbb.B(); cc.C(); ddd.D() }`,
+			
+						import (
+							aa "root/a"
+							bbb "root/b"
+						)
+			
+						import (
+							cc "root/c"
+							ddd "root/d"
+						)
+			
+						func main() { aa.A(); bbb.B(); cc.C(); ddd.D() }`,
 				},
 			},
 		},
@@ -917,13 +888,13 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
-            			import (
+						import (
 							. "root/a"
 							"root/b"
 							cc "root/c"
 						)
 
-            			func main() { A(); b.B(); cc.C(); }
+						func main() { A(); b.B(); cc.C(); }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -941,14 +912,14 @@ func TestRestorerResolver(t *testing.T) {
 						r.Alias["root/c"] = ""
 					},
 					expect: `package main
-            
-            			import (
-            				"root/a"
-            				"root/b"
-            				"root/c"
-            			)
-            
-            			func main() { a.A(); b.B(); c.C() }`,
+			
+						import (
+							"root/a"
+							"root/b"
+							"root/c"
+						)
+			
+						func main() { a.A(); b.B(); c.C() }`,
 				},
 				{
 					name: "change-to-dot",
@@ -959,14 +930,14 @@ func TestRestorerResolver(t *testing.T) {
 						r.Alias["root/c"] = "."
 					},
 					expect: `package main
-            
-            			import (
-            				. "root/a"
-            				. "root/b"
-            				. "root/c"
-            			)
-            
-            			func main() { A(); B(); C() }`,
+			
+						import (
+							. "root/a"
+							. "root/b"
+							. "root/c"
+						)
+			
+						func main() { A(); B(); C() }`,
 				},
 				{
 					name: "change-to-alias",
@@ -977,14 +948,14 @@ func TestRestorerResolver(t *testing.T) {
 						r.Alias["root/c"] = "cc"
 					},
 					expect: `package main
-            
-            			import (
-            				aa "root/a"
-            				bb "root/b"
-            				cc "root/c"
-            			)
-            
-            			func main() { aa.A(); bb.B(); cc.C() }`,
+			
+						import (
+							aa "root/a"
+							bb "root/b"
+							cc "root/c"
+						)
+			
+						func main() { aa.A(); bb.B(); cc.C() }`,
 				},
 			},
 		},
@@ -994,11 +965,11 @@ func TestRestorerResolver(t *testing.T) {
 				"main": dummy.Dir{
 					"main.go": dummy.Src(`package main
 
-            			import (
+						import (
 							"root/a"
 						)
 
-            			func main() { a.A(); }
+						func main() { a.A(); }
 					`),
 				},
 				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
@@ -1017,13 +988,42 @@ func TestRestorerResolver(t *testing.T) {
 						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b/a", Name: "AA"}}})
 					},
 					expect: `package main
-            
-            			import (
-            				. "root/a"
-            				"root/b/a"
-            			)
-            
-            			func main() { A(); a.AA() }`,
+			
+						import (
+							. "root/a"
+							"root/b/a"
+						)
+			
+						func main() { A(); a.AA() }`,
+				},
+			},
+		},
+		{
+			name: "binary-bug",
+			src: dummy.Dir{
+				"main": dummy.Dir{
+					"main.go": dummy.Src(`package main
+
+						import "encoding/binary"
+
+						func main() {
+							_ = binary.LittleEndian.Uint16(nil)
+						}
+					`),
+				},
+				"go.mod": dummy.Src("module root"),
+			},
+			cases: []tc{
+				{
+					name: "noop",
+					expect: `package main
+
+						import "encoding/binary"
+
+						func main() {
+							_ = binary.LittleEndian.Uint16(nil)
+						}
+					`,
 				},
 			},
 		},

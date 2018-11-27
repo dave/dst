@@ -415,7 +415,7 @@ if err := decorator.Print(f); err != nil {
 ## Managing imports
 
 Managing the imports block is non-trivial. There are two separate interfaces defined by the 
-[resolver package](https://godoc.org/github.com/dave/dst/decorator/resolver) which allow the 
+[resolver package](https://github.com/dave/dst/tree/master/decorator/resolver) which allow the 
 decorator and restorer to automatically manage the imports block.
 
 The decorator uses an `IdentResolver` which resolves the package path of any `*ast.Ident`. This is 
@@ -424,7 +424,7 @@ complicated by dot-import syntax ([see below](#why-is-resolving-identifiers-hard
 The restorer uses a `PackageResolver` which resolves the name of any package given the path. This 
 is complicated by vendoring and Go modules.
 
-When `Resolver` is set on `Decorator` and `Restorer`, the `Path` property must be set to the local 
+When `Resolver` is set on `Decorator` or `Restorer`, the `Path` property must be set to the local 
 package path.
 
 Several implementations of both interfaces that are suitable for different environments are 
@@ -514,6 +514,9 @@ if err := res.Print(f); err != nil {
 //	fmt.Println(baz.A())
 //}
 ```
+
+For more information on exactly how the imports block is managed, read through the [test 
+cases](https://github.com/dave/dst/blob/master/decorator/restorer_resolver_test.go).
 
 ### Why is resolving identifiers hard?
 

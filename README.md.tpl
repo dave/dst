@@ -108,7 +108,7 @@ enables systems that refer to `ast` nodes (such as `go/types`) to be used:
 ## Managing imports
 
 Managing the imports block is non-trivial. There are two separate interfaces defined by the 
-[resolver package](https://godoc.org/github.com/dave/dst/decorator/resolver) which allow the 
+[resolver package](https://github.com/dave/dst/tree/master/decorator/resolver) which allow the 
 decorator and restorer to automatically manage the imports block.
 
 The decorator uses an `IdentResolver` which resolves the package path of any `*ast.Ident`. This is 
@@ -117,7 +117,7 @@ complicated by dot-import syntax ([see below](#why-is-resolving-identifiers-hard
 The restorer uses a `PackageResolver` which resolves the name of any package given the path. This 
 is complicated by vendoring and Go modules.
 
-When `Resolver` is set on `Decorator` and `Restorer`, the `Path` property must be set to the local 
+When `Resolver` is set on `Decorator` or `Restorer`, the `Path` property must be set to the local 
 package path.
 
 Several implementations of both interfaces that are suitable for different environments are 
@@ -164,6 +164,9 @@ map. `guess.PackageResolver` guesses the package name based on the last part of 
 Here's an example of manually supplying alternative resolvers for the decorator and resolver:
 
 {{ "ExampleManualImports" | example }}
+
+For more information on exactly how the imports block is managed, read through the [test 
+cases](https://github.com/dave/dst/blob/master/decorator/restorer_resolver_test.go).
 
 ### Why is resolving identifiers hard?
 
