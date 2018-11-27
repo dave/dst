@@ -188,6 +188,7 @@ func getDecorationInfo(n dst.Node) (before, after dst.SpaceType, info []decorati
 		before = n.Decs.Before
 		after = n.Decs.After
 		info = append(info, decorationInfo{"Start", n.Decs.Start})
+		info = append(info, decorationInfo{"X", n.Decs.X})
 		info = append(info, decorationInfo{"End", n.Decs.End})
 	case *dst.IfStmt:
 		before = n.Decs.Before

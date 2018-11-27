@@ -777,6 +777,9 @@ func Clone(n Node) Node {
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
 
+		// Decoration: X
+		out.Decs.X = append(out.Decs.X, n.Decs.X...)
+
 		// String: Name
 		out.Name = n.Name
 

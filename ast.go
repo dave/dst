@@ -337,6 +337,9 @@ func (id *Ident) IsExported() bool { return IsExported(id.Name) }
 
 func (id *Ident) String() string {
 	if id != nil {
+		if id.Path != "" {
+			return id.Path + "." + id.Name
+		}
 		return id.Name
 	}
 	return "<nil>"

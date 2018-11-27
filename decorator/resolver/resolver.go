@@ -10,10 +10,16 @@ type PackageResolver interface {
 	ResolvePackage(path string) (string, error)
 }
 
-// IdentResolver resolves an identifier to a package path. Returns an empty string if the node is
-// not an identifier.
+// IdentResolver resolves an identifier to a local or remote reference.
+//
+// Returns path == "" if the node is not a local or remote reference (e.g. a field in a composite
+// literal, the selector in a selector expression etc.).
+//
+// Returns path == "" is the node is a local reference.
+//
+// Returns path != "" is the node is a remote reference.
 type IdentResolver interface {
-	ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error)
+	ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (path string, err error)
 }
 
 var PackageNotFoundError = errors.New("package not found")

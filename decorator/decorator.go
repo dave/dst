@@ -15,7 +15,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// New returns a new package decorator
+// New returns a new decorator
 func New(fset *token.FileSet) *Decorator {
 	return &Decorator{
 		Map:       newMap(),
@@ -30,8 +30,8 @@ func NewWithImports(pkg *packages.Package) *Decorator {
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
 		Fset:      pkg.Fset,
-		Path:      pkg.PkgPath,
 		Resolver: &gotypes.IdentResolver{
+			Path: pkg.PkgPath,
 			Info: pkg.TypesInfo,
 		},
 	}
@@ -42,13 +42,10 @@ type Decorator struct {
 	Filenames map[*dst.File]string // Source file names
 	Fset      *token.FileSet
 
-	Path      string // local package path, used to ensure the local path is not set in idents
-	canonical string // local package path, de-vendored, set in DecorateNode
-
-	// If a Resolver is provided, it is used to resolve Ident nodes. During decoration, remote
-	// identifiers (e.g. usually part of a qualified identifier SelectorExpr, but sometimes on
-	// their own for dot-imported packages) are updated with the path of the package they are
-	// imported from.
+	// If a Resolver is provided, it is used to resolve remote identifiers from *ast.Ident and
+	// *ast.SelectorExpr nodes. Usually a remote identifier is a SelectorExpr qualified identifier,
+	// but in the case of dot-imports they can be simply Ident nodes. During decoration, remote
+	// identifiers are replaced with *dst.Ident with Path set to the path of imported package.
 	Resolver resolver.IdentResolver
 }
 
@@ -106,8 +103,6 @@ func (d *Decorator) DecorateFile(f *ast.File) (*dst.File, error) {
 // Decorate decorates an ast.Node and returns a dst.Node
 func (d *Decorator) DecorateNode(n ast.Node) (dst.Node, error) {
 
-	d.canonical = stripVendor(d.Path)
-
 	fd := d.newFileDecorator()
 	if f, ok := n.(*ast.File); ok {
 		fd.file = f
@@ -115,7 +110,7 @@ func (d *Decorator) DecorateNode(n ast.Node) (dst.Node, error) {
 	fd.fragment(n)
 	fd.link()
 
-	out, err := fd.decorateNode(nil, "", n)
+	out, err := fd.decorateNode(nil, "", "", "", n)
 	if err != nil {
 		return nil, err
 	}
@@ -166,31 +161,127 @@ type decorationInfo struct {
 	decs []string
 }
 
-func (f *fileDecorator) resolvePath(parent ast.Node, typ string, id *ast.Ident) (string, error) {
+// Never need to resolve idents that are in these fields (decorateSelectorExpr will force
+// SelectorExpr.Sel to be resolved)
+var avoid = map[string]bool{
+	"Field.Names":       true,
+	"LabeledStmt.Label": true,
+	"BranchStmt.Label":  true,
+	"ImportSpec.Name":   true,
+	"ValueSpec.Names":   true,
+	"TypeSpec.Name":     true,
+	"FuncDecl.Name":     true,
+	"File.Name":         true,
+	"SelectorExpr.Sel":  true,
+}
 
-	if f.Resolver == nil {
-		return "", nil
+var decorateAvoid = map[string]bool{
+	"SelectorExpr.X": true, // we avoid this in the decorator, but not the restorer
+}
+
+func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, parentName, parentField, parentFieldType string, n *ast.SelectorExpr) (dst.Node, error) {
+
+	var path string
+	if f.Resolver != nil {
+		p, err := f.resolvePath(true, n, "", "", "", n.Sel)
+		if err != nil {
+			return nil, err
+		}
+		path = p
 	}
 
-	// The parent field type (typ) for all idents is either "Ident" or "Expr".
-	//
-	// If the parent field type is Ident, there is no possibility of this field holding a
-	// SelectorExpr, so this ident cannot possibly be a qualified identifier. We avoid resolving
-	// the Path for these idents.
-	//
-	// Inside SelectorExpr is a special case where the logic is reversed. We avoid setting Path for
-	// X (Expr) but set it for Sel (Ident).
-	if _, sel := parent.(*ast.SelectorExpr); (typ == "Ident" && !sel) || (typ == "Expr" && sel) {
-		return "", nil
+	if path == "" {
+		// continue to default logic in decorateNode
+		return nil, nil
+	}
+
+	// replace *ast.SelectorExpr with *dst.Ident and merge decorations
+	out := &dst.Ident{}
+	f.Dst.Nodes[n] = out
+	f.Dst.Nodes[n.X] = out
+	f.Dst.Nodes[n.Sel] = out
+	f.Ast.Nodes[out] = n
+
+	out.Decs.Before = mergeLineSpace(f.before[n], f.before[n.Sel], f.before[n.X])
+	out.Decs.After = mergeLineSpace(f.after[n], f.after[n.Sel], f.after[n.X])
+
+	// String: Name
+	out.Name = n.Sel.Name
+
+	// Object: Obj
+	ob, err := f.decorateObject(n.Sel.Obj)
+	if err != nil {
+		return nil, err
+	}
+	out.Obj = ob
+
+	// Path: Path
+	out.Path = path
+
+	nd, nok := f.decorations[n]
+	xd, xok := f.decorations[n.X]
+	sd, sok := f.decorations[n.Sel]
+
+	if nok {
+		if decs, ok := nd["Start"]; ok {
+			out.Decs.Start.Append(decs...)
+		}
+	}
+
+	if xok {
+		if decs, ok := xd["Start"]; ok {
+			out.Decs.Start.Append(decs...)
+		}
+		if decs, ok := xd["End"]; ok {
+			out.Decs.X.Append(decs...)
+		}
+	}
+
+	if nok {
+		if decs, ok := nd["X"]; ok {
+			out.Decs.X.Append(decs...)
+		}
+	}
+
+	if sok {
+		if decs, ok := sd["Start"]; ok {
+			out.Decs.X.Append(decs...)
+		}
+		if decs, ok := sd["End"]; ok {
+			out.Decs.End.Append(decs...)
+		}
+	}
+
+	if nok {
+		if decs, ok := nd["End"]; ok {
+			out.Decs.End.Append(decs...)
+		}
+	}
+
+	return out, nil
+
+}
+
+func (f *fileDecorator) resolvePath(force bool, parent ast.Node, parentName, parentField, parentFieldType string, id *ast.Ident) (string, error) {
+
+	if !force {
+		if f.Resolver == nil {
+			panic("resolvePath needs a Resolver")
+		}
+
+		key := parentName + "." + parentField
+		if avoid[key] || decorateAvoid[key] {
+			return "", nil
+		}
+
+		if parentFieldType != "Expr" {
+			panic(fmt.Sprintf("decorateIdent: unsupported parentName %s, parentField %s, parentFieldType %s", parentName, parentField, parentFieldType))
+		}
 	}
 
 	path, err := f.Resolver.ResolveIdent(f.file, parent, id)
 	if err != nil {
 		return "", err
-	}
-
-	if path == f.canonical {
-		return "", nil
 	}
 
 	return path, nil
@@ -256,7 +347,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) (*dst.Object, error) {
 		}
 		out.Decl = s
 	case ast.Node:
-		n, err := f.decorateNode(nil, "", decl)
+		n, err := f.decorateNode(nil, "", "", "", decl)
 		if err != nil {
 			return nil, err
 		}
@@ -276,7 +367,7 @@ func (f *fileDecorator) decorateObject(o *ast.Object) (*dst.Object, error) {
 		}
 		out.Data = s
 	case ast.Node:
-		n, err := f.decorateNode(nil, "", data)
+		n, err := f.decorateNode(nil, "", "", "", data)
 		if err != nil {
 			return nil, err
 		}
@@ -369,4 +460,20 @@ func debug(w io.Writer, file dst.Node) {
 		return true
 	})
 	fmt.Fprint(w, result)
+}
+
+func mergeLineSpace(spaces ...dst.SpaceType) dst.SpaceType {
+	var hasNewLine bool
+	for _, v := range spaces {
+		switch v {
+		case dst.EmptyLine:
+			return dst.EmptyLine
+		case dst.NewLine:
+			hasNewLine = true
+		}
+	}
+	if hasNewLine {
+		return dst.NewLine
+	}
+	return dst.None
 }

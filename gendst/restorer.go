@@ -21,6 +21,9 @@ func generateRestorer(names []string) error {
 	// }
 	f.Func().Params(Id("r").Op("*").Id("FileRestorer")).Id("restoreNode").Params(
 		Id("n").Qual(DSTPATH, "Node"),
+		Id("parentName"),
+		Id("parentField"),
+		Id("parentFieldType").String(),
 		Id("allowDuplicate").Bool(),
 	).Qual("go/ast", "Node").BlockFunc(func(g *Group) {
 		g.If(List(Id("an"), Id("ok")).Op(":=").Id("r").Dot("Ast").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
@@ -33,6 +36,15 @@ func generateRestorer(names []string) error {
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
 				g.Case(Op("*").Qual(DSTPATH, nodeName)).BlockFunc(func(g *Group) {
+					if nodeName == "Ident" {
+						g.Line()
+						g.Comment("Special case for *dst.Ident - replace with SelectorExpr if needed")
+						g.Id("sel").Op(":=").Id("r").Dot("restoreIdent").Call(Id("n"), Id("parentName"), Id("parentField"), Id("parentFieldType"), Id("allowDuplicate"))
+						g.If(Id("sel").Op("!=").Nil()).Block(
+							Return(Id("sel")),
+						)
+						g.Line()
+					}
 					g.Id("out").Op(":=").Op("&").Qual("go/ast", nodeName).Values()
 					g.Id("r").Dot("Ast").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
 					g.Id("r").Dot("Dst").Dot("Nodes").Index(Id("out")).Op("=").Id("n")
@@ -45,7 +57,7 @@ func generateRestorer(names []string) error {
 						switch frag := frag.(type) {
 						case data.Init:
 							g.Line().Commentf("Init: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Op("&").Qual("go/ast", frag.Type.Name).Values()
+							g.Add(frag.Field.Get("out")).Op("=").Op("&").Qual("go/ast", frag.Type.TypeName()).Values()
 						case data.Decoration:
 							g.Line().Commentf("Decoration: %s", frag.Name)
 							g.Id("r").Dot("applyDecorations").Call(Id("out"), Id("n").Dot("Decs").Dot(frag.Name), Do(func(s *Statement) { s.Lit(frag.Name == "End") }))
@@ -92,24 +104,24 @@ func generateRestorer(names []string) error {
 								}
 							*/
 							g.If(frag.Field.Get("n").Op("!=").Nil()).Block(
-								frag.Field.Get("out").Op("=").Id("r").Dot("restoreNode").Call(frag.Field.Get("n"), Id("allowDuplicate")).Assert(frag.Type.Literal("go/ast")),
+								frag.Field.Get("out").Op("=").Id("r").Dot("restoreNode").Call(frag.Field.Get("n"), Lit(nodeName), Lit(frag.Field.FieldName()), Lit(frag.Type.TypeName()), Id("allowDuplicate")).Assert(frag.Type.Literal("go/ast")),
 							)
 						case data.List:
 							g.Line().Commentf("List: %s", frag.Name)
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 								frag.Field.Get("out").Op("=").Append(
 									frag.Field.Get("out"),
-									Id("r").Dot("restoreNode").Call(Id("v"), Id("allowDuplicate")).Assert(frag.Elem.Literal("go/ast")),
+									Id("r").Dot("restoreNode").Call(Id("v"), Lit(nodeName), Lit(frag.Field.FieldName()), Lit(frag.Elem.TypeName()), Id("allowDuplicate")).Assert(frag.Elem.Literal("go/ast")),
 								),
 							)
 						case data.Map:
 							g.Line().Commentf("Map: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Map(String()).Add(frag.Elem.Literal("go/ast")).Values()
 							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).BlockFunc(func(g *Group) {
-								if frag.Elem.Name == "Object" {
+								if frag.Elem.TypeName() == "Object" {
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreObject").Call(Id("v"))
 								} else {
-									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v"), Id("allowDuplicate")).Assert(frag.Elem.Literal("go/ast"))
+									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v"), Lit(nodeName), Lit(frag.Field.FieldName()), Lit(frag.Elem.TypeName()), Id("allowDuplicate")).Assert(frag.Elem.Literal("go/ast"))
 								}
 							})
 						case data.Bad:

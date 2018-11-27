@@ -26,7 +26,7 @@ func generateClone(names []string) error {
 						switch frag := frag.(type) {
 						case data.Init:
 							g.Line().Commentf("Init: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Op("&").Id(frag.Type.Name).Values()
+							g.Add(frag.Field.Get("out")).Op("=").Op("&").Id(frag.Type.TypeName()).Values()
 						case data.Decoration:
 							g.Line().Commentf("Decoration: %s", frag.Name)
 							g.Id("out").Dot("Decs").Dot(frag.Name).Op("=").Append(Id("out").Dot("Decs").Dot(frag.Name), Id("n").Dot("Decs").Dot(frag.Name).Op("..."))
@@ -55,7 +55,7 @@ func generateClone(names []string) error {
 							g.Line().Commentf("Map: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Map(String()).Add(frag.Elem.Literal(DSTPATH)).Values()
 							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).BlockFunc(func(g *Group) {
-								if frag.Elem.Name == "Object" {
+								if frag.Elem.TypeName() == "Object" {
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("CloneObject").Call(Id("v"))
 								} else {
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("Clone").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH))

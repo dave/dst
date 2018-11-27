@@ -12,15 +12,51 @@ import (
 )
 
 // IdentResolver is a simple ident resolver that parses the imports block of the file and resolves
-// qualified identifiers using resolved package names.
-//
-// It is not possible to resolve identifiers in dot-imported packages without the full export data
-// of the imported package, so this resolver will panic if it encounters a dot-import. See
-// gotypes.IdentResolver for a dot-imports capable ident resolver.
+// qualified identifiers using resolved package names. It is not possible to resolve identifiers in
+// dot-imported packages without the full export data of the imported package, so this resolver will
+// return an error if it encounters a dot-import. See gotypes.IdentResolver for a dot-imports
+// capable ident resolver.
 type IdentResolver struct {
 	PackageResolver resolver.PackageResolver
 	filesM          sync.Mutex
 	files           map[*ast.File]map[string]string
+}
+
+func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
+
+	if r.PackageResolver == nil {
+		return "", errors.New("goast.IdentResolver should have PackageResolver set")
+	}
+
+	imports, err := r.imports(file)
+	if err != nil {
+		return "", err
+	}
+
+	se, ok := parent.(*ast.SelectorExpr)
+	if !ok {
+		return "", nil
+	}
+
+	xid, ok := se.X.(*ast.Ident)
+	if !ok {
+		return "", nil
+	}
+
+	if xid.Obj != nil {
+		// Obj != nil -> not a qualified ident
+		return "", nil
+	}
+
+	path, ok := imports[xid.Name]
+	if !ok {
+		return "", nil
+	}
+
+	// This ident resolver doesn't ever need to know the local package path because it will not
+	// attempt to resolve idents that are not inside SelectorExpr nodes.
+
+	return path, nil
 }
 
 func (r *IdentResolver) imports(file *ast.File) (map[string]string, error) {
@@ -97,35 +133,6 @@ func (r *IdentResolver) imports(file *ast.File) (map[string]string, error) {
 	r.files[file] = imports
 
 	return imports, nil
-}
-
-func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
-
-	if r.PackageResolver == nil {
-		return "", errors.New("goast.IdentResolver should have PackageResolver set")
-	}
-
-	imports, err := r.imports(file)
-	if err != nil {
-		return "", err
-	}
-	se, ok := parent.(*ast.SelectorExpr)
-	if !ok {
-		return "", nil
-	}
-	xid, ok := se.X.(*ast.Ident)
-	if !ok {
-		return "", nil
-	}
-	if xid.Obj != nil {
-		// Obj != nil -> not a qualified ident
-		return "", nil
-	}
-	path, ok := imports[xid.Name]
-	if !ok {
-		return "", nil
-	}
-	return path, nil
 }
 
 func mustUnquote(s string) string {

@@ -11,7 +11,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func TestNodeResolver(t *testing.T) {
+func TestIdentResolver(t *testing.T) {
 	type tc struct{ id, expect string }
 	tests := []struct {
 		skip, solo bool
@@ -115,7 +115,7 @@ func TestNodeResolver(t *testing.T) {
 			cases: []tc{
 				{"A", "root/a"},
 				{"B", "root/b"},
-				{"C", "root/main"},
+				{"C", ""},
 			},
 		},
 	}
@@ -154,6 +154,7 @@ func TestNodeResolver(t *testing.T) {
 			pkg := pkgs[0]
 
 			res := &gotypes.IdentResolver{
+				Path: "root/main",
 				Info: pkg.TypesInfo,
 			}
 
@@ -182,12 +183,12 @@ func TestNodeResolver(t *testing.T) {
 			for _, c := range test.cases {
 				//ast.Print(pkg.Fset, parents[c.id])
 				//ast.Print(pkg.Fset, nodes[c.id])
-				found, err := res.ResolveIdent(nil, parents[c.id], nodes[c.id])
+				path, err := res.ResolveIdent(nil, parents[c.id], nodes[c.id])
 				if err != nil {
 					t.Error(err)
 				}
-				if found != c.expect {
-					t.Errorf("expect %q, found %q", c.expect, found)
+				if path != c.expect {
+					t.Errorf("expect %q, found %q", c.expect, path)
 				}
 			}
 

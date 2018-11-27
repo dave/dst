@@ -53,7 +53,7 @@ func generateFragger(names []string) error {
 							)
 						case data.Map:
 							g.Line().Commentf("Map: %s", frag.Name)
-							if frag.Elem.Name != "Object" {
+							if frag.Elem.TypeName() != "Object" {
 								g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 									Id("f").Dot("addNodeFragments").Call(Id("v")),
 								)

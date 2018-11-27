@@ -32,6 +32,35 @@ func TestRestorerResolver(t *testing.T) {
 		cases []tc
 	}{
 		{
+			name: "binary-bug",
+			src: dummy.Dir{
+				"main": dummy.Dir{
+					"main.go": dummy.Src(`package main
+
+						import "encoding/binary"
+
+						func main() {
+							_ = binary.LittleEndian.Uint16(nil)
+						}
+					`),
+				},
+				"go.mod": dummy.Src("module root"),
+			},
+			cases: []tc{
+				{
+					name: "noop",
+					expect: `package main
+
+						import "encoding/binary"
+
+						func main() {
+							_ = binary.LittleEndian.Uint16(nil)
+						}
+					`,
+				},
+			},
+		},
+		{
 			name: "simple",
 			root: "a.b",
 			src: dummy.Dir{
@@ -184,6 +213,43 @@ func TestRestorerResolver(t *testing.T) {
 				"go.mod": dummy.Src("module a.b"),
 			},
 			cases: []tc{
+				{
+					name: "change-to-local",
+					desc: "change to the local path, should remove selector",
+					mutate: func(f *dst.File) {
+						sel := f.Decls[1].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ident)
+						sel.Path = "a.b/main"
+					},
+					expect: `package main
+
+            			func main() { A() }
+					`,
+				},
+				{
+					name: "change-to-dot",
+					desc: "change to a dot-import, should remove selector",
+					restorer: func(r *FileRestorer) {
+						r.Alias["a.b/a"] = "."
+					},
+					expect: `package main
+
+						import . "a.b/a"
+
+            			func main() { A() }
+					`,
+				},
+				{
+					name: "change-to-empty",
+					desc: "change to empty path, should remove selector",
+					mutate: func(f *dst.File) {
+						sel := f.Decls[1].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ident)
+						sel.Path = ""
+					},
+					expect: `package main
+
+            			func main() { A() }
+					`,
+				},
 				{
 					name: "add-c",
 					desc: "if C import is found as part of another block, it is ignored and ordered first",

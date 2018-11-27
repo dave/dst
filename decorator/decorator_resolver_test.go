@@ -49,7 +49,7 @@ func TestDecoratorResolver(t *testing.T) {
 					"root/a",
 					func(f *dst.File) *dst.Ident {
 						d := f.Decls[1]
-						return d.(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.SelectorExpr).Sel
+						return d.(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ident)
 					},
 				},
 				{

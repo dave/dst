@@ -68,7 +68,6 @@ func TestGoAstIdentResolver(t *testing.T) {
 			}
 
 			d := decorator.New(token.NewFileSet())
-			d.Path = "root"
 			d.Resolver = &IdentResolver{
 				PackageResolver: &guess.PackageResolver{},
 			}
@@ -81,8 +80,8 @@ func TestGoAstIdentResolver(t *testing.T) {
 			nodes := map[string]string{}
 			dst.Inspect(f, func(n dst.Node) bool {
 				switch n := n.(type) {
-				case *dst.SelectorExpr:
-					nodes[n.Sel.Name] = n.Sel.Path
+				case *dst.Ident:
+					nodes[n.Name] = n.Path
 				}
 				return true
 			})

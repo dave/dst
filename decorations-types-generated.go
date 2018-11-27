@@ -308,8 +308,15 @@ type GoStmtDecorations struct {
 
 // IdentDecorations holds decorations for Ident:
 //
+// 	/*Start*/
+// 	i /*End*/ ++
+//
+// 	/*Start*/
+// 	fmt. /*X*/ Print /*End*/ ()
+//
 type IdentDecorations struct {
 	NodeDecs
+	X Decorations
 }
 
 // IfStmtDecorations holds decorations for IfStmt:
@@ -471,7 +478,7 @@ type SelectStmtDecorations struct {
 
 // SelectorExprDecorations holds decorations for SelectorExpr:
 //
-// 	var F = /*Start*/ fmt. /*X*/ Sprint /*End*/ (0)
+// 	var F = /*Start*/ tt. /*X*/ F /*End*/ ()
 //
 type SelectorExprDecorations struct {
 	NodeDecs
