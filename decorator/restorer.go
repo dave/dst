@@ -63,6 +63,11 @@ func (pr *Restorer) Fprint(w io.Writer, f *dst.File) error {
 	return format.Node(w, pr.Fset, af)
 }
 
+// RestoreFile restores a *dst.File to an *ast.File
+func (pr *Restorer) RestoreFile(name string, file *dst.File) (*ast.File, error) {
+	return pr.FileRestorer(name, file).Restore()
+}
+
 func (pr *Restorer) FileRestorer(name string, file *dst.File) *FileRestorer {
 	return &FileRestorer{
 		Restorer:     pr,
@@ -74,11 +79,6 @@ func (pr *Restorer) FileRestorer(name string, file *dst.File) *FileRestorer {
 		nodeData:     map[*ast.Object]dst.Node{},
 		packageNames: map[string]string{},
 	}
-}
-
-// RestoreFile restores a *dst.File to an *ast.File
-func (pr *Restorer) RestoreFile(name string, file *dst.File) (*ast.File, error) {
-	return pr.FileRestorer(name, file).Restore()
 }
 
 type FileRestorer struct {
@@ -94,6 +94,25 @@ type FileRestorer struct {
 	nodeData        map[*ast.Object]dst.Node // Objects that have a ast.Node Data (look up after file has been rendered)
 	cursorAtNewLine token.Pos                // The cursor position directly after adding a newline decoration (or a line comment which ends in a "\n"). If we're still at this cursor position when we add a line space, reduce the "\n" by one.
 	packageNames    map[string]string        // names in the code of all imported packages ("." for dot-imports)
+}
+
+// Print uses format.Node to print a *dst.File to stdout
+func (fr *FileRestorer) Print(f *dst.File) error {
+	return fr.Fprint(os.Stdout, f)
+}
+
+// Fprint uses format.Node to print a *dst.File to a writer
+func (fr *FileRestorer) Fprint(w io.Writer, f *dst.File) error {
+	af, err := fr.Restore()
+	if err != nil {
+		return err
+	}
+	return format.Node(w, fr.Fset, af)
+}
+
+// RestoreFile should not be used on FileRestorer - use Restore instead
+func (fr *FileRestorer) RestoreFile(name string, file *dst.File) (*ast.File, error) {
+	panic("RestoreFile should not be called on FileRestorer - use Restore instead")
 }
 
 func (fr *FileRestorer) Restore() (*ast.File, error) {

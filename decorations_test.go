@@ -20,6 +20,47 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+func ExampleAlias() {
+
+	code := `package main
+
+		import "fmt"
+
+		func main() {
+			fmt.Println("a")
+		}`
+
+	dec := decorator.New(token.NewFileSet())
+	dec.Path = "main"
+	dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
+
+	f, err := dec.Parse(code)
+	if err != nil {
+		panic(err)
+	}
+
+	res := decorator.NewRestorer()
+	res.Path = "main"
+	res.Resolver = &guess.PackageResolver{}
+
+	fr := res.FileRestorer("", f)
+	fr.Alias["fmt"] = "fmt1"
+
+	if err := fr.Print(f); err != nil {
+		panic(err)
+	}
+
+	//Output:
+	//package main
+	//
+	//import fmt1 "fmt"
+	//
+	//func main() {
+	//	fmt1.Println("a")
+	//}
+
+}
+
 func ExampleManualImports() {
 
 	code := `package main

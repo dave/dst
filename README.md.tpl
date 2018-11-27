@@ -165,6 +165,14 @@ Here's an example of manually supplying alternative resolvers for the decorator 
 
 {{ "ExampleManualImports" | example }}
 
+### Alias control
+
+To control the alias of imports, use a `FileRestorer`:
+
+{{ "ExampleAlias" | example }} 
+
+### More import management details
+
 For more information on exactly how the imports block is managed, read through the [test 
 cases](https://github.com/dave/dst/blob/master/decorator/restorer_resolver_test.go).
 

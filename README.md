@@ -515,6 +515,51 @@ if err := res.Print(f); err != nil {
 //}
 ```
 
+### Alias control
+
+To control the alias of imports, use a `FileRestorer`:
+
+```go
+code := `package main
+
+	import "fmt"
+
+	func main() {
+		fmt.Println("a")
+	}`
+
+dec := decorator.New(token.NewFileSet())
+dec.Path = "main"
+dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
+
+f, err := dec.Parse(code)
+if err != nil {
+	panic(err)
+}
+
+res := decorator.NewRestorer()
+res.Path = "main"
+res.Resolver = &guess.PackageResolver{}
+
+fr := res.FileRestorer("", f)
+fr.Alias["fmt"] = "fmt1"
+
+if err := fr.Print(f); err != nil {
+	panic(err)
+}
+
+//Output:
+//package main
+//
+//import fmt1 "fmt"
+//
+//func main() {
+//	fmt1.Println("a")
+//}
+``` 
+
+### More import management details
+
 For more information on exactly how the imports block is managed, read through the [test 
 cases](https://github.com/dave/dst/blob/master/decorator/restorer_resolver_test.go).
 
