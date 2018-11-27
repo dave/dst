@@ -47,7 +47,7 @@ type Decorator struct {
 	// but in the case of dot-imports they can be simply Ident nodes. During decoration, remote
 	// identifiers are replaced with *dst.Ident with Path set to the path of imported package.
 	Resolver resolver.IdentResolver
-	// Local package path - only required if Resolver is set.
+	// Local package path - required if Resolver is set.
 	Path string
 }
 

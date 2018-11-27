@@ -40,13 +40,13 @@ type Restorer struct {
 	Map
 	Fset *token.FileSet // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
 
-	Path string // Local path
-
 	// If a Resolver is provided, the names of all imported packages are resolved, and the imports
 	// block is updated. All remote identifiers are updated (sometimes this involves changing
 	// SelectorExpr.X.Name, or even swapping between Ident and SelectorExpr). To force specific
 	// import alias names, use the FileRestorer.Alias map.
 	Resolver resolver.PackageResolver
+	// Local package path - required if Resolver is set.
+	Path string
 }
 
 // Print uses format.Node to print a *dst.File to stdout
