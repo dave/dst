@@ -30,8 +30,8 @@ func NewWithImports(pkg *packages.Package) *Decorator {
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
 		Fset:      pkg.Fset,
+		Path:      pkg.PkgPath,
 		Resolver: &gotypes.IdentResolver{
-			Path: pkg.PkgPath,
 			Info: pkg.TypesInfo,
 		},
 	}
@@ -47,6 +47,8 @@ type Decorator struct {
 	// but in the case of dot-imports they can be simply Ident nodes. During decoration, remote
 	// identifiers are replaced with *dst.Ident with Path set to the path of imported package.
 	Resolver resolver.IdentResolver
+	// Local package path - only required if Resolver is set.
+	Path string
 }
 
 // Parse uses parser.ParseFile to parse and decorate a Go source file. The src parameter should
@@ -102,6 +104,14 @@ func (d *Decorator) DecorateFile(f *ast.File) (*dst.File, error) {
 
 // Decorate decorates an ast.Node and returns a dst.Node
 func (d *Decorator) DecorateNode(n ast.Node) (dst.Node, error) {
+
+	if d.Resolver == nil && d.Path != "" {
+		panic("Decorator Path should be empty when Resolver is nil")
+	}
+
+	if d.Resolver != nil && d.Path == "" {
+		panic("Decorator Path should be set when Resolver is set")
+	}
 
 	fd := d.newFileDecorator()
 	if f, ok := n.(*ast.File); ok {
@@ -282,6 +292,12 @@ func (f *fileDecorator) resolvePath(force bool, parent ast.Node, parentName, par
 	path, err := f.Resolver.ResolveIdent(f.file, parent, id)
 	if err != nil {
 		return "", err
+	}
+
+	path = stripVendor(path)
+
+	if path == stripVendor(f.Path) {
+		return "", nil
 	}
 
 	return path, nil

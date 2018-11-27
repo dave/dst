@@ -4,11 +4,9 @@ import (
 	"errors"
 	"go/ast"
 	"go/types"
-	"strings"
 )
 
 type IdentResolver struct {
-	Path string      // Local package path
 	Info *types.Info // Types info - must include Uses
 }
 
@@ -16,10 +14,6 @@ func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Id
 
 	if r.Info == nil || r.Info.Uses == nil {
 		return "", errors.New("gotypes.IdentResolver needs Uses in types info")
-	}
-
-	if r.Path == "" {
-		return "", errors.New("gotypes.IdentResolver needs Path")
 	}
 
 	se, ok := parent.(*ast.SelectorExpr)
@@ -37,7 +31,7 @@ func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Id
 		if !ok {
 			return "", nil // not a pkgname -> not a remote identifier
 		}
-		return stripVendor(pn.Imported().Path()), nil
+		return pn.Imported().Path(), nil
 	}
 
 	obj, ok := r.Info.Uses[id]
@@ -54,31 +48,5 @@ func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Id
 		return "", nil // pre-defined idents in the universe scope - e.g. "byte"
 	}
 
-	path := stripVendor(pkg.Path())
-
-	if path == stripVendor(r.Path) {
-		return "", nil // ident in the local package
-	}
-
-	return path, nil
-}
-
-func stripVendor(path string) string {
-	findVendor := func(path string) (index int, ok bool) {
-		// Two cases, depending on internal at start of string or not.
-		// The order matters: we must return the index of the final element,
-		// because the final one is where the effective import path starts.
-		switch {
-		case strings.Contains(path, "/vendor/"):
-			return strings.LastIndex(path, "/vendor/") + 1, true
-		case strings.HasPrefix(path, "vendor/"):
-			return 0, true
-		}
-		return 0, false
-	}
-	i, ok := findVendor(path)
-	if !ok {
-		return path
-	}
-	return path[i+len("vendor/"):]
+	return pkg.Path(), nil
 }

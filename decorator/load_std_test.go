@@ -60,6 +60,7 @@ func testPackageRestoresCorrectlyWithImports(t *testing.T, path string) {
 
 		// must use go/build package resolver for standard library because of https://github.com/golang/go/issues/26924
 		r := NewRestorer()
+		r.Path = p.PkgPath
 		r.Resolver = &gobuild.PackageResolver{Dir: p.Dir}
 
 		for _, file := range p.Files {

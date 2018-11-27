@@ -31,6 +31,7 @@ func ExampleManualImports() {
 		}`
 
 	dec := decorator.New(token.NewFileSet())
+	dec.Path = "main"
 	dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
 
 	f, err := dec.Parse(code)
@@ -45,6 +46,7 @@ func ExampleManualImports() {
 	}
 
 	res := decorator.NewRestorer()
+	res.Path = "main"
 	res.Resolver = &guess.PackageResolver{}
 	if err := res.Print(f); err != nil {
 		panic(err)

@@ -98,6 +98,14 @@ type FileRestorer struct {
 
 func (fr *FileRestorer) Restore() (*ast.File, error) {
 
+	if fr.Resolver == nil && fr.Path != "" {
+		panic("Restorer Path should be empty when Resolver is nil")
+	}
+
+	if fr.Resolver != nil && fr.Path == "" {
+		panic("Restorer Path should be set when Resolver is set")
+	}
+
 	if fr.Fset == nil {
 		fr.Fset = token.NewFileSet()
 	}

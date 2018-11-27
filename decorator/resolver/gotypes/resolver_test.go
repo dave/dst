@@ -115,7 +115,7 @@ func TestIdentResolver(t *testing.T) {
 			cases: []tc{
 				{"A", "root/a"},
 				{"B", "root/b"},
-				{"C", ""},
+				{"C", "root/main"},
 			},
 		},
 	}
@@ -154,7 +154,6 @@ func TestIdentResolver(t *testing.T) {
 			pkg := pkgs[0]
 
 			res := &gotypes.IdentResolver{
-				Path: "root/main",
 				Info: pkg.TypesInfo,
 			}
 

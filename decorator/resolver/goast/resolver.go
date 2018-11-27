@@ -53,9 +53,6 @@ func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Id
 		return "", nil
 	}
 
-	// This ident resolver doesn't ever need to know the local package path because it will not
-	// attempt to resolve idents that are not inside SelectorExpr nodes.
-
 	return path, nil
 }
 
