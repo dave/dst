@@ -150,7 +150,7 @@ call.Decs.Before = dst.EmptyLine
 call.Decs.After = dst.EmptyLine
 
 for _, v := range call.Args {
-	v := v.(*dst.Ident)
+	v := v.(*dst.Ref)
 	v.Decs.Before = dst.NewLine
 	v.Decs.After = dst.NewLine
 }
@@ -299,7 +299,7 @@ f := p.Files[0]
 b := f.Decls[0].(*dst.FuncDecl).Body
 b.List = append(b.List, &dst.ExprStmt{
 	X: &dst.CallExpr{
-		Fun:	&dst.Ident{Path: "fmt", Name: "Println"},
+		Fun:	&dst.Ref{Path: "fmt", Name: "Println"},
 		Args: []dst.Expr{
 			&dst.BasicLit{Kind: token.STRING, Value: strconv.Quote("Hello, World!")},
 		},
@@ -337,7 +337,7 @@ code := `package main
 	}`
 
 dec := decorator.New(token.NewFileSet())
-dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
+dec.Resolver = &goast.RefResolver{PackageResolver: &guess.PackageResolver{}}
 
 f, err := dec.Parse(code)
 if err != nil {
@@ -346,7 +346,7 @@ if err != nil {
 
 f.Decls[1].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Args = []dst.Expr{
 	&dst.CallExpr{
-		Fun: &dst.Ident{Name: "A", Path: "foo.bar/baz"},
+		Fun: &dst.Ref{Name: "A", Path: "foo.bar/baz"},
 	},
 }
 
@@ -428,15 +428,15 @@ for id, ob := range typesInfo.Uses {
 	astUses = append(astUses, id)
 }
 
-// Find each *dst.Ident in the Dst.Nodes mapping
-var dstUses []*dst.Ident
+// Find each *dst.Ref in the Dst.Nodes mapping
+var dstRefs []*dst.Ref
 for _, id := range astUses {
-	dstUses = append(dstUses, dec.Dst.Nodes[id].(*dst.Ident))
+	dstRefs = append(dstRefs, dec.Dst.Nodes[id].(*dst.Ref))
 }
 
 // Change the name of the original definition and all uses
 dstDef.Name = "foo"
-for _, id := range dstUses {
+for _, id := range dstRefs {
 	id.Name = "foo"
 }
 

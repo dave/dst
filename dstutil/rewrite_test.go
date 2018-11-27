@@ -83,8 +83,8 @@ const a, b, c = 1, 2, 3
 			if _, ok := c.Parent().(*dst.ValueSpec); ok {
 				switch c.Name() {
 				case "Names":
-					c.InsertAfter(dst.NewIdent("c"))
-					c.InsertAfter(dst.NewIdent("b"))
+					c.InsertAfter(dst.NewDef("c"))
+					c.InsertAfter(dst.NewDef("b"))
 				case "Values":
 					c.InsertAfter(&dst.BasicLit{Kind: token.INT, Value: "3"})
 					c.InsertAfter(&dst.BasicLit{Kind: token.INT, Value: "2"})
@@ -195,8 +195,8 @@ var z int
 }
 
 func valspec(name, typ string) *dst.ValueSpec {
-	return &dst.ValueSpec{Names: []*dst.Ident{dst.NewIdent(name)},
-		Type: dst.NewIdent(typ),
+	return &dst.ValueSpec{Names: []*dst.Def{dst.NewDef(name)},
+		Type: dst.NewRef(typ, ""),
 	}
 }
 

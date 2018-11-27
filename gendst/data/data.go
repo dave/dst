@@ -20,7 +20,7 @@ var Info = map[string][]Part{
 		//
 		type Field struct {
 			Doc     *CommentGroup // associated documentation; or nil
-			Names   []*Ident      // field/method/parameter names; or nil
+			Names   []*Def        // field/method/parameter names; or nil
 			Type    Expr          // field/method/parameter type
 			Tag     *BasicLit     // field tag; or nil
 			Comment *CommentGroup // line comments; or nil
@@ -33,13 +33,13 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Names",
 			Field:     Field{"Names"},
-			Elem:      Type{"Ident", true},
+			Elem:      Structs{"Ident", "Def"},
 			Separator: token.COMMA,
 		},
 		Node{
 			Name:  "Type",
 			Field: Field{"Type"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "Type",
@@ -48,7 +48,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Tag",
 			Field: Field{"Tag"},
-			Type:  Type{"BasicLit", true},
+			Type:  Struct{"BasicLit"},
 		},
 		Decoration{
 			Name: "End",
@@ -86,7 +86,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "List",
 			Field:     Field{"List"},
-			Elem:      Type{"Field", true},
+			Elem:      Struct{"Field"},
 			Separator: token.COMMA,
 		},
 		Token{
@@ -156,9 +156,65 @@ var Info = map[string][]Part{
 			Name:  "Obj",
 			Field: Field{"Obj"},
 		},
+	},
+	/*
+		// Def represents a definition ident (*ast.Ident).
+		Def struct {
+			Name string
+			Obj  *Object
+			Decs DefDecorations
+		}
+	*/
+	"Def": {
+		Decoration{
+			Name: "Start",
+		},
+		String{
+			Name:          "Name",
+			ValueField:    Field{"Name"},
+			PositionField: Field{"NamePos"},
+			Literal:       false,
+		},
+		Decoration{
+			Name: "End",
+		},
+		Object{
+			Name:  "Obj",
+			Field: Field{"Obj"},
+		},
+	},
+	/*
+		// Ref represents a reference ident (*ast.Ident or *ast.SelectorExpr).
+		Ref struct {
+			Name string
+			Path string // imported package path (or empty for the local package)
+			Obj  *Object
+			Decs RefDecorations
+		}
+	*/
+	"Ref": {
+		Decoration{
+			Name: "Start",
+		},
+		Decoration{
+			Name: "X",
+		},
+		String{
+			Name:          "Name",
+			ValueField:    Field{"Name"},
+			PositionField: Field{"NamePos"},
+			Literal:       false,
+		},
 		PathDecoration{
 			Name:  "Path",
 			Field: Field{"Path"},
+		},
+		Decoration{
+			Name: "End",
+		},
+		Object{
+			Name:  "Obj",
+			Field: Field{"Obj"},
 		},
 	},
 	/*
@@ -186,7 +242,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Elt",
 			Field: Field{"Elt"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "End",
@@ -232,7 +288,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Type",
 			Field: Field{"Type"},
-			Type:  Type{"FuncType", true},
+			Type:  Struct{"FuncType"},
 		},
 		Decoration{
 			Name: "Type",
@@ -240,7 +296,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Body",
 			Field: Field{"Body"},
-			Type:  Type{"BlockStmt", true},
+			Type:  Struct{"BlockStmt"},
 		},
 		Decoration{
 			Name: "End",
@@ -263,7 +319,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Type",
 			Field: Field{"Type"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "Type",
@@ -280,7 +336,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Elts",
 			Field:     Field{"Elts"},
-			Elem:      Type{"Expr", false},
+			Elem:      Iface{"Expr"},
 			Separator: token.COMMA,
 		},
 		Token{
@@ -319,7 +375,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "X",
 			Field: Field{"X"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "X",
@@ -336,8 +392,8 @@ var Info = map[string][]Part{
 	/*
 		// A SelectorExpr node represents an expression followed by a selector.
 		SelectorExpr struct {
-			X   Expr   // expression
-			Sel *Ident // field selector
+			X   Expr // expression
+			Sel *Ref // field selector
 		}
 	*/
 	"SelectorExpr": {
@@ -347,7 +403,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "X",
 			Field: Field{"X"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Token{
 			Name:  "Period",
@@ -359,7 +415,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Sel",
 			Field: Field{"Sel"},
-			Type:  Type{"Ident", true},
+			Type:  Structs{"Ident", "Ref"},
 		},
 		Decoration{
 			Name: "End",
@@ -381,7 +437,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "X",
 			Field: Field{"X"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "X",
@@ -397,7 +453,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Index",
 			Field: Field{"Index"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "Index",
@@ -432,7 +488,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "X",
 			Field: Field{"X"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "X",
@@ -449,7 +505,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Low",
 			Field: Field{"Low"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Token{
 			Name:  "Colon1",
@@ -461,7 +517,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "High",
 			Field: Field{"High"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Token{
 			Name:   "Colon2",
@@ -475,7 +531,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Max",
 			Field: Field{"Max"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "Max",
@@ -512,7 +568,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "X",
 			Field: Field{"X"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Token{
 			Name:  "Period",
@@ -532,7 +588,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Type",
 			Field: Field{"Type"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Token{
 			Name:   "TypeToken",
@@ -568,7 +624,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Fun",
 			Field: Field{"Fun"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "Fun",
@@ -584,7 +640,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Args",
 			Field:     Field{"Args"},
-			Elem:      Type{"Expr", false},
+			Elem:      Iface{"Expr"},
 			Separator: token.COMMA,
 		},
 		Token{
@@ -637,7 +693,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "X",
 			Field: Field{"X"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "End",
@@ -669,7 +725,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "X",
 			Field: Field{"X"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "End",
@@ -691,7 +747,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "X",
 			Field: Field{"X"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "X",
@@ -708,7 +764,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Y",
 			Field: Field{"Y"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "End",
@@ -731,7 +787,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Key",
 			Field: Field{"Key"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "Key",
@@ -747,7 +803,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Value",
 			Field: Field{"Value"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "End",
@@ -776,7 +832,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Len",
 			Field: Field{"Len"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Token{
 			Name:  "Rbrack",
@@ -788,7 +844,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Elt",
 			Field: Field{"Elt"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "End",
@@ -817,7 +873,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Fields",
 			Field: Field{"Fields"},
-			Type:  Type{"FieldList", true},
+			Type:  Struct{"FieldList"},
 		},
 		Decoration{
 			Name: "End",
@@ -859,7 +915,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Params",
 			Field: Field{"Params"},
-			Type:  Type{"FieldList", true},
+			Type:  Struct{"FieldList"},
 		},
 		Decoration{
 			Name: "Params",
@@ -868,7 +924,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Results",
 			Field: Field{"Results"},
-			Type:  Type{"FieldList", true},
+			Type:  Struct{"FieldList"},
 		},
 		Decoration{
 			Name: "End",
@@ -897,7 +953,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Methods",
 			Field: Field{"Methods"},
-			Type:  Type{"FieldList", true},
+			Type:  Struct{"FieldList"},
 		},
 		Decoration{
 			Name: "End",
@@ -934,7 +990,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Key",
 			Field: Field{"Key"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Token{
 			Name:  "Rbrack",
@@ -946,7 +1002,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Value",
 			Field: Field{"Value"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "End",
@@ -1009,7 +1065,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Value",
 			Field: Field{"Value"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "End",
@@ -1064,7 +1120,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Decl",
 			Field: Field{"Decl"},
-			Type:  Type{"Decl", false},
+			Type:  Iface{"Decl"},
 		},
 		Decoration{
 			Name: "End",
@@ -1101,7 +1157,7 @@ var Info = map[string][]Part{
 	/*
 		// A LabeledStmt node represents a labeled statement.
 		LabeledStmt struct {
-			Label *Ident
+			Label *Def
 			Colon token.Pos // position of ":"
 			Stmt  Stmt
 		}
@@ -1113,7 +1169,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Label",
 			Field: Field{"Label"},
-			Type:  Type{"Ident", true},
+			Type:  Structs{"Ident", "Def"},
 		},
 		Decoration{
 			Name: "Label",
@@ -1129,7 +1185,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Stmt",
 			Field: Field{"Stmt"},
-			Type:  Type{"Stmt", false},
+			Type:  Iface{"Stmt"},
 		},
 		Decoration{
 			Name: "End",
@@ -1150,7 +1206,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "X",
 			Field: Field{"X"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "End",
@@ -1173,7 +1229,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Chan",
 			Field: Field{"Chan"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "Chan",
@@ -1189,7 +1245,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Value",
 			Field: Field{"Value"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "End",
@@ -1210,7 +1266,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "X",
 			Field: Field{"X"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "X",
@@ -1243,7 +1299,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Lhs",
 			Field:     Field{"Lhs"},
-			Elem:      Type{"Expr", false},
+			Elem:      Iface{"Expr"},
 			Separator: token.COMMA,
 		},
 		Token{
@@ -1258,7 +1314,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Rhs",
 			Field:     Field{"Rhs"},
-			Elem:      Type{"Expr", false},
+			Elem:      Iface{"Expr"},
 			Separator: token.COMMA,
 		},
 		Decoration{
@@ -1287,7 +1343,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Call",
 			Field: Field{"Call"},
-			Type:  Type{"CallExpr", true},
+			Type:  Struct{"CallExpr"},
 		},
 		Decoration{
 			Name: "End",
@@ -1315,7 +1371,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Call",
 			Field: Field{"Call"},
-			Type:  Type{"CallExpr", true},
+			Type:  Struct{"CallExpr"},
 		},
 		Decoration{
 			Name: "End",
@@ -1343,7 +1399,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Results",
 			Field:     Field{"Results"},
-			Elem:      Type{"Expr", false},
+			Elem:      Iface{"Expr"},
 			Separator: token.COMMA,
 		},
 		Decoration{
@@ -1357,7 +1413,7 @@ var Info = map[string][]Part{
 		BranchStmt struct {
 			TokPos token.Pos   // position of Tok
 			Tok    token.Token // keyword token (BREAK, CONTINUE, GOTO, FALLTHROUGH)
-			Label  *Ident      // label name; or nil
+			Label  *Ref        // label name; or nil
 		}
 	*/
 	"BranchStmt": {
@@ -1377,7 +1433,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Label",
 			Field: Field{"Label"},
-			Type:  Type{"Ident", true},
+			Type:  Structs{"Ident", "Ref"},
 		},
 		Decoration{
 			Name: "End",
@@ -1406,7 +1462,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "List",
 			Field:     Field{"List"},
-			Elem:      Type{"Stmt", false},
+			Elem:      Iface{"Stmt"},
 			Separator: token.SEMICOLON,
 		},
 		Token{
@@ -1443,7 +1499,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Init",
 			Field: Field{"Init"},
-			Type:  Type{"Stmt", false},
+			Type:  Iface{"Stmt"},
 		},
 		Decoration{
 			Name: "Init",
@@ -1452,7 +1508,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Cond",
 			Field: Field{"Cond"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "Cond",
@@ -1460,7 +1516,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Body",
 			Field: Field{"Body"},
-			Type:  Type{"BlockStmt", true},
+			Type:  Struct{"BlockStmt"},
 		},
 		Token{
 			Name:   "ElseTok",
@@ -1474,7 +1530,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Else",
 			Field: Field{"Else"},
-			Type:  Type{"Stmt", false},
+			Type:  Iface{"Stmt"},
 		},
 		Decoration{
 			Name: "End",
@@ -1506,7 +1562,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "List",
 			Field:     Field{"List"},
-			Elem:      Type{"Expr", false},
+			Elem:      Iface{"Expr"},
 			Separator: token.COMMA,
 		},
 		Token{
@@ -1520,7 +1576,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Body",
 			Field:     Field{"Body"},
-			Elem:      Type{"Stmt", false},
+			Elem:      Iface{"Stmt"},
 			Separator: token.SEMICOLON,
 		},
 		Decoration{
@@ -1551,7 +1607,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Init",
 			Field: Field{"Init"},
-			Type:  Type{"Stmt", false},
+			Type:  Iface{"Stmt"},
 		},
 		Decoration{
 			Name: "Init",
@@ -1560,7 +1616,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Tag",
 			Field: Field{"Tag"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "Tag",
@@ -1569,7 +1625,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Body",
 			Field: Field{"Body"},
-			Type:  Type{"BlockStmt", true},
+			Type:  Struct{"BlockStmt"},
 		},
 		Decoration{
 			Name: "End",
@@ -1599,7 +1655,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Init",
 			Field: Field{"Init"},
-			Type:  Type{"Stmt", false},
+			Type:  Iface{"Stmt"},
 		},
 		Decoration{
 			Name: "Init",
@@ -1608,7 +1664,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Assign",
 			Field: Field{"Assign"},
-			Type:  Type{"Stmt", false},
+			Type:  Iface{"Stmt"},
 		},
 		Decoration{
 			Name: "Assign",
@@ -1616,7 +1672,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Body",
 			Field: Field{"Body"},
-			Type:  Type{"BlockStmt", true},
+			Type:  Struct{"BlockStmt"},
 		},
 		Decoration{
 			Name: "End",
@@ -1648,7 +1704,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Comm",
 			Field: Field{"Comm"},
-			Type:  Type{"Stmt", false},
+			Type:  Iface{"Stmt"},
 		},
 		Decoration{
 			Name: "Comm",
@@ -1665,7 +1721,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Body",
 			Field:     Field{"Body"},
-			Elem:      Type{"Stmt", false},
+			Elem:      Iface{"Stmt"},
 			Separator: token.SEMICOLON,
 		},
 		Decoration{
@@ -1694,7 +1750,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Body",
 			Field: Field{"Body"},
-			Type:  Type{"BlockStmt", true},
+			Type:  Struct{"BlockStmt"},
 		},
 		Decoration{
 			Name: "End",
@@ -1725,7 +1781,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Init",
 			Field: Field{"Init"},
-			Type:  Type{"Stmt", false},
+			Type:  Iface{"Stmt"},
 		},
 		Token{
 			Name:   "InitSemicolon",
@@ -1739,7 +1795,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Cond",
 			Field: Field{"Cond"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Token{
 			Name:   "CondSemicolon",
@@ -1753,7 +1809,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Post",
 			Field: Field{"Post"},
-			Type:  Type{"Stmt", false},
+			Type:  Iface{"Stmt"},
 		},
 		Decoration{
 			Name: "Post",
@@ -1762,7 +1818,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Body",
 			Field: Field{"Body"},
-			Type:  Type{"BlockStmt", true},
+			Type:  Struct{"BlockStmt"},
 		},
 		Decoration{
 			Name: "End",
@@ -1795,7 +1851,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Key",
 			Field: Field{"Key"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Token{
 			Name:   "Comma",
@@ -1809,7 +1865,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Value",
 			Field: Field{"Value"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "Value",
@@ -1832,7 +1888,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "X",
 			Field: Field{"X"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "X",
@@ -1840,7 +1896,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Body",
 			Field: Field{"Body"},
-			Type:  Type{"BlockStmt", true},
+			Type:  Struct{"BlockStmt"},
 		},
 		Decoration{
 			Name: "End",
@@ -1850,7 +1906,7 @@ var Info = map[string][]Part{
 		// An ImportSpec node represents a single package import.
 		ImportSpec struct {
 			Doc     *CommentGroup // associated documentation; or nil
-			Name    *Ident        // local package name (including "."); or nil
+			Name    *Def          // local package name (including "."); or nil
 			Path    *BasicLit     // import path
 			Comment *CommentGroup // line comments; or nil
 			EndPos  token.Pos     // end of spec (overrides Path.Pos if nonzero)
@@ -1864,7 +1920,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Name",
 			Field: Field{"Name"},
-			Type:  Type{"Ident", true},
+			Type:  Structs{"Ident", "Def"},
 		},
 		Decoration{
 			Name: "Name",
@@ -1873,7 +1929,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Path",
 			Field: Field{"Path"},
-			Type:  Type{"BasicLit", true},
+			Type:  Struct{"BasicLit"},
 		},
 		Decoration{
 			Name: "End",
@@ -1885,7 +1941,7 @@ var Info = map[string][]Part{
 		//
 		ValueSpec struct {
 			Doc     *CommentGroup // associated documentation; or nil
-			Names   []*Ident      // value names (len(Names) > 0)
+			Names   []*Def        // value names (len(Names) > 0)
 			Type    Expr          // value type; or nil
 			Values  []Expr        // initial values; or nil
 			Comment *CommentGroup // line comments; or nil
@@ -1898,13 +1954,13 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Names",
 			Field:     Field{"Names"},
-			Elem:      Type{"Ident", true},
+			Elem:      Structs{"Ident", "Def"},
 			Separator: token.COMMA,
 		},
 		Node{
 			Name:  "Type",
 			Field: Field{"Type"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Token{
 			Name:   "Assign",
@@ -1918,7 +1974,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Values",
 			Field:     Field{"Values"},
-			Elem:      Type{"Expr", false},
+			Elem:      Iface{"Expr"},
 			Separator: token.COMMA,
 		},
 		Decoration{
@@ -1929,9 +1985,9 @@ var Info = map[string][]Part{
 		// A TypeSpec node represents a type declaration (TypeSpec production).
 		TypeSpec struct {
 			Doc     *CommentGroup // associated documentation; or nil
-			Name    *Ident        // type name
+			Name    *Def          // type name
 			Assign  token.Pos     // position of '=', if any
-			Type    Expr          // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
+			Type    Expr          // *Ref, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
 			Comment *CommentGroup // line comments; or nil
 		}
 	*/
@@ -1942,7 +1998,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Name",
 			Field: Field{"Name"},
-			Type:  Type{"Ident", true},
+			Type:  Structs{"Ident", "Def"},
 		},
 		Token{
 			Name:  "Assign",
@@ -1960,7 +2016,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Type",
 			Field: Field{"Type"},
-			Type:  Type{"Expr", false},
+			Type:  Iface{"Expr"},
 		},
 		Decoration{
 			Name: "End",
@@ -2048,7 +2104,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Specs",
 			Field:     Field{"Specs"},
-			Elem:      Type{"Spec", false},
+			Elem:      Iface{"Spec"},
 			Separator: token.SEMICOLON,
 		},
 		Token{
@@ -2070,7 +2126,7 @@ var Info = map[string][]Part{
 		FuncDecl struct {
 			Doc  *CommentGroup // associated documentation; or nil
 			Recv *FieldList    // receiver (methods); or nil (functions)
-			Name *Ident        // function/method name
+			Name *Def          // function/method name
 			Type *FuncType     // function signature: parameters, results, and position of "func" keyword
 			Body *BlockStmt    // function body; or nil for external (non-Go) function
 		}
@@ -2087,7 +2143,7 @@ var Info = map[string][]Part{
 			// Initializer for "Type"
 			Name:  "Type",
 			Field: Field{"Type"},
-			Type:  Type{"FuncType", true},
+			Type:  Struct{"FuncType"},
 		},
 		Decoration{
 			Name: "Start",
@@ -2115,7 +2171,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Recv",
 			Field: Field{"Recv"},
-			Type:  Type{"FieldList", true},
+			Type:  Struct{"FieldList"},
 		},
 		Decoration{
 			Name: "Recv",
@@ -2124,7 +2180,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Name",
 			Field: Field{"Name"},
-			Type:  Type{"Ident", true},
+			Type:  Structs{"Ident", "Def"},
 		},
 		Decoration{
 			Name: "Name",
@@ -2132,7 +2188,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Params",
 			Field: InnerField{"Type", "Params"},
-			Type:  Type{"FieldList", true},
+			Type:  Struct{"FieldList"},
 		},
 		Decoration{
 			Name: "Params",
@@ -2145,7 +2201,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Results",
 			Field: InnerField{"Type", "Results"},
-			Type:  Type{"FieldList", true},
+			Type:  Struct{"FieldList"},
 		},
 		Decoration{
 			Name: "Results",
@@ -2160,7 +2216,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Body",
 			Field: Field{"Body"},
-			Type:  Type{"BlockStmt", true},
+			Type:  Struct{"BlockStmt"},
 		},
 		Decoration{
 			Name: "End",
@@ -2189,11 +2245,11 @@ var Info = map[string][]Part{
 		type File struct {
 			Doc        *CommentGroup   // associated documentation; or nil
 			Package    token.Pos       // position of "package" keyword
-			Name       *Ident          // package name
+			Name       *Def            // package name
 			Decls      []Decl          // top-level declarations; or nil
 			Scope      *Scope          // package scope (this file only)
 			Imports    []*ImportSpec   // imports in this file
-			Unresolved []*Ident        // unresolved identifiers in this file
+			Unresolved []*Ref          // unresolved references in this file
 			Comments   []*CommentGroup // list of all comments in the source file
 		}
 	*/
@@ -2214,7 +2270,7 @@ var Info = map[string][]Part{
 		Node{
 			Name:  "Name",
 			Field: Field{"Name"},
-			Type:  Type{"Ident", true},
+			Type:  Structs{"Ident", "Def"},
 		},
 		Decoration{
 			Name: "Name",
@@ -2222,7 +2278,7 @@ var Info = map[string][]Part{
 		List{
 			Name:      "Decls",
 			Field:     Field{"Decls"},
-			Elem:      Type{"Decl", false},
+			Elem:      Iface{"Decl"},
 			Separator: token.SEMICOLON,
 		},
 		Decoration{
@@ -2257,19 +2313,19 @@ var Info = map[string][]Part{
 		Map{
 			Name:  "Imports",
 			Field: Field{"Imports"},
-			Elem:  Type{"Object", true},
+			Elem:  Struct{"Object"},
 		},
 		Map{
 			Name:  "Files",
 			Field: Field{"Files"},
-			Elem:  Type{"File", true},
+			Elem:  Struct{"File"},
 		},
 	},
 }
 
 var Exprs = map[string]bool{
 	"BadExpr":        true,
-	"Ident":          true,
+	"Ref":            true,
 	"Ellipsis":       true,
 	"BasicLit":       true,
 	"FuncLit":        true,
@@ -2290,6 +2346,15 @@ var Exprs = map[string]bool{
 	"InterfaceType":  true,
 	"MapType":        true,
 	"ChanType":       true,
+}
+
+var AstOnly = map[string]bool{
+	"Ident": true,
+}
+
+var DstOnly = map[string]bool{
+	"Def": true,
+	"Ref": true,
 }
 
 var Stmts = map[string]bool{
@@ -2331,7 +2396,7 @@ var Specs = map[string]bool{
 type Init struct {
 	Name  string
 	Field FieldSpec
-	Type  Type
+	Type  TypeSpec
 }
 
 type Decoration struct {
@@ -2361,20 +2426,20 @@ type String struct {
 type List struct {
 	Name      string
 	Field     FieldSpec
-	Elem      Type
+	Elem      TypeSpec
 	Separator token.Token
 }
 
 type Map struct {
 	Name  string
 	Field FieldSpec
-	Elem  Type
+	Elem  TypeSpec
 }
 
 type Node struct {
 	Name  string
 	Field FieldSpec
-	Type  Type
+	Type  TypeSpec
 }
 
 type Token struct {
@@ -2439,23 +2504,52 @@ func (d Double) Get(id string, ast bool) *jen.Statement {
 	return d.Dst(jen.Id(id))
 }
 
-type Type struct {
-	Name    string
-	Pointer bool
+type TypeSpec interface {
+	TypeName(path string) string
+	Literal(path string) *jen.Statement
 }
 
-func (t Type) Literal(path string) *jen.Statement {
-	if t.Pointer {
-		return jen.Op("*").Qual(path, t.Name)
-	}
-	return jen.Qual(path, t.Name)
+type Iface struct {
+	Name string
 }
 
-func (t Type) String() string {
-	if t.Pointer {
-		return "*" + t.Name
+func (i Iface) Literal(path string) *jen.Statement {
+	return jen.Qual(path, i.Name)
+}
+
+func (i Iface) TypeName(path string) string {
+	return i.Name
+}
+
+type Struct struct {
+	Name string
+}
+
+func (s Struct) Literal(path string) *jen.Statement {
+	return jen.Op("*").Qual(path, s.Name)
+}
+
+func (s Struct) TypeName(path string) string {
+	return s.Name
+}
+
+type Structs struct {
+	Ast, Dst string
+}
+
+func (s Structs) Literal(path string) *jen.Statement {
+	name := s.Ast
+	if path == DSTPATH {
+		name = s.Dst
 	}
-	return t.Name
+	return jen.Op("*").Qual(path, name)
+}
+
+func (s Structs) TypeName(path string) string {
+	if path == DSTPATH {
+		return s.Dst
+	}
+	return s.Ast
 }
 
 type FieldSpec interface {

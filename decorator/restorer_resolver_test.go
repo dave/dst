@@ -68,7 +68,7 @@ func TestRestorerResolver(t *testing.T) {
 					desc: "adding an import to a file that has no imports creates a new import block",
 					mutate: func(f *dst.File) {
 						b := f.Decls[0].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/a", Name: "A"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/a", Name: "A"}}})
 					},
 					expect: `package main
 
@@ -81,7 +81,7 @@ func TestRestorerResolver(t *testing.T) {
 					desc: "manually added alias work as expected",
 					mutate: func(f *dst.File) {
 						b := f.Decls[0].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/a", Name: "A"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/a", Name: "A"}}})
 					},
 					restorer: func(r *FileRestorer) {
 						r.Alias["a.b/a"] = "a1"
@@ -99,8 +99,8 @@ func TestRestorerResolver(t *testing.T) {
 						b := f.Decls[0].(*dst.FuncDecl).Body
 						b.List = append(
 							b.List,
-							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/a", Name: "A"}}},
-							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/b", Name: "B"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/a", Name: "A"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/b", Name: "B"}}},
 						)
 					},
 					expect: `package main
@@ -119,10 +119,10 @@ func TestRestorerResolver(t *testing.T) {
 						b := f.Decls[0].(*dst.FuncDecl).Body
 						b.List = append(
 							b.List,
-							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/fmt/c", Name: "C"}}},
-							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/fmt/a", Name: "A"}}},
-							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/fmt/b", Name: "B"}}},
-							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "fmt", Name: "Print"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/fmt/c", Name: "C"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/fmt/a", Name: "A"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/fmt/b", Name: "B"}}},
+							&dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "fmt", Name: "Print"}}},
 						)
 					},
 					expect: `package main
@@ -151,8 +151,8 @@ func TestRestorerResolver(t *testing.T) {
 						f.Decls = append([]dst.Decl{cgo}, f.Decls...)
 
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/a", Name: "A"}}})
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/b", Name: "B"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/a", Name: "A"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/b", Name: "B"}}})
 					},
 					expect: `package main
             
@@ -185,6 +185,43 @@ func TestRestorerResolver(t *testing.T) {
 			},
 			cases: []tc{
 				{
+					name: "change-to-local",
+					desc: "change to the local path, should remove selector",
+					mutate: func(f *dst.File) {
+						sel := f.Decls[1].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ref)
+						sel.Path = "a.b/main"
+					},
+					expect: `package main
+
+            			func main() { A() }
+					`,
+				},
+				{
+					name: "change-to-dot",
+					desc: "change to a dot-import, should remove selector",
+					restorer: func(r *FileRestorer) {
+						r.Alias["a.b/a"] = "."
+					},
+					expect: `package main
+
+						import . "a.b/a"
+
+            			func main() { A() }
+					`,
+				},
+				{
+					name: "change-to-empty",
+					desc: "change to empty path, should remove selector",
+					mutate: func(f *dst.File) {
+						sel := f.Decls[1].(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ref)
+						sel.Path = ""
+					},
+					expect: `package main
+
+            			func main() { A() }
+					`,
+				},
+				{
 					name: "add-c",
 					desc: "if C import is found as part of another block, it is ignored and ordered first",
 					mutate: func(f *dst.File) {
@@ -193,8 +230,8 @@ func TestRestorerResolver(t *testing.T) {
 						firstBlock.Specs = append(firstBlock.Specs, &dst.ImportSpec{Path: &dst.BasicLit{Kind: token.STRING, Value: strconv.Quote("C")}})
 
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/b", Name: "B"}}})
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "bufio", Name: "NewReader"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/b", Name: "B"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "bufio", Name: "NewReader"}}})
 					},
 					expect: `package main
             
@@ -286,7 +323,7 @@ func TestRestorerResolver(t *testing.T) {
 					desc: "adding a simple import should work as expected",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b", Name: "B"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "root/b", Name: "B"}}})
 					},
 					expect: `package main
 
@@ -332,7 +369,7 @@ func TestRestorerResolver(t *testing.T) {
 					desc: "adding a standard import to a file with an anon import, the anon import stays anon",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b", Name: "B"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "root/b", Name: "B"}}})
 					},
 					expect: `package main
 
@@ -348,7 +385,7 @@ func TestRestorerResolver(t *testing.T) {
 					desc: "convert anonymous import to standard works as intended",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/a", Name: "A"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "root/a", Name: "A"}}})
 					},
 					expect: `package main
 
@@ -405,7 +442,7 @@ func TestRestorerResolver(t *testing.T) {
 					desc: "re-arrange first import block if additions",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/d", Name: "D"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/d", Name: "D"}}})
 					},
 					expect: `package main
 
@@ -454,7 +491,7 @@ func TestRestorerResolver(t *testing.T) {
 					desc: "only re-arrange first block",
 					mutate: func(f *dst.File) {
 						b := f.Decls[2].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/c", Name: "C"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/c", Name: "C"}}})
 					},
 					expect: `package main
 
@@ -582,7 +619,7 @@ func TestRestorerResolver(t *testing.T) {
 					mutate: func(f *dst.File) {
 						b := f.Decls[2].(*dst.FuncDecl).Body
 						b.List = b.List[2:4]
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/e", Name: "E"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "root/e", Name: "E"}}})
 					},
 					expect: `package main
 						
@@ -629,7 +666,7 @@ func TestRestorerResolver(t *testing.T) {
 					desc: "decorations in re-arranged block are retained",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "a.b/b", Name: "B"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "a.b/b", Name: "B"}}})
 					},
 					expect: `package main
 
@@ -678,8 +715,8 @@ func TestRestorerResolver(t *testing.T) {
 					desc: "line-feed formatting in re-arranged first block is correctly modified",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "io", Name: "Copy"}}})
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "foo.bar/b", Name: "B"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "io", Name: "Copy"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "foo.bar/b", Name: "B"}}})
 					},
 					expect: `package main
             
@@ -701,7 +738,7 @@ func TestRestorerResolver(t *testing.T) {
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
 						b.List = b.List[1:]
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "foo.bar/b", Name: "B"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "foo.bar/b", Name: "B"}}})
 					},
 					expect: `package main
             
@@ -737,7 +774,7 @@ func TestRestorerResolver(t *testing.T) {
 					desc: "alias from import block works correctly",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b", Name: "B"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "root/b", Name: "B"}}})
 					},
 					expect: `package main
 
@@ -783,7 +820,7 @@ func TestRestorerResolver(t *testing.T) {
 					desc: "alias is retained even when alias == package name",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b", Name: "B"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "root/b", Name: "B"}}})
 					},
 					expect: `package main
 
@@ -948,7 +985,7 @@ func TestRestorerResolver(t *testing.T) {
 					},
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
-						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/b/a", Name: "AA"}}})
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ref{Path: "root/b/a", Name: "AA"}}})
 					},
 					expect: `package main
             

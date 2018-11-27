@@ -39,7 +39,7 @@ var D = /*Start*/ A /*Type*/ { /*Lbrace*/ A: 0} /*End*/
 var E = /*Start*/ ( /*Lparen*/ 1 + 1 /*X*/) /*End*/ / 2
 
 // SelectorExpr
-var F = /*Start*/ fmt. /*X*/ Sprint /*End*/ (0)
+var F = /*Start*/ tt. /*X*/ F /*End*/ ()
 
 // IndexExpr
 var G = /*Start*/ []int{0} /*X*/ [ /*Lbrack*/ 0 /*Index*/] /*End*/
@@ -121,6 +121,17 @@ A /*Label*/ : /*Colon*/
 	// BranchStmt
 	/*Start*/
 	goto /*Tok*/ A /*End*/
+
+	// Def
+	var /*Start*/ F /*End*/ func()
+
+	// Ref(0)
+	/*Start*/
+	F /*End*/ ()
+
+	// Ref(1)
+	/*Start*/
+	fmt. /*X*/ Print /*End*/ ()
 
 	// SendStmt
 	/*Start*/
@@ -307,3 +318,9 @@ func /*Func*/ (a *A) /*Recv*/ f /*Name*/ (d, e int) /*Params*/ (f, g int) /*Resu
 } /*End*/
 
 // --
+
+type TT int
+
+func (TT) F() int { return 0 }
+
+var tt TT

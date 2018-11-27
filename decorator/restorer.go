@@ -14,7 +14,6 @@ import (
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator/resolver"
 	"github.com/dave/dst/decorator/resolver/gopackages"
-	"github.com/dave/dst/dstutil"
 )
 
 // NewRestorer returns a restorer.
@@ -30,6 +29,7 @@ func NewRestorerWithImports(path, dir string) *Restorer {
 	return &Restorer{
 		Map:  newMap(),
 		Fset: token.NewFileSet(),
+		Path: path,
 		Resolver: &gopackages.PackageResolver{
 			Dir: dir,
 		},
@@ -39,6 +39,8 @@ func NewRestorerWithImports(path, dir string) *Restorer {
 type Restorer struct {
 	Map
 	Fset *token.FileSet // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
+
+	Path string // Local path
 
 	// If a Resolver is provided, the names of all imported packages are resolved, and the imports
 	// block is updated. All remote identifiers are updated (sometimes this involves changing
@@ -63,13 +65,14 @@ func (pr *Restorer) Fprint(w io.Writer, f *dst.File) error {
 
 func (pr *Restorer) FileRestorer(name string, file *dst.File) *FileRestorer {
 	return &FileRestorer{
-		Restorer: pr,
-		Alias:    map[string]string{},
-		name:     name,
-		file:     file,
-		lines:    []int{0}, // initialise with the first line at Pos 0
-		nodeDecl: map[*ast.Object]dst.Node{},
-		nodeData: map[*ast.Object]dst.Node{},
+		Restorer:     pr,
+		Alias:        map[string]string{},
+		name:         name,
+		file:         file,
+		lines:        []int{0}, // initialise with the first line at Pos 0
+		nodeDecl:     map[*ast.Object]dst.Node{},
+		nodeData:     map[*ast.Object]dst.Node{},
+		packageNames: map[string]string{},
 	}
 }
 
@@ -90,6 +93,7 @@ type FileRestorer struct {
 	nodeDecl        map[*ast.Object]dst.Node // Objects that have a ast.Node Decl (look up after file has been rendered)
 	nodeData        map[*ast.Object]dst.Node // Objects that have a ast.Node Data (look up after file has been rendered)
 	cursorAtNewLine token.Pos                // The cursor position directly after adding a newline decoration (or a line comment which ends in a "\n"). If we're still at this cursor position when we add a line space, reduce the "\n" by one.
+	packageNames    map[string]string        // names in the code of all imported packages ("." for dot-imports)
 }
 
 func (fr *FileRestorer) Restore() (*ast.File, error) {
@@ -154,8 +158,11 @@ func (fr *FileRestorer) updateImports() error {
 
 	dst.Inspect(fr.file, func(n dst.Node) bool {
 		switch n := n.(type) {
-		case *dst.Ident:
+		case *dst.Ref:
 			if n.Path == "" {
+				return true
+			}
+			if n.Path == fr.Path {
 				return true
 			}
 			if _, ok := packages[n.Path]; !ok {
@@ -241,11 +248,11 @@ func (fr *FileRestorer) updateImports() error {
 	sort.Slice(allOrdered, func(i, j int) bool { return packagePathOrderLess(allOrdered[i], allOrdered[j]) })
 
 	// work out the actual aliases for all packages (and rename conflicts)
-	aliases := map[string]string{} // alias in the package block
-	names := map[string]string{}   // name in the code
+	aliases := map[string]string{}        // alias in the package block
+	fr.packageNames = map[string]string{} // name in the code
 
 	conflict := func(name string) bool {
-		for _, n := range names {
+		for _, n := range fr.packageNames {
 			if name == n {
 				return true
 			}
@@ -300,21 +307,21 @@ func (fr *FileRestorer) updateImports() error {
 		if alias == "." {
 			// no conflict checking for dot-imports
 			aliases[path] = "."
-			names[path] = ""
+			fr.packageNames[path] = ""
 			continue
 		}
 		if alias == "_" {
 			if unanon[path] {
 				// for anonymous imports that we are converting to regular imports...
-				names[path], aliases[path] = findAlias(path, "")
+				fr.packageNames[path], aliases[path] = findAlias(path, "")
 			} else {
 				// no conflict checking for anonymous imports
 				aliases[path] = "_"
-				names[path] = ""
+				fr.packageNames[path] = ""
 			}
 			continue
 		}
-		names[path], aliases[path] = findAlias(path, alias)
+		fr.packageNames[path], aliases[path] = findAlias(path, alias)
 	}
 
 	// convert any anonymous imports to regular imports
@@ -330,7 +337,7 @@ func (fr *FileRestorer) updateImports() error {
 					spec.Name = nil
 					continue
 				}
-				spec.Name = &dst.Ident{Name: aliases[path]}
+				spec.Name = &dst.Def{Name: aliases[path]}
 			}
 		}
 	}
@@ -342,7 +349,7 @@ func (fr *FileRestorer) updateImports() error {
 			path := mustUnquote(spec.Path.Value)
 			if spec.Name == nil && aliases[path] != "" {
 				// missing alias
-				spec.Name = &dst.Ident{Name: aliases[path]}
+				spec.Name = &dst.Def{Name: aliases[path]}
 			} else if spec.Name != nil && aliases[path] == "" {
 				// alias needs to be removed
 				spec.Name = nil
@@ -381,7 +388,7 @@ func (fr *FileRestorer) updateImports() error {
 				Path: &dst.BasicLit{Kind: token.STRING, Value: fmt.Sprintf("%q", path)},
 			}
 			if aliases[path] != "" {
-				is.Name = &dst.Ident{
+				is.Name = &dst.Def{
 					Name: aliases[path],
 				}
 			}
@@ -464,79 +471,55 @@ func (fr *FileRestorer) updateImports() error {
 		fr.file.Decls = decls
 	}
 
-	// update the SelectorExpr and Ident in the rest of the file
-	dstutil.Apply(fr.file, func(c *dstutil.Cursor) bool {
-		switch n := c.Node().(type) {
-		case *dst.SelectorExpr:
-			if n.Sel.Path == "" {
-				return true
-			}
-			x, ok := n.X.(*dst.Ident)
-			if !ok {
-				return true
-			}
-			sel := n.Sel
-			if names[n.Sel.Path] == "" {
-				// blank name -> replace this with Ident
-				id := &dst.Ident{
-					Name: n.Sel.Name,
-					Path: n.Sel.Path,
-					Obj:  n.Sel.Obj,
-				}
+	return nil
+}
 
-				// merge decorations for n, x and sel:
+func (r *FileRestorer) restoreRef(n *dst.Ref, allowDuplicate bool) ast.Node {
 
-				if n.Decs.Before == dst.EmptyLine || x.Decs.Before == dst.EmptyLine || sel.Decs.Before == dst.EmptyLine {
-					id.Decs.Before = dst.EmptyLine
-				} else if n.Decs.Before == dst.NewLine || x.Decs.Before == dst.NewLine || sel.Decs.Before == dst.NewLine {
-					id.Decs.Before = dst.NewLine
-				}
-
-				if n.Decs.After == dst.EmptyLine || x.Decs.After == dst.EmptyLine || sel.Decs.After == dst.EmptyLine {
-					id.Decs.After = dst.EmptyLine
-				} else if n.Decs.After == dst.NewLine || x.Decs.After == dst.NewLine || sel.Decs.After == dst.NewLine {
-					id.Decs.After = dst.NewLine
-				}
-
-				// add all decorations
-				id.Decs.Start.Append([]string(n.Decs.Start)...)
-				id.Decs.Start.Append([]string(x.Decs.Start)...)
-				id.Decs.Start.Append([]string(x.Decs.End)...)
-				id.Decs.Start.Append([]string(n.Decs.X)...)
-				id.Decs.Start.Append([]string(sel.Decs.Start)...)
-				id.Decs.End.Append([]string(sel.Decs.End)...)
-				id.Decs.End.Append([]string(n.Decs.End)...)
-
-				c.Replace(id)
-			} else if names[n.Sel.Path] != x.Name {
-				// update name
-				x.Name = names[n.Sel.Path]
-			}
-		case *dst.Ident:
-			if n.Path == "" {
-				return true
-			}
-			if _, ok := c.Parent().(*dst.SelectorExpr); ok {
-				// skip idents inside SelectorExpr
-				return true
-			}
-			if names[n.Path] != "" {
-				// add a SelectorExpr
-				sel := &dst.SelectorExpr{
-					X:   &dst.Ident{Name: names[n.Path]},
-					Sel: &dst.Ident{Name: n.Name, Path: n.Path, Obj: n.Obj},
-				}
-				sel.Decs.Before = n.Decs.Before
-				sel.Decs.After = n.Decs.After
-				sel.Decs.Start.Append([]string(n.Decs.Start)...)
-				sel.Decs.End.Append([]string(n.Decs.End)...)
-				c.Replace(sel)
+	var name string
+	if r.Resolver != nil {
+		if n.Path != r.Path {
+			name = r.packageNames[n.Path]
+			if name == "." {
+				name = ""
 			}
 		}
-		return true
-	}, nil)
+	}
 
-	return nil
+	if name == "" {
+		// continue to run standard Ref -> Ident restore
+		return nil
+	}
+
+	// restore a SelectorExpr
+	out := &ast.SelectorExpr{}
+	r.Ast.Nodes[n] = out
+	r.Dst.Nodes[out] = n
+	r.Dst.Nodes[out.Sel] = n
+	r.Dst.Nodes[out.X] = n
+	r.applySpace(n.Decs.Before)
+
+	// Decoration: Start
+	r.applyDecorations(out, n.Decs.Start, false)
+
+	// Node: X
+	out.X = r.restoreNode(dst.NewRef(name, ""), allowDuplicate).(ast.Expr)
+
+	// Token: Period
+	r.cursor += token.Pos(len(token.PERIOD.String()))
+
+	// Decoration: X
+	r.applyDecorations(out, n.Decs.X, false)
+
+	// Node: Sel
+	out.Sel = r.restoreNode(dst.NewRef(n.Name, ""), allowDuplicate).(*ast.Ident)
+
+	// Decoration: End
+	r.applyDecorations(out, n.Decs.End, true)
+	r.applySpace(n.Decs.After)
+
+	return out
+
 }
 
 func packagePathOrderLess(pi, pj string) bool {

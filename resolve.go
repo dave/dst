@@ -37,10 +37,10 @@ func (p *pkgBuilder) declare(scope, altScope *Scope, obj *Object) {
 	}
 }
 
-func resolve(scope *Scope, ident *Ident) bool {
+func resolve(scope *Scope, ref *Ref) bool {
 	for ; scope != nil; scope = scope.Outer {
-		if obj := scope.Lookup(ident.Name); obj != nil {
-			ident.Obj = obj
+		if obj := scope.Lookup(ref.Name); obj != nil {
+			ref.Obj = obj
 			return true
 		}
 	}
@@ -59,10 +59,10 @@ func resolve(scope *Scope, ident *Ident) bool {
 type Importer func(imports map[string]*Object, path string) (pkg *Object, err error)
 
 // NewPackage creates a new Package node from a set of File nodes. It resolves
-// unresolved identifiers across files and updates each file's Unresolved list
+// unresolved references across files and updates each file's Unresolved list
 // accordingly. If a non-nil importer and universe scope are provided, they are
-// used to resolve identifiers not declared in any of the package files. Any
-// remaining unresolved identifiers are reported as undeclared. If the files
+// used to resolve references not declared in any of the package files. Any
+// remaining unresolved references are reported as undeclared. If the files
 // belong to different packages, one package name is selected and files with
 // different package names are reported and then ignored.
 // The result is a package node and a scanner.ErrorList if there were errors.
@@ -93,7 +93,7 @@ func NewPackage(fset *token.FileSet, files map[string]*File, importer Importer, 
 	// package global mapping of imported package ids to package objects
 	imports := make(map[string]*Object)
 
-	// complete file scopes with imports and resolve identifiers
+	// complete file scopes with imports and resolve references
 	for _, file := range files {
 		// ignore file if it belongs to a different package
 		// (error has already been reported)
@@ -117,7 +117,7 @@ func NewPackage(fset *token.FileSet, files map[string]*File, importer Importer, 
 				continue
 			}
 			// TODO(gri) If a local package name != "." is provided,
-			// global identifier resolution could proceed even if the
+			// global reference resolution could proceed even if the
 			// import failed. Consider adjusting the logic here a bit.
 
 			// local name overrides imported package name
@@ -144,19 +144,19 @@ func NewPackage(fset *token.FileSet, files map[string]*File, importer Importer, 
 			}
 		}
 
-		// resolve identifiers
+		// resolve references
 		if importErrors {
 			// don't use the universe scope without correct imports
 			// (objects in the universe may be shadowed by imports;
-			// with missing imports, identifiers might get resolved
+			// with missing imports, references might get resolved
 			// incorrectly to universe objects)
 			pkgScope.Outer = nil
 		}
 		i := 0
-		for _, ident := range file.Unresolved {
-			if !resolve(fileScope, ident) {
-				p.errorf("undeclared name: %s", ident.Name)
-				file.Unresolved[i] = ident
+		for _, ref := range file.Unresolved {
+			if !resolve(fileScope, ref) {
+				p.errorf("undeclared name: %s", ref.Name)
+				file.Unresolved[i] = ref
 				i++
 			}
 

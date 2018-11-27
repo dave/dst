@@ -9,7 +9,7 @@ import (
 	"github.com/dave/dst/decorator/resolver/guess"
 )
 
-func TestGoAstIdentResolver(t *testing.T) {
+func TestGoAstRefResolver(t *testing.T) {
 	type tc struct{ id, expect string }
 	tests := []struct {
 		skip, solo bool
@@ -68,7 +68,7 @@ func TestGoAstIdentResolver(t *testing.T) {
 			}
 
 			d := decorator.New(token.NewFileSet())
-			d.Resolver = &IdentResolver{
+			d.Resolver = &RefResolver{
 				PackageResolver: &guess.PackageResolver{},
 			}
 
@@ -80,8 +80,8 @@ func TestGoAstIdentResolver(t *testing.T) {
 			nodes := map[string]string{}
 			dst.Inspect(f, func(n dst.Node) bool {
 				switch n := n.(type) {
-				case *dst.SelectorExpr:
-					nodes[n.Sel.Name] = n.Sel.Path
+				case *dst.Ref:
+					nodes[n.Name] = n.Path
 				}
 				return true
 			})

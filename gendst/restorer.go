@@ -32,8 +32,26 @@ func generateRestorer(names []string) error {
 		)
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
+				if data.AstOnly[nodeName] {
+					continue
+				}
+
 				g.Case(Op("*").Qual(DSTPATH, nodeName)).BlockFunc(func(g *Group) {
-					g.Id("out").Op(":=").Op("&").Qual("go/ast", nodeName).Values()
+					if nodeName == "Ref" {
+						g.Line()
+						g.Comment("Special case for *dst.Ref - replace with SelectorExpr if needed")
+						g.Id("sel").Op(":=").Id("r").Dot("restoreRef").Call(Id("n"), Id("allowDuplicate"))
+						g.If(Id("sel").Op("!=").Nil()).Block(
+							Return(Id("sel")),
+						)
+						g.Line()
+					}
+					outType := nodeName
+					if nodeName == "Def" || nodeName == "Ref" {
+						// Special case for converting Def and Ref back to Ident
+						outType = "Ident"
+					}
+					g.Id("out").Op(":=").Op("&").Qual("go/ast", outType).Values()
 					g.Id("r").Dot("Ast").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
 					g.Id("r").Dot("Dst").Dot("Nodes").Index(Id("out")).Op("=").Id("n")
 
@@ -45,7 +63,7 @@ func generateRestorer(names []string) error {
 						switch frag := frag.(type) {
 						case data.Init:
 							g.Line().Commentf("Init: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Op("&").Qual("go/ast", frag.Type.Name).Values()
+							g.Add(frag.Field.Get("out")).Op("=").Op("&").Qual("go/ast", frag.Type.TypeName("go/ast")).Values()
 						case data.Decoration:
 							g.Line().Commentf("Decoration: %s", frag.Name)
 							g.Id("r").Dot("applyDecorations").Call(Id("out"), Id("n").Dot("Decs").Dot(frag.Name), Do(func(s *Statement) { s.Lit(frag.Name == "End") }))
@@ -106,7 +124,7 @@ func generateRestorer(names []string) error {
 							g.Line().Commentf("Map: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Map(String()).Add(frag.Elem.Literal("go/ast")).Values()
 							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).BlockFunc(func(g *Group) {
-								if frag.Elem.Name == "Object" {
+								if frag.Elem.TypeName("go/ast") == "Object" {
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreObject").Call(Id("v"))
 								} else {
 									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v"), Id("allowDuplicate")).Assert(frag.Elem.Literal("go/ast"))

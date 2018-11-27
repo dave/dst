@@ -19,6 +19,10 @@ func generateDst(names []string) error {
 	f := NewFile("dst")
 	for _, name := range names {
 
+		if data.AstOnly[name] {
+			continue
+		}
+
 		if name == "Package" {
 			f.Comment("Decorations is nil for Package nodes.")
 		} else {
@@ -88,6 +92,11 @@ func generateDstDecs(names []string) error {
 
 	f := NewFile("dst")
 	for _, name := range names {
+
+		if data.AstOnly[name] {
+			continue
+		}
+
 		// type <name>Decorations struct {
 		// 	//...
 		// }

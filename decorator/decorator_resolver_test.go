@@ -13,7 +13,7 @@ import (
 func TestDecoratorResolver(t *testing.T) {
 	type tc struct {
 		expect string
-		get    func(*dst.File) *dst.Ident
+		get    func(*dst.File) *dst.Ref
 	}
 	tests := []struct {
 		skip, solo bool
@@ -47,21 +47,21 @@ func TestDecoratorResolver(t *testing.T) {
 			cases: []tc{
 				{
 					"root/a",
-					func(f *dst.File) *dst.Ident {
+					func(f *dst.File) *dst.Ref {
 						d := f.Decls[1]
-						return d.(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.SelectorExpr).Sel
+						return d.(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ref)
 					},
 				},
 				{
 					"root/b",
-					func(f *dst.File) *dst.Ident {
-						return f.Decls[1].(*dst.FuncDecl).Body.List[1].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ident)
+					func(f *dst.File) *dst.Ref {
+						return f.Decls[1].(*dst.FuncDecl).Body.List[1].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ref)
 					},
 				},
 				{
 					"",
-					func(f *dst.File) *dst.Ident {
-						return f.Decls[1].(*dst.FuncDecl).Body.List[2].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ident)
+					func(f *dst.File) *dst.Ref {
+						return f.Decls[1].(*dst.FuncDecl).Body.List[2].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ref)
 					},
 				},
 			},

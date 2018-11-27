@@ -7,19 +7,19 @@ import (
 	"strings"
 )
 
-type IdentResolver struct {
+type RefResolver struct {
 	Path string      // Local package path
 	Info *types.Info // Types info - must include Uses
 }
 
-func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
+func (r *RefResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (bool, string, error) {
 
 	if r.Info == nil || r.Info.Uses == nil {
-		return "", errors.New("gotypes.IdentResolver needs Uses in types info")
+		return false, "", errors.New("gotypes.RefResolver needs Uses in types info")
 	}
 
 	if r.Path == "" {
-		return "", errors.New("gotypes.IdentResolver needs Path")
+		return false, "", errors.New("gotypes.RefResolver needs Path")
 	}
 
 	se, ok := parent.(*ast.SelectorExpr)
@@ -27,40 +27,40 @@ func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Id
 		// if the parent is a SelectorExpr, only return the path if X is an ident and a package
 		xid, ok := se.X.(*ast.Ident)
 		if !ok {
-			return "", nil // x is not an ident -> not a qualified identifier
+			return false, "", nil // x is not an ident -> not a qualified identifier
 		}
 		obj, ok := r.Info.Uses[xid]
 		if !ok {
-			return "", nil // not found in uses -> not a qualified identifier
+			return false, "", nil // not found in uses -> not a qualified identifier
 		}
 		pn, ok := obj.(*types.PkgName)
 		if !ok {
-			return "", nil // not a pkgname -> not a remote identifier
+			return false, "", nil // not a pkgname -> not a remote identifier
 		}
-		return stripVendor(pn.Imported().Path()), nil
+		return false, stripVendor(pn.Imported().Path()), nil
 	}
 
 	obj, ok := r.Info.Uses[id]
 	if !ok {
-		return "", nil // not found in uses -> not a remote identifier
+		return false, "", nil // not found in uses -> not a remote identifier
 	}
 
 	if v, ok := obj.(*types.Var); ok && v.IsField() {
-		return "", nil // field ident -> doesn't need qualified ident
+		return false, "", nil // field ident -> doesn't need qualified ident
 	}
 
 	pkg := obj.Pkg()
 	if pkg == nil {
-		return "", nil // pre-defined idents in the universe scope - e.g. "byte"
+		return false, "", nil // pre-defined idents in the universe scope - e.g. "byte"
 	}
 
 	path := stripVendor(pkg.Path())
 
 	if path == stripVendor(r.Path) {
-		return "", nil // ident in the local package
+		return true, "", nil // ident in the local package
 	}
 
-	return path, nil
+	return false, path, nil
 }
 
 func stripVendor(path string) string {

@@ -3,7 +3,7 @@
 Managing the imports block is non-trivial. There are two separate interfaces defined by this package
 which allow the decorator and restorer to automatically manage the imports block.
 
-The decorator uses an `IdentResolver` which resolves the package path of any `*ast.Ident`. This is 
+The decorator uses an `RefResolver` which resolves the package path of any `*ast.Ident`. This is 
 complicated by dot-import syntax ([see below](#why-is-resolving-identifiers-hard)).
 
 The restorer uses a `PackageResolver` which resolves the name of any package given the path. This 
@@ -12,9 +12,9 @@ is complicated by vendoring and Go modules.
 This package provides several implementations of both interfaces that are suitable for different 
 environments:
 
-## IdentResolver implementations
+## RefResolver implementations
 
-#### gotypes.IdentResolver
+#### gotypes.RefResolver
 
 This is the default implementation, and provides full compatibility with dot-imports. However this 
 requires full export data for all imported packages, so a `go/types.Info` is required. There are 
@@ -22,7 +22,7 @@ many ways of loading ast and generating `go/types.Info`. Using `golang.org/x/too
 is recommended for full modules compatibility. See the [decorator.Load](https://godoc.org/github.com/dave/dst/decorator#Load)
 convenience function to automate this.
 
-#### goast.IdentResolver
+#### goast.RefResolver
 
 This is a simplified implementation that only scans a single ast file. This is unable to resolve 
 dot-import idents, so will panic if a dot-import is encountered in the import block. It uses the 

@@ -277,11 +277,11 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 
 		// Node: Label
 		if n.Label != nil {
-			child, err := f.decorateNode(n, "Ident", n.Label)
+			child, err := f.decorateNode(n, "Ref", n.Label)
 			if err != nil {
 				return nil, err
 			}
-			out.Label = child.(*dst.Ident)
+			out.Label = child.(*dst.Ref)
 		}
 
 		if nd, ok := f.decorations[n]; ok {
@@ -686,11 +686,11 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 
 		// List: Names
 		for _, v := range n.Names {
-			child, err := f.decorateNode(n, "Ident", v)
+			child, err := f.decorateNode(n, "Def", v)
 			if err != nil {
 				return nil, err
 			}
-			out.Names = append(out.Names, child.(*dst.Ident))
+			out.Names = append(out.Names, child.(*dst.Def))
 		}
 
 		// Node: Type
@@ -772,11 +772,11 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 
 		// Node: Name
 		if n.Name != nil {
-			child, err := f.decorateNode(n, "Ident", n.Name)
+			child, err := f.decorateNode(n, "Def", n.Name)
 			if err != nil {
 				return nil, err
 			}
-			out.Name = child.(*dst.Ident)
+			out.Name = child.(*dst.Def)
 		}
 
 		// List: Decls
@@ -908,11 +908,11 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 
 		// Node: Name
 		if n.Name != nil {
-			child, err := f.decorateNode(n, "Ident", n.Name)
+			child, err := f.decorateNode(n, "Def", n.Name)
 			if err != nil {
 				return nil, err
 			}
-			out.Name = child.(*dst.Ident)
+			out.Name = child.(*dst.Def)
 		}
 
 		// Node: Params
@@ -1126,7 +1126,17 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 
 		return out, nil
 	case *ast.Ident:
-		out := &dst.Ident{}
+
+		// Special case for *ast.Ident - replace with Ref if needed
+		ref, err := f.decorateIdent(parent, typ, n)
+		if err != nil {
+			return nil, err
+		}
+		if ref != nil {
+			return ref, nil
+		}
+
+		out := &dst.Def{}
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
 
@@ -1142,13 +1152,6 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 			return nil, err
 		}
 		out.Obj = ob
-
-		// Path: Path
-		path, err := f.resolvePath(parent, typ, n)
-		if err != nil {
-			return nil, err
-		}
-		out.Path = path
 
 		if nd, ok := f.decorations[n]; ok {
 			if decs, ok := nd["Start"]; ok {
@@ -1240,11 +1243,11 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 
 		// Node: Name
 		if n.Name != nil {
-			child, err := f.decorateNode(n, "Ident", n.Name)
+			child, err := f.decorateNode(n, "Def", n.Name)
 			if err != nil {
 				return nil, err
 			}
-			out.Name = child.(*dst.Ident)
+			out.Name = child.(*dst.Def)
 		}
 
 		// Node: Path
@@ -1440,11 +1443,11 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 
 		// Node: Label
 		if n.Label != nil {
-			child, err := f.decorateNode(n, "Ident", n.Label)
+			child, err := f.decorateNode(n, "Def", n.Label)
 			if err != nil {
 				return nil, err
 			}
-			out.Label = child.(*dst.Ident)
+			out.Label = child.(*dst.Def)
 		}
 
 		// Token: Colon
@@ -1738,6 +1741,16 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 
 		return out, nil
 	case *ast.SelectorExpr:
+
+		// Special case for *ast.SelectorExpr - replace with Ref if needed
+		ref, err := f.decorateSelectorExpr(parent, typ, n)
+		if err != nil {
+			return nil, err
+		}
+		if ref != nil {
+			return ref, nil
+		}
+
 		out := &dst.SelectorExpr{}
 		f.Dst.Nodes[n] = out
 		f.Ast.Nodes[out] = n
@@ -1758,11 +1771,11 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 
 		// Node: Sel
 		if n.Sel != nil {
-			child, err := f.decorateNode(n, "Ident", n.Sel)
+			child, err := f.decorateNode(n, "Ref", n.Sel)
 			if err != nil {
 				return nil, err
 			}
-			out.Sel = child.(*dst.Ident)
+			out.Sel = child.(*dst.Ref)
 		}
 
 		if nd, ok := f.decorations[n]; ok {
@@ -2088,11 +2101,11 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 
 		// Node: Name
 		if n.Name != nil {
-			child, err := f.decorateNode(n, "Ident", n.Name)
+			child, err := f.decorateNode(n, "Def", n.Name)
 			if err != nil {
 				return nil, err
 			}
-			out.Name = child.(*dst.Ident)
+			out.Name = child.(*dst.Def)
 		}
 
 		// Token: Assign
@@ -2219,11 +2232,11 @@ func (f *fileDecorator) decorateNode(parent ast.Node, typ string, n ast.Node) (d
 
 		// List: Names
 		for _, v := range n.Names {
-			child, err := f.decorateNode(n, "Ident", v)
+			child, err := f.decorateNode(n, "Def", v)
 			if err != nil {
 				return nil, err
 			}
-			out.Names = append(out.Names, child.(*dst.Ident))
+			out.Names = append(out.Names, child.(*dst.Def))
 		}
 
 		// Node: Type

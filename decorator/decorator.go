@@ -30,7 +30,7 @@ func NewWithImports(pkg *packages.Package) *Decorator {
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
 		Fset:      pkg.Fset,
-		Resolver: &gotypes.IdentResolver{
+		Resolver: &gotypes.RefResolver{
 			Path: pkg.PkgPath,
 			Info: pkg.TypesInfo,
 		},
@@ -42,11 +42,11 @@ type Decorator struct {
 	Filenames map[*dst.File]string // Source file names
 	Fset      *token.FileSet
 
-	// If a Resolver is provided, it is used to resolve Ident nodes. During decoration, remote
-	// identifiers (e.g. usually part of a qualified identifier SelectorExpr, but sometimes on
-	// their own for dot-imported packages) are updated with the path of the package they are
-	// imported from.
-	Resolver resolver.IdentResolver
+	// If a Resolver is provided, it is used to resolve remote references from *ast.SelectorExpr
+	// and *ast.Ident nodes. Usually a remote reference is a qualified identifier *ast.SelectorExpr,
+	// but in the case of dot-imports they can be simply *ast.Ident. During decoration, remote
+	// references are replaced with *dst.Ref with Path set to the path of imported package.
+	Resolver resolver.RefResolver
 }
 
 // Parse uses parser.ParseFile to parse and decorate a Go source file. The src parameter should
@@ -161,30 +161,171 @@ type decorationInfo struct {
 	decs []string
 }
 
-func (f *fileDecorator) resolvePath(parent ast.Node, typ string, id *ast.Ident) (string, error) {
+func (f *fileDecorator) decorateIdent(parent ast.Node, typ string, n *ast.Ident) (dst.Node, error) {
+
+	if typ == "Def" {
+		// continue to default logic in decorateNode
+		return nil, nil
+	}
+
+	if typ != "Ref" && typ != "Expr" {
+		panic(fmt.Sprintf("decorateIdent: unsupported typ %s", typ))
+	}
+
+	// replace with *dst.Ref
+	out := &dst.Ref{}
+	f.Dst.Nodes[n] = out
+	f.Ast.Nodes[out] = n
+
+	out.Decs.Before = f.before[n]
+	out.Decs.After = f.after[n]
+
+	// String: Name
+	out.Name = n.Name
+
+	// Object: Obj
+	ob, err := f.decorateObject(n.Obj)
+	if err != nil {
+		return nil, err
+	}
+	out.Obj = ob
+
+	// Path: Path
+	if f.Resolver != nil {
+		_, path, err := f.resolvePath(parent, typ, n)
+		if err != nil {
+			return nil, err
+		}
+		out.Path = path
+	}
+
+	if nd, ok := f.decorations[n]; ok {
+		if decs, ok := nd["Start"]; ok {
+			out.Decs.Start = decs
+		}
+		if decs, ok := nd["X"]; ok {
+			out.Decs.Start.Append(decs...)
+		}
+		if decs, ok := nd["End"]; ok {
+			out.Decs.End = decs
+		}
+	}
+
+	return out, nil
+
+}
+
+func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, typ string, n *ast.SelectorExpr) (dst.Node, error) {
+
+	var path string
+	if f.Resolver != nil {
+		_, p, err := f.resolvePath(n, "Ref", n.Sel)
+		if err != nil {
+			return nil, err
+		}
+		path = p
+	}
+
+	if path == "" {
+		// continue to default logic in decorateNode
+		return nil, nil
+	}
+
+	// replace with *dst.Ref and merge decorations
+	out := &dst.Ref{}
+	f.Dst.Nodes[n] = out
+	f.Dst.Nodes[n.X] = out
+	f.Dst.Nodes[n.Sel] = out
+	f.Ast.Nodes[out] = n
+
+	out.Decs.Before = mergeLineSpace(f.before[n], f.before[n.Sel], f.before[n.X])
+	out.Decs.After = mergeLineSpace(f.after[n], f.after[n.Sel], f.after[n.X])
+
+	// String: Name
+	out.Name = n.Sel.Name
+
+	// Object: Obj
+	ob, err := f.decorateObject(n.Sel.Obj)
+	if err != nil {
+		return nil, err
+	}
+	out.Obj = ob
+
+	// Path: Path
+	out.Path = path
+
+	nd, nok := f.decorations[n]
+	xd, xok := f.decorations[n.X]
+	sd, sok := f.decorations[n.Sel]
+
+	if nok {
+		if decs, ok := nd["Start"]; ok {
+			out.Decs.Start.Append(decs...)
+		}
+	}
+
+	if xok {
+		if decs, ok := xd["Start"]; ok {
+			out.Decs.Start.Append(decs...)
+		}
+		if decs, ok := xd["End"]; ok {
+			out.Decs.X.Append(decs...)
+		}
+	}
+
+	if nok {
+		if decs, ok := nd["X"]; ok {
+			out.Decs.X.Append(decs...)
+		}
+	}
+
+	if sok {
+		if decs, ok := sd["Start"]; ok {
+			out.Decs.X.Append(decs...)
+		}
+		if decs, ok := sd["End"]; ok {
+			out.Decs.End.Append(decs...)
+		}
+	}
+
+	if nok {
+		if decs, ok := nd["End"]; ok {
+			out.Decs.End.Append(decs...)
+		}
+	}
+
+	return out, nil
+
+}
+
+func (f *fileDecorator) resolvePath(parent ast.Node, typ string, id *ast.Ident) (bool, string, error) {
 
 	if f.Resolver == nil {
-		return "", nil
+		panic("resolvePath needs a Resolver")
 	}
 
-	// The parent field type (typ) for all idents is either "Ident" or "Expr".
-	//
-	// If the parent field type is Ident, there is no possibility of this field holding a
-	// SelectorExpr, so this ident cannot possibly be a qualified identifier. We avoid resolving
-	// the Path for these idents.
-	//
-	// Inside SelectorExpr is a special case where the logic is reversed. We avoid setting Path for
-	// X (Expr) but set it for Sel (Ident).
-	if _, sel := parent.(*ast.SelectorExpr); (typ == "Ident" && !sel) || (typ == "Expr" && sel) {
-		return "", nil
+	_, sel := parent.(*ast.SelectorExpr)
+	_, branch := parent.(*ast.BranchStmt)
+
+	switch {
+	case branch && typ == "Ref":
+		// BranchStmt.Label is *Ref but always local, so no need to resolve
+		return false, "", nil
+	case sel && typ == "Expr":
+		// SelectorExpr.X is Expr but no need to resolve
+		return false, "", nil
+	case sel && typ == "Ref", typ == "Expr":
+		// continue to resolve package
+	default:
+		panic(fmt.Sprintf("resolvePath: unexpected parent = %T, typ = %s", parent, typ))
 	}
 
-	path, err := f.Resolver.ResolveIdent(f.file, parent, id)
+	local, path, err := f.Resolver.ResolveIdent(f.file, parent, id)
 	if err != nil {
-		return "", err
+		return false, "", err
 	}
 
-	return path, nil
+	return local, path, nil
 }
 
 func stripVendor(path string) string {
@@ -360,4 +501,20 @@ func debug(w io.Writer, file dst.Node) {
 		return true
 	})
 	fmt.Fprint(w, result)
+}
+
+func mergeLineSpace(spaces ...dst.SpaceType) dst.SpaceType {
+	var hasNewLine bool
+	for _, v := range spaces {
+		switch v {
+		case dst.EmptyLine:
+			return dst.EmptyLine
+		case dst.NewLine:
+			hasNewLine = true
+		}
+	}
+	if hasNewLine {
+		return dst.NewLine
+	}
+	return dst.None
 }

@@ -504,6 +504,28 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		r.applySpace(n.Decs.After)
 
 		return out
+	case *dst.Def:
+		out := &ast.Ident{}
+		r.Ast.Nodes[n] = out
+		r.Dst.Nodes[out] = n
+		r.applySpace(n.Decs.Before)
+
+		// Decoration: Start
+		r.applyDecorations(out, n.Decs.Start, false)
+
+		// String: Name
+		out.NamePos = r.cursor
+		out.Name = n.Name
+		r.cursor += token.Pos(len(n.Name))
+
+		// Decoration: End
+		r.applyDecorations(out, n.Decs.End, true)
+
+		// Object: Obj
+		out.Obj = r.restoreObject(n.Obj)
+		r.applySpace(n.Decs.After)
+
+		return out
 	case *dst.DeferStmt:
 		out := &ast.DeferStmt{}
 		r.Ast.Nodes[n] = out
@@ -967,28 +989,6 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 		r.applySpace(n.Decs.After)
 
 		return out
-	case *dst.Ident:
-		out := &ast.Ident{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
-		r.applySpace(n.Decs.Before)
-
-		// Decoration: Start
-		r.applyDecorations(out, n.Decs.Start, false)
-
-		// String: Name
-		out.NamePos = r.cursor
-		out.Name = n.Name
-		r.cursor += token.Pos(len(n.Name))
-
-		// Decoration: End
-		r.applyDecorations(out, n.Decs.End, true)
-
-		// Object: Obj
-		out.Obj = r.restoreObject(n.Obj)
-		r.applySpace(n.Decs.After)
-
-		return out
 	case *dst.IfStmt:
 		out := &ast.IfStmt{}
 		r.Ast.Nodes[n] = out
@@ -1398,6 +1398,38 @@ func (r *FileRestorer) restoreNode(n dst.Node, allowDuplicate bool) ast.Node {
 
 		// Decoration: End
 		r.applyDecorations(out, n.Decs.End, true)
+		r.applySpace(n.Decs.After)
+
+		return out
+	case *dst.Ref:
+
+		// Special case for *dst.Ref - replace with SelectorExpr if needed
+		sel := r.restoreRef(n, allowDuplicate)
+		if sel != nil {
+			return sel
+		}
+
+		out := &ast.Ident{}
+		r.Ast.Nodes[n] = out
+		r.Dst.Nodes[out] = n
+		r.applySpace(n.Decs.Before)
+
+		// Decoration: Start
+		r.applyDecorations(out, n.Decs.Start, false)
+
+		// Decoration: X
+		r.applyDecorations(out, n.Decs.X, false)
+
+		// String: Name
+		out.NamePos = r.cursor
+		out.Name = n.Name
+		r.cursor += token.Pos(len(n.Name))
+
+		// Decoration: End
+		r.applyDecorations(out, n.Decs.End, true)
+
+		// Object: Obj
+		out.Obj = r.restoreObject(n.Obj)
 		r.applySpace(n.Decs.After)
 
 		return out

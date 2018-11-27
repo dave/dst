@@ -216,8 +216,11 @@ func (a *application) apply(parent dst.Node, name string, iter *iterator, n dst.
 	case *dst.FieldList:
 		a.applyList(n, "List")
 
+	case *dst.Def:
+		// nothing to do
+
 	// Expressions
-	case *dst.BadExpr, *dst.Ident, *dst.BasicLit:
+	case *dst.BadExpr, *dst.Ref, *dst.BasicLit:
 		// nothing to do
 
 	case *dst.Ellipsis:

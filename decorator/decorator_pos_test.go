@@ -11,6 +11,8 @@ import (
 	"testing"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator/resolver/goast"
+	"github.com/dave/dst/decorator/resolver/guess"
 	"golang.org/x/tools/go/loader"
 )
 
@@ -31,7 +33,10 @@ func TestPositions(t *testing.T) {
 		}
 	}
 
-	file, err := Decorate(prog.Fset, astFile)
+	dec := New(prog.Fset)
+	dec.Resolver = &goast.RefResolver{PackageResolver: &guess.PackageResolver{}}
+
+	file, err := dec.DecorateFile(astFile)
 	if err != nil {
 		t.Fatal(err)
 	}
