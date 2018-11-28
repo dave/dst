@@ -288,10 +288,14 @@ The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience fun
 
 ```go
 // Create a simple module in a temporary directory
-dir, _ := ioutil.TempDir("", "")
+dir, err := createTempFiles(map[string]string{
+	"go.mod":	"module root",
+	"main.go":	"package main \n\n func main() {}",
+})
 defer os.RemoveAll(dir)
-ioutil.WriteFile(filepath.Join(dir, "go.mod"), []byte("module root"), 0666)
-ioutil.WriteFile(filepath.Join(dir, "main.go"), []byte("package main \n\n func main() {}"), 0666)
+if err != nil {
+	panic(err)
+}
 
 // Use the Load convenience function that calls go/packages to load the package. All loaded
 // ast files are decorated to dst.
