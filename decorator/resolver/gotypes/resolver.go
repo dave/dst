@@ -6,13 +6,17 @@ import (
 	"go/types"
 )
 
+func New(uses map[*ast.Ident]types.Object) *IdentResolver {
+	return &IdentResolver{Uses: uses}
+}
+
 type IdentResolver struct {
-	Info *types.Info // Types info - must include Uses
+	Uses map[*ast.Ident]types.Object // Types info - must include Uses
 }
 
 func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
 
-	if r.Info == nil || r.Info.Uses == nil {
+	if r.Uses == nil {
 		return "", errors.New("gotypes.IdentResolver needs Uses in types info")
 	}
 
@@ -23,7 +27,7 @@ func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Id
 		if !ok {
 			return "", nil // x is not an ident -> not a qualified identifier
 		}
-		obj, ok := r.Info.Uses[xid]
+		obj, ok := r.Uses[xid]
 		if !ok {
 			return "", nil // not found in uses -> not a qualified identifier
 		}
@@ -34,7 +38,7 @@ func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Id
 		return pn.Imported().Path(), nil
 	}
 
-	obj, ok := r.Info.Uses[id]
+	obj, ok := r.Uses[id]
 	if !ok {
 		return "", nil // not found in uses -> not a remote identifier
 	}

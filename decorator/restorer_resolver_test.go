@@ -13,6 +13,7 @@ import (
 
 	"github.com/andreyvit/diff"
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator/resolver/gopackages"
 	"github.com/dave/dst/dstutil/dummy"
 	"golang.org/x/tools/go/packages"
 )
@@ -1079,7 +1080,7 @@ func TestRestorerResolver(t *testing.T) {
 					t.Fatal("errors loading package")
 				}
 
-				d := NewWithImports(pkg)
+				d := NewDecoratorFromPackage(pkg)
 
 				var file *dst.File
 				for _, sf := range pkg.Syntax {
@@ -1097,14 +1098,14 @@ func TestRestorerResolver(t *testing.T) {
 					c.mutate(file)
 				}
 
-				r := NewRestorerWithImports(mainPkg, mainDir)
-				fr := r.FileRestorer("main.go", file)
+				r := NewRestorerWithImports(mainPkg, gopackages.New(mainDir))
+				fr := r.FileRestorer()
 
 				if c.restorer != nil {
 					c.restorer(fr)
 				}
 
-				restoredFile, err := fr.Restore()
+				restoredFile, err := fr.RestoreFile(file)
 				if err != nil {
 					t.Fatal(err)
 				}

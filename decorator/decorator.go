@@ -15,8 +15,8 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// New returns a new decorator
-func New(fset *token.FileSet) *Decorator {
+// NewDecorator returns a new decorator.
+func NewDecorator(fset *token.FileSet) *Decorator {
 	return &Decorator{
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
@@ -24,16 +24,25 @@ func New(fset *token.FileSet) *Decorator {
 	}
 }
 
-// NewWithImports returns a new package decorator with import management attributes set.
-func NewWithImports(pkg *packages.Package) *Decorator {
+// NewDecoratorWithImports returns a new decorator with import management enabled.
+func NewDecoratorWithImports(fset *token.FileSet, path string, resolver resolver.IdentResolver) *Decorator {
+	return &Decorator{
+		Map:       newMap(),
+		Filenames: map[*dst.File]string{},
+		Fset:      fset,
+		Path:      path,
+		Resolver:  resolver,
+	}
+}
+
+// NewDecoratorFromPackage returns a new decorator configured to decorate files in pkg.
+func NewDecoratorFromPackage(pkg *packages.Package) *Decorator {
 	return &Decorator{
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
 		Fset:      pkg.Fset,
 		Path:      pkg.PkgPath,
-		Resolver: &gotypes.IdentResolver{
-			Info: pkg.TypesInfo,
-		},
+		Resolver:  gotypes.New(pkg.TypesInfo.Uses),
 	}
 }
 

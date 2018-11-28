@@ -6,7 +6,6 @@ import (
 
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
-	"github.com/dave/dst/decorator/resolver/guess"
 )
 
 func TestGoAstIdentResolver(t *testing.T) {
@@ -67,11 +66,7 @@ func TestGoAstIdentResolver(t *testing.T) {
 				t.Skip()
 			}
 
-			d := decorator.New(token.NewFileSet())
-			d.Path = "main"
-			d.Resolver = &IdentResolver{
-				PackageResolver: &guess.PackageResolver{},
-			}
+			d := decorator.NewDecoratorWithImports(token.NewFileSet(), "main", New())
 
 			f, err := d.Parse(test.src)
 			if err != nil {

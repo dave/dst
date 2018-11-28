@@ -654,7 +654,7 @@ const d = 1
 				t.Fatal(err)
 			}
 
-			restoredFset, restoredFile, err := Restore(file)
+			restoredFset, restoredFile, err := RestoreFile(file)
 			if err != nil {
 				t.Fatal(err)
 			}

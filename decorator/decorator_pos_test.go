@@ -33,7 +33,7 @@ func TestPositions(t *testing.T) {
 		}
 	}
 
-	dec := New(prog.Fset)
+	dec := NewDecorator(prog.Fset)
 	dec.Path = path
 	dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
 

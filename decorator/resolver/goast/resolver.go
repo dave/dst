@@ -1,7 +1,6 @@
 package goast
 
 import (
-	"errors"
 	"fmt"
 	"go/ast"
 	"go/token"
@@ -9,7 +8,16 @@ import (
 	"sync"
 
 	"github.com/dave/dst/decorator/resolver"
+	"github.com/dave/dst/decorator/resolver/guess"
 )
+
+func New() *IdentResolver {
+	return &IdentResolver{}
+}
+
+func WithResolver(resolver resolver.PackageResolver) *IdentResolver {
+	return &IdentResolver{PackageResolver: resolver}
+}
 
 // IdentResolver is a simple ident resolver that parses the imports block of the file and resolves
 // qualified identifiers using resolved package names. It is not possible to resolve identifiers in
@@ -25,7 +33,7 @@ type IdentResolver struct {
 func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
 
 	if r.PackageResolver == nil {
-		return "", errors.New("goast.IdentResolver should have PackageResolver set")
+		r.PackageResolver = guess.New()
 	}
 
 	imports, err := r.imports(file)

@@ -6,6 +6,14 @@ import (
 	"github.com/dave/dst/decorator/resolver"
 )
 
+func New(dir string) *PackageResolver {
+	return &PackageResolver{Dir: dir}
+}
+
+func WithContext(dir string, context *build.Context) *PackageResolver {
+	return &PackageResolver{Dir: dir, Context: context}
+}
+
 type PackageResolver struct {
 	// FindPackage is called during Load to create the build.Package for a given import path from a
 	// given directory. If FindPackage is nil, (*build.Context).Import is used. A client may use

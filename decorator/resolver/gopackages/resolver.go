@@ -7,9 +7,17 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+func New(dir string) *PackageResolver {
+	return &PackageResolver{Dir: dir}
+}
+
+func WithConfig(dir string, config packages.Config) *PackageResolver {
+	return &PackageResolver{Config: config, Dir: dir}
+}
+
 type PackageResolver struct {
-	Config packages.Config
 	Dir    string
+	Config packages.Config
 }
 
 func (r *PackageResolver) ResolvePackage(path string) (string, error) {

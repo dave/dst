@@ -12,11 +12,11 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/dave/dst/decorator/resolver/goast"
-	"github.com/dave/dst/decorator/resolver/guess"
-
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
+	"github.com/dave/dst/decorator/resolver/goast"
+	"github.com/dave/dst/decorator/resolver/gopackages"
+	"github.com/dave/dst/decorator/resolver/guess"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -30,20 +30,16 @@ func ExampleAlias() {
 			fmt.Println("a")
 		}`
 
-	dec := decorator.New(token.NewFileSet())
-	dec.Path = "main"
-	dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
+	dec := decorator.NewDecoratorWithImports(token.NewFileSet(), "main", goast.New())
 
 	f, err := dec.Parse(code)
 	if err != nil {
 		panic(err)
 	}
 
-	res := decorator.NewRestorer()
-	res.Path = "main"
-	res.Resolver = &guess.PackageResolver{}
+	res := decorator.NewRestorerWithImports("main", guess.New())
 
-	fr := res.FileRestorer("", f)
+	fr := res.FileRestorer()
 	fr.Alias["fmt"] = "fmt1"
 
 	if err := fr.Print(f); err != nil {
@@ -71,9 +67,7 @@ func ExampleManualImports() {
 			fmt.Println("a")
 		}`
 
-	dec := decorator.New(token.NewFileSet())
-	dec.Path = "main"
-	dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
+	dec := decorator.NewDecoratorWithImports(token.NewFileSet(), "main", goast.New())
 
 	f, err := dec.Parse(code)
 	if err != nil {
@@ -86,9 +80,7 @@ func ExampleManualImports() {
 		},
 	}
 
-	res := decorator.NewRestorer()
-	res.Path = "main"
-	res.Resolver = &guess.PackageResolver{}
+	res := decorator.NewRestorerWithImports("main", guess.New())
 	if err := res.Print(f); err != nil {
 		panic(err)
 	}
@@ -142,7 +134,7 @@ func ExampleImports() {
 
 	// Create a restorer with the import manager enabled, and print the result. As you can see, the
 	// import block is automatically managed, and the Println ident is converted to a SelectorExpr:
-	r := decorator.NewRestorerWithImports("root", dir)
+	r := decorator.NewRestorerWithImports("root", gopackages.New(dir))
 	if err := r.Print(p.Files[0]); err != nil {
 		panic(err)
 	}
@@ -211,7 +203,7 @@ func ExampleTypes() {
 	}
 
 	// Create a new decorator, which will track the mapping between ast and dst nodes
-	dec := decorator.New(fset)
+	dec := decorator.NewDecorator(fset)
 
 	// Decorate the *ast.File to give us a *dst.File
 	f, err := dec.DecorateFile(astFile)

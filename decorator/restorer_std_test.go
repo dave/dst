@@ -78,7 +78,7 @@ func testPackageRestoresCorrectly(t *testing.T, path string) {
 				t.Fatal(err)
 			}
 
-			restoredFset, restoredFile, err := Restore(dstFile)
+			restoredFset, restoredFile, err := RestoreFile(dstFile)
 			if err != nil {
 				t.Fatal(err)
 			}

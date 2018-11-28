@@ -153,9 +153,7 @@ func TestIdentResolver(t *testing.T) {
 			}
 			pkg := pkgs[0]
 
-			res := &gotypes.IdentResolver{
-				Info: pkg.TypesInfo,
-			}
+			res := gotypes.New(pkg.TypesInfo.Uses)
 
 			parents := map[string]ast.Node{}
 			nodes := map[string]*ast.Ident{}

@@ -42,7 +42,7 @@ markers. When adding a line comment, a newline is automatically rendered.
 
 {{ "ExampleComment" | example }}
 
-### Line spacing
+### Spacing
 
 The `Before` property marks the node as having a line space (new line or empty line) before the node. 
 These spaces are rendered before any decorations attached to the `Start` decoration point. The `After`
@@ -50,14 +50,14 @@ property is similar but rendered after the node (and after any `End` decorations
 
 {{ "ExampleSpace" | example }}
 
-### Common properties
+### Decorations
 
 The common decoration properties (`Start`, `End`, `Before` and `After`) occur on all nodes, and can be 
 accessed with the `Decorations()` method on the `Node` interface:
 
 {{ "ExampleDecorated" | example }}
 
-### Newlines as decorations
+### Newlines
 
 The `Before` and `After` properties cover the majority of cases, but occasionally a newline needs to 
 be rendered inside a node. Simply add a `\n` decoration to accomplish this. 
@@ -69,7 +69,7 @@ use the `Clone` function to make a deep copy of the node before re-use:
 
 {{ "ExampleClone" | example }}
 
-### Apply function from astutil
+### Apply
 
 The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package is a fork of `golang.org/x/tools/go/ast/astutil`, 
 and provides the `Apply` function with similar semantics.     
@@ -78,41 +78,46 @@ and provides the `Apply` function with similar semantics.
 
 The decorator can automatically manage the `import` block, which is a non-trivial task.
 
-Use [NewWithImports](https://godoc.org/github.com/dave/dst/decorator#NewWithImports) and 
-[NewRestorerWithImports](https://godoc.org/github.com/dave/dst/decorator#NewRestorerWithImports) to 
-create an import aware decorator / restorer with default settings.
+Use [NewDecoratorWithImports](https://godoc.org/github.com/dave/dst/decorator#NewDecoratorWithImports) 
+and [NewRestorerWithImports](https://godoc.org/github.com/dave/dst/decorator#NewRestorerWithImports) 
+to create an import aware decorator / restorer. 
 
-During decoration, remote identifiers are normalised: `*ast.SelectorExpr` qualified identifiers are 
-replaced with `*dst.Ident` with the `Path` field set to the path of the imported package. 
+During decoration, remote identifiers are normalised - `*ast.SelectorExpr` nodes that represent 
+qualified identifiers are replaced with `*dst.Ident` nodes with the `Path` field set to the path of 
+the imported package. 
 
-When adding a qualified identifier node, there is no need to use `SelectorExpr` - just add an 
-`Ident` and set `Path` to the imported package path. The restorer will wrap it in a `SelectorExpr` 
-where appropriate when converting back to ast, and also update the import block.
+When adding a qualified identifier node, there is no need to use `*dst.SelectorExpr` - just add a 
+`*dst.Ident` and set `Path` to the imported package path. The restorer will wrap it in a 
+`*ast.SelectorExpr` where appropriate when converting back to ast, and also update the import 
+block.
+
+To enable import management, the decorator must be able to resolve the imported package for 
+selector expressions and identifiers, and the restorer must be able to resolve the name of a 
+package given it's path. Several implementations for these resolvers are provided, and the best 
+method will depend on the environment. [See below](#resolvers) for more details.
+
+### Load
 
 The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience function uses 
-`go/packages` to load packages and decorate all loaded ast files:
+`go/packages` to load packages and decorate all loaded ast files, with import management enabled:
 
 {{ "ExampleImports" | example }}
 
-The default resolvers that enable import management may not be suitable for all environments. If 
-more control is needed, custom resolvers can be used for both the `Decorator` and `Restorer`. More 
-details and several alternative implementations can be found [below](#managing-imports).
-
-### Node mappings
+### Mappings
 
 The decorator exposes `Dst.Nodes` and `Ast.Nodes` which map between `ast.Node` and `dst.Node`. This 
 enables systems that refer to `ast` nodes (such as `go/types`) to be used:
 
 {{ "ExampleTypes" | example }}
 
-## Managing imports
+## Resolvers
 
 Managing the imports block is non-trivial. There are two separate interfaces defined by the 
 [resolver package](https://github.com/dave/dst/tree/master/decorator/resolver) which allow the 
 decorator and restorer to automatically manage the imports block.
 
 The decorator uses an `IdentResolver` which resolves the package path of any `*ast.Ident`. This is 
-complicated by dot-import syntax ([see below](#why-is-resolving-identifiers-hard)).
+complicated by dot-import syntax ([see below](#dot-imports)).
 
 The restorer uses a `PackageResolver` which resolves the name of any package given the path. This 
 is complicated by vendoring and Go modules.
@@ -123,35 +128,36 @@ package path.
 Several implementations of both interfaces that are suitable for different environments are 
 provided:
 
-### IdentResolver implementations
+### IdentResolver implementations for Decorator
 
 #### gotypes.IdentResolver
 
-This is the default implementation, and provides full compatibility with dot-imports. However this 
-requires full export data for all imported packages, so a `go/types.Info` is required. There are 
+This implementation provides full compatibility with dot-imports. However it requires full export 
+data for all imported packages, so the `Uses` map from `go/types.Info` is required. There are 
 many ways of loading ast and generating `go/types.Info`. Using `golang.org/x/tools/go/packages.Load` 
 is recommended for full modules compatibility. See the [decorator.Load](https://godoc.org/github.com/dave/dst/decorator#Load)
 convenience function to automate this.
 
 #### goast.IdentResolver
 
-This is a simplified implementation that only scans a single ast file. This is unable to resolve 
-dot-import idents, so will panic if a dot-import is encountered in the import block. It uses the 
-provided `PackageResolver` to resolve the names of all imported packages.
+This is a simplified implementation that only needs to scan a single ast file. This is unable to 
+resolve identifiers from dot-imported packages, so will panic if a dot-import is encountered in the 
+import block. It uses the provided `PackageResolver` to resolve the names of all imported packages. 
+If no `PackageResolver` is provided, `guess.PackageResolver` is used. 
 
-### PackageResolver implementations
+### PackageResolver implementations for Restorer
 
 #### gopackages.PackageResolver
 
-This is the default implementation, and provides full compatibility with modules. It uses 
-`golang.org/x/tools/go/packages` to load the package data. This may be very slow if the package is 
-inside a module that hasn't been loaded before. 
+This implementation provides full compatibility with Go modules. It uses `golang.org/x/tools/go/packages` 
+to load the package data. This may be very slow, and uses the `go` command line tool to query 
+package data, so may not be compatible with some environments. 
 
 #### gobuild.PackageResolver
 
-This is an alternative implementation that uses the legacy `go/build` package to load the imported 
-package data. This may be needed in some circumstances and provides better performance. This will
-ignore modules and just searches the system's `GOPATH`.
+This is an alternative implementation that uses the legacy `go/build` system to load the imported 
+package data. This may be needed in some circumstances and provides better performance than 
+`go/packages`. However, this is not Go modules aware.
 
 #### guess.PackageResolver and simple.PackageResolver
 
@@ -161,22 +167,22 @@ map. `guess.PackageResolver` guesses the package name based on the last part of 
 
 ### Example
 
-Here's an example of manually supplying alternative resolvers for the decorator and resolver:
+Here's an example of supplying resolvers for the decorator and resolver:
 
 {{ "ExampleManualImports" | example }}
 
-### Alias control
+### Alias
 
 To control the alias of imports, use a `FileRestorer`:
 
 {{ "ExampleAlias" | example }} 
 
-### More import management details
+### Details
 
 For more information on exactly how the imports block is managed, read through the [test 
 cases](https://github.com/dave/dst/blob/master/decorator/restorer_resolver_test.go).
 
-### Why is resolving identifiers hard?
+### Dot-imports
 
 Consider this file...
 

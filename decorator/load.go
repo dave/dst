@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator/resolver/gopackages"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -42,7 +43,7 @@ func Load(cfg *packages.Config, patterns ...string) ([]*Package, error) {
 				goFiles[fpath] = true
 			}
 
-			p.Decorator = NewWithImports(pkg)
+			p.Decorator = NewDecoratorFromPackage(pkg)
 			for _, f := range pkg.Syntax {
 				fpath := pkg.Fset.File(f.Pos()).Name()
 				if !goFiles[fpath] {
@@ -77,7 +78,7 @@ func (p *Package) Save() error {
 }
 
 func (p *Package) save(writeFile func(filename string, data []byte, perm os.FileMode) error) error {
-	r := NewRestorerWithImports(p.PkgPath, p.Dir)
+	r := NewRestorerWithImports(p.PkgPath, gopackages.New(p.Dir))
 	for _, file := range p.Files {
 		buf := &bytes.Buffer{}
 		if err := r.Fprint(buf, file); err != nil {

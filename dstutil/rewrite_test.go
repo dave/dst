@@ -223,7 +223,7 @@ func TestRewrite(t *testing.T) {
 					t.Fatal(err)
 				}
 				dstFile = dstutil.Apply(dstFile, test.pre, test.post).(*dst.File)
-				restoredFset, restoredFile, err := decorator.Restore(dstFile)
+				restoredFset, restoredFile, err := decorator.RestoreFile(dstFile)
 				if err != nil {
 					t.Fatal(err)
 				}

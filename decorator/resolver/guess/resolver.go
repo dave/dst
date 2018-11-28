@@ -2,6 +2,14 @@ package guess
 
 import "strings"
 
+func New() PackageResolver {
+	return PackageResolver{}
+}
+
+func WithMap(m map[string]string) PackageResolver {
+	return PackageResolver(m)
+}
+
 // PackageResolver is a map of package path -> package name. Names are resolved from this map, and
 // if a name doesn't exist in the map, the package name is guessed from the last part of the path
 // (after the last slash).

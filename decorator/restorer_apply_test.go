@@ -132,7 +132,7 @@ var j /*b*/ int`,
 				file = dstutil.Apply(file, test.pre, test.post).(*dst.File)
 			}
 
-			restoredFset, restoredFile, err := Restore(file)
+			restoredFset, restoredFile, err := RestoreFile(file)
 			if err != nil {
 				t.Fatal(err)
 			}

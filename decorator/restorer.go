@@ -13,7 +13,6 @@ import (
 
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator/resolver"
-	"github.com/dave/dst/decorator/resolver/gopackages"
 )
 
 // NewRestorer returns a restorer.
@@ -25,14 +24,12 @@ func NewRestorer() *Restorer {
 }
 
 // NewRestorerWithImports returns a restorer with import management attributes set.
-func NewRestorerWithImports(path, dir string) *Restorer {
+func NewRestorerWithImports(path string, resolver resolver.PackageResolver) *Restorer {
 	return &Restorer{
-		Map:  newMap(),
-		Fset: token.NewFileSet(),
-		Path: path,
-		Resolver: &gopackages.PackageResolver{
-			Dir: dir,
-		},
+		Map:      newMap(),
+		Fset:     token.NewFileSet(),
+		Path:     path,
+		Resolver: resolver,
 	}
 }
 
@@ -56,7 +53,7 @@ func (pr *Restorer) Print(f *dst.File) error {
 
 // Fprint uses format.Node to print a *dst.File to a writer
 func (pr *Restorer) Fprint(w io.Writer, f *dst.File) error {
-	af, err := pr.RestoreFile("", f)
+	af, err := pr.RestoreFile(f)
 	if err != nil {
 		return err
 	}
@@ -64,27 +61,21 @@ func (pr *Restorer) Fprint(w io.Writer, f *dst.File) error {
 }
 
 // RestoreFile restores a *dst.File to an *ast.File
-func (pr *Restorer) RestoreFile(name string, file *dst.File) (*ast.File, error) {
-	return pr.FileRestorer(name, file).Restore()
+func (pr *Restorer) RestoreFile(file *dst.File) (*ast.File, error) {
+	return pr.FileRestorer().RestoreFile(file)
 }
 
-func (pr *Restorer) FileRestorer(name string, file *dst.File) *FileRestorer {
+func (pr *Restorer) FileRestorer() *FileRestorer {
 	return &FileRestorer{
-		Restorer:     pr,
-		Alias:        map[string]string{},
-		name:         name,
-		file:         file,
-		lines:        []int{0}, // initialise with the first line at Pos 0
-		nodeDecl:     map[*ast.Object]dst.Node{},
-		nodeData:     map[*ast.Object]dst.Node{},
-		packageNames: map[string]string{},
+		Restorer: pr,
+		Alias:    map[string]string{},
 	}
 }
 
 type FileRestorer struct {
 	*Restorer
-	Alias           map[string]string // map of package path -> package alias for imports
-	name            string
+	Alias           map[string]string // Map of package path -> package alias for imports
+	Name            string            // The name of the restored file in the FileSet. Can usually be left empty.
 	file            *dst.File
 	lines           []int
 	comments        []*ast.CommentGroup
@@ -97,56 +88,63 @@ type FileRestorer struct {
 }
 
 // Print uses format.Node to print a *dst.File to stdout
-func (fr *FileRestorer) Print(f *dst.File) error {
-	return fr.Fprint(os.Stdout, f)
+func (r *FileRestorer) Print(f *dst.File) error {
+	return r.Fprint(os.Stdout, f)
 }
 
 // Fprint uses format.Node to print a *dst.File to a writer
-func (fr *FileRestorer) Fprint(w io.Writer, f *dst.File) error {
-	af, err := fr.Restore()
+func (r *FileRestorer) Fprint(w io.Writer, f *dst.File) error {
+	af, err := r.RestoreFile(f)
 	if err != nil {
 		return err
 	}
-	return format.Node(w, fr.Fset, af)
+	return format.Node(w, r.Fset, af)
 }
 
-// RestoreFile should not be used on FileRestorer - use Restore instead
-func (fr *FileRestorer) RestoreFile(name string, file *dst.File) (*ast.File, error) {
-	panic("RestoreFile should not be called on FileRestorer - use Restore instead")
-}
+// RestoreFile restores a *dst.File to *ast.File
+func (r *FileRestorer) RestoreFile(file *dst.File) (*ast.File, error) {
 
-func (fr *FileRestorer) Restore() (*ast.File, error) {
-
-	if fr.Resolver == nil && fr.Path != "" {
+	if r.Resolver == nil && r.Path != "" {
 		panic("Restorer Path should be empty when Resolver is nil")
 	}
 
-	if fr.Resolver != nil && fr.Path == "" {
+	if r.Resolver != nil && r.Path == "" {
 		panic("Restorer Path should be set when Resolver is set")
 	}
 
-	if fr.Fset == nil {
-		fr.Fset = token.NewFileSet()
+	if r.Fset == nil {
+		r.Fset = token.NewFileSet()
 	}
 
-	fr.base = fr.Fset.Base() // base is the pos that the file will start at in the fset
-	fr.cursor = token.Pos(fr.base)
+	// reset the FileRestorer, but leave Name and the Alias map unchanged
 
-	if err := fr.updateImports(); err != nil {
+	r.file = file
+	r.lines = []int{0} // initialise with the first line at Pos 0
+	r.nodeDecl = map[*ast.Object]dst.Node{}
+	r.nodeData = map[*ast.Object]dst.Node{}
+	r.packageNames = map[string]string{}
+	r.comments = []*ast.CommentGroup{}
+	r.cursorAtNewLine = 0
+	r.packageNames = map[string]string{}
+
+	r.base = r.Fset.Base() // base is the pos that the file will start at in the fset
+	r.cursor = token.Pos(r.base)
+
+	if err := r.updateImports(); err != nil {
 		return nil, err
 	}
 
 	// restore the file, populate comments and lines
-	f := fr.restoreNode(fr.file, "", "", "", false).(*ast.File)
+	f := r.restoreNode(r.file, "", "", "", false).(*ast.File)
 
-	for _, cg := range fr.comments {
+	for _, cg := range r.comments {
 		f.Comments = append(f.Comments, cg)
 	}
 
-	size := fr.fileSize()
+	size := r.fileSize()
 
-	ff := fr.Fset.AddFile(fr.name, fr.base, size)
-	if !ff.SetLines(fr.lines) {
+	ff := r.Fset.AddFile(r.Name, r.base, size)
+	if !ff.SetLines(r.lines) {
 		panic("ff.SetLines failed")
 	}
 
@@ -154,19 +152,19 @@ func (fr *FileRestorer) Restore() (*ast.File, error) {
 	// never occurs in the actual code). These shouldn't have position information but perhaps it
 	// doesn't matter?
 	// TODO: Disable all position information on these nodes?
-	for o, dn := range fr.nodeDecl {
-		o.Decl = fr.restoreNode(dn, "", "", "", true)
+	for o, dn := range r.nodeDecl {
+		o.Decl = r.restoreNode(dn, "", "", "", true)
 	}
-	for o, dn := range fr.nodeData {
-		o.Data = fr.restoreNode(dn, "", "", "", true)
+	for o, dn := range r.nodeData {
+		o.Data = r.restoreNode(dn, "", "", "", true)
 	}
 
 	return f, nil
 }
 
-func (fr *FileRestorer) updateImports() error {
+func (r *FileRestorer) updateImports() error {
 
-	if fr.Resolver == nil {
+	if r.Resolver == nil {
 		return nil
 	}
 
@@ -183,13 +181,13 @@ func (fr *FileRestorer) updateImports() error {
 	all := map[string]bool{}
 	var allOrdered []string
 
-	dst.Inspect(fr.file, func(n dst.Node) bool {
+	dst.Inspect(r.file, func(n dst.Node) bool {
 		switch n := n.(type) {
 		case *dst.Ident:
 			if n.Path == "" {
 				return true
 			}
-			if n.Path == fr.Path {
+			if n.Path == r.Path {
 				return true
 			}
 			if _, ok := packages[n.Path]; !ok {
@@ -224,7 +222,7 @@ func (fr *FileRestorer) updateImports() error {
 	resolved := map[string]string{}
 
 	for path := range packages {
-		name, err := fr.Resolver.ResolvePackage(path)
+		name, err := r.Resolver.ResolvePackage(path)
 		if err != nil {
 			return err
 		}
@@ -234,7 +232,7 @@ func (fr *FileRestorer) updateImports() error {
 	// make a list of packages we should remove from the import block(s)
 	deletions := map[string]bool{}
 	for path, alias := range imports {
-		if alias == "_" || path == "C" || fr.Alias[path] == "_" {
+		if alias == "_" || path == "C" || r.Alias[path] == "_" {
 			// never remove anonymous imports, or the "C" import
 			if !all[path] {
 				all[path] = true
@@ -264,7 +262,7 @@ func (fr *FileRestorer) updateImports() error {
 	}
 
 	// any anonymous imports manually added with FileRestorer.Alias should be added too
-	for path, alias := range fr.Alias {
+	for path, alias := range r.Alias {
 		if alias == "_" && !all[path] {
 			additions[path] = true
 			all[path] = true
@@ -275,11 +273,11 @@ func (fr *FileRestorer) updateImports() error {
 	sort.Slice(allOrdered, func(i, j int) bool { return packagePathOrderLess(allOrdered[i], allOrdered[j]) })
 
 	// work out the actual aliases for all packages (and rename conflicts)
-	aliases := map[string]string{}        // alias in the package block
-	fr.packageNames = map[string]string{} // name in the code
+	aliases := map[string]string{}       // alias in the package block
+	r.packageNames = map[string]string{} // name in the code
 
 	conflict := func(name string) bool {
-		for _, n := range fr.packageNames {
+		for _, n := range r.packageNames {
 			if name == n {
 				return true
 			}
@@ -320,10 +318,10 @@ func (fr *FileRestorer) updateImports() error {
 		}
 
 		// if we set the alias to "_" but the package is still in use, we should ignore the alias
-		ignoreAlias := fr.Alias[path] == "_" && packages[path]
+		ignoreAlias := r.Alias[path] == "_" && packages[path]
 
 		var alias string
-		if a, ok := fr.Alias[path]; ok && !ignoreAlias {
+		if a, ok := r.Alias[path]; ok && !ignoreAlias {
 			// If we have provided a custom alias, use this
 			alias = a
 		} else if a, ok := imports[path]; ok {
@@ -334,21 +332,21 @@ func (fr *FileRestorer) updateImports() error {
 		if alias == "." {
 			// no conflict checking for dot-imports
 			aliases[path] = "."
-			fr.packageNames[path] = ""
+			r.packageNames[path] = ""
 			continue
 		}
 		if alias == "_" {
 			if unanon[path] {
 				// for anonymous imports that we are converting to regular imports...
-				fr.packageNames[path], aliases[path] = findAlias(path, "")
+				r.packageNames[path], aliases[path] = findAlias(path, "")
 			} else {
 				// no conflict checking for anonymous imports
 				aliases[path] = "_"
-				fr.packageNames[path] = ""
+				r.packageNames[path] = ""
 			}
 			continue
 		}
-		fr.packageNames[path], aliases[path] = findAlias(path, alias)
+		r.packageNames[path], aliases[path] = findAlias(path, alias)
 	}
 
 	// convert any anonymous imports to regular imports
@@ -401,9 +399,9 @@ func (fr *FileRestorer) updateImports() error {
 			}
 			if hasCgoBlock {
 				// special case for if we have the "C" import
-				fr.file.Decls = append([]dst.Decl{fr.file.Decls[0], gd}, fr.file.Decls[1:]...)
+				r.file.Decls = append([]dst.Decl{r.file.Decls[0], gd}, r.file.Decls[1:]...)
 			} else {
-				fr.file.Decls = append([]dst.Decl{gd}, fr.file.Decls...)
+				r.file.Decls = append([]dst.Decl{gd}, r.file.Decls...)
 			}
 			blocks = append(blocks, gd)
 		}
@@ -488,14 +486,14 @@ func (fr *FileRestorer) updateImports() error {
 	}
 
 	if len(deleteBlocks) > 0 {
-		decls := make([]dst.Decl, 0, len(fr.file.Decls))
-		for _, decl := range fr.file.Decls {
+		decls := make([]dst.Decl, 0, len(r.file.Decls))
+		for _, decl := range r.file.Decls {
 			if deleteBlocks[decl] {
 				continue
 			}
 			decls = append(decls, decl)
 		}
-		fr.file.Decls = decls
+		r.file.Decls = decls
 	}
 
 	return nil
@@ -566,42 +564,42 @@ func packagePathOrderLess(pi, pj string) bool {
 	return pi < pj
 }
 
-func (f *FileRestorer) fileSize() int {
+func (r *FileRestorer) fileSize() int {
 
 	// If a comment is at the end of a file, it will extend past the current cursor position...
 
-	end := int(f.cursor) // end pos of file
+	end := int(r.cursor) // end pos of file
 
 	// check that none of the comments or newlines extend past the file end position. If so, increment.
-	for _, cg := range f.comments {
+	for _, cg := range r.comments {
 		if int(cg.End()) >= end {
 			end = int(cg.End()) + 1
 		}
 	}
-	for _, lineOffset := range f.lines {
-		pos := lineOffset + f.base // remember lines are relative to the file base
+	for _, lineOffset := range r.lines {
+		pos := lineOffset + r.base // remember lines are relative to the file base
 		if pos >= end {
 			end = pos + 1
 		}
 	}
 
-	return end - f.base
+	return end - r.base
 }
 
-func (f *FileRestorer) applyLiteral(text string) {
+func (r *FileRestorer) applyLiteral(text string) {
 	isMultiLine := strings.HasPrefix(text, "`") && strings.Contains(text, "\n")
 	if !isMultiLine {
 		return
 	}
 	for charIndex, char := range text {
 		if char == '\n' {
-			lineOffset := int(f.cursor) - f.base + charIndex // remember lines are relative to the file base
-			f.lines = append(f.lines, lineOffset)
+			lineOffset := int(r.cursor) - r.base + charIndex // remember lines are relative to the file base
+			r.lines = append(r.lines, lineOffset)
 		}
 	}
 }
 
-func (f *FileRestorer) hasCommentField(n ast.Node) bool {
+func (r *FileRestorer) hasCommentField(n ast.Node) bool {
 	switch n.(type) {
 	case *ast.Field, *ast.ValueSpec, *ast.TypeSpec, *ast.ImportSpec:
 		return true
@@ -609,37 +607,37 @@ func (f *FileRestorer) hasCommentField(n ast.Node) bool {
 	return false
 }
 
-func (f *FileRestorer) addCommentField(n ast.Node, slash token.Pos, text string) {
+func (r *FileRestorer) addCommentField(n ast.Node, slash token.Pos, text string) {
 	c := &ast.Comment{Slash: slash, Text: text}
 	switch n := n.(type) {
 	case *ast.Field:
 		if n.Comment == nil {
 			n.Comment = &ast.CommentGroup{}
-			f.comments = append(f.comments, n.Comment)
+			r.comments = append(r.comments, n.Comment)
 		}
 		n.Comment.List = append(n.Comment.List, c)
 	case *ast.ImportSpec:
 		if n.Comment == nil {
 			n.Comment = &ast.CommentGroup{}
-			f.comments = append(f.comments, n.Comment)
+			r.comments = append(r.comments, n.Comment)
 		}
 		n.Comment.List = append(n.Comment.List, c)
 	case *ast.ValueSpec:
 		if n.Comment == nil {
 			n.Comment = &ast.CommentGroup{}
-			f.comments = append(f.comments, n.Comment)
+			r.comments = append(r.comments, n.Comment)
 		}
 		n.Comment.List = append(n.Comment.List, c)
 	case *ast.TypeSpec:
 		if n.Comment == nil {
 			n.Comment = &ast.CommentGroup{}
-			f.comments = append(f.comments, n.Comment)
+			r.comments = append(r.comments, n.Comment)
 		}
 		n.Comment.List = append(n.Comment.List, c)
 	}
 }
 
-func (f *FileRestorer) applyDecorations(node ast.Node, decorations dst.Decorations, end bool) {
+func (r *FileRestorer) applyDecorations(node ast.Node, decorations dst.Decorations, end bool) {
 	firstLine := true
 	for _, d := range decorations {
 
@@ -649,39 +647,39 @@ func (f *FileRestorer) applyDecorations(node ast.Node, decorations dst.Decoratio
 		isComment := isLineComment || isInlineComment
 		isMultiLineComment := isInlineComment && strings.Contains(d, "\n")
 
-		if end && f.cursorAtNewLine == f.cursor {
-			f.cursor++ // indent all comments in "End" decorations
+		if end && r.cursorAtNewLine == r.cursor {
+			r.cursor++ // indent all comments in "End" decorations
 		}
 
 		// for multi-line comments, add a newline for each \n
 		if isMultiLineComment {
 			for charIndex, char := range d {
 				if char == '\n' {
-					lineOffset := int(f.cursor) - f.base + charIndex // remember lines are relative to the file base
-					f.lines = append(f.lines, lineOffset)
+					lineOffset := int(r.cursor) - r.base + charIndex // remember lines are relative to the file base
+					r.lines = append(r.lines, lineOffset)
 				}
 			}
 		}
 
 		// if the decoration is a comment, add it and advance the cursor
 		if isComment {
-			if firstLine && end && f.hasCommentField(node) {
+			if firstLine && end && r.hasCommentField(node) {
 				// for comments on the same line as the end of a node that has a Comment field, we
 				// add the comment to the node instead of the file.
-				f.addCommentField(node, f.cursor, d)
+				r.addCommentField(node, r.cursor, d)
 			} else {
-				f.comments = append(f.comments, &ast.CommentGroup{List: []*ast.Comment{{Slash: f.cursor, Text: d}}})
+				r.comments = append(r.comments, &ast.CommentGroup{List: []*ast.Comment{{Slash: r.cursor, Text: d}}})
 			}
-			f.cursor += token.Pos(len(d))
+			r.cursor += token.Pos(len(d))
 		}
 
 		// for newline decorations and also line-comments, add a newline
 		if isLineComment || isNewline {
-			lineOffset := int(f.cursor) - f.base // remember lines are relative to the file base
-			f.lines = append(f.lines, lineOffset)
-			f.cursor++
+			lineOffset := int(r.cursor) - r.base // remember lines are relative to the file base
+			r.lines = append(r.lines, lineOffset)
+			r.cursor++
 
-			f.cursorAtNewLine = f.cursor
+			r.cursorAtNewLine = r.cursor
 		}
 
 		if isNewline || isLineComment {
@@ -690,7 +688,7 @@ func (f *FileRestorer) applyDecorations(node ast.Node, decorations dst.Decoratio
 	}
 }
 
-func (f *FileRestorer) applySpace(space dst.SpaceType) {
+func (r *FileRestorer) applySpace(space dst.SpaceType) {
 	var newlines int
 	switch space {
 	case dst.NewLine:
@@ -698,19 +696,19 @@ func (f *FileRestorer) applySpace(space dst.SpaceType) {
 	case dst.EmptyLine:
 		newlines = 2
 	}
-	if f.cursor == f.cursorAtNewLine {
+	if r.cursor == r.cursorAtNewLine {
 		newlines--
 	}
 	for i := 0; i < newlines; i++ {
 
 		// Advance the cursor one more byte for all newlines, so we step over any required
 		// separator char - e.g. comma. See net-hook test
-		f.cursor++
+		r.cursor++
 
-		lineOffset := int(f.cursor) - f.base // remember lines are relative to the file base
-		f.lines = append(f.lines, lineOffset)
-		f.cursor++
-		f.cursorAtNewLine = f.cursor
+		lineOffset := int(r.cursor) - r.base // remember lines are relative to the file base
+		r.lines = append(r.lines, lineOffset)
+		r.cursor++
+		r.cursorAtNewLine = r.cursor
 	}
 }
 
