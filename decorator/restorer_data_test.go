@@ -1,9 +1,7 @@
 package decorator
 
-import (
-	"testing"
-)
+import "testing"
 
-func TestLoad(t *testing.T) {
+func TestData(t *testing.T) {
 	testPackageRestoresCorrectlyWithImports(t, "github.com/dave/dst/gendst/data")
 }

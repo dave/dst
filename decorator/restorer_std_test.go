@@ -2,24 +2,22 @@ package decorator
 
 import (
 	"bytes"
-	"testing"
-
-	"path/filepath"
-
 	"fmt"
 	"go/build"
 	"go/format"
-	"go/parser"
+	"io/ioutil"
 	"os/exec"
+	"path/filepath"
 	"strings"
+	"testing"
 
-	"golang.org/x/tools/go/loader"
+	"github.com/dave/dst/decorator/resolver/gobuild"
 )
 
-func TestStdLibAll(t *testing.T) {
+func TestLoadStdLibAll(t *testing.T) {
 
 	if testing.Short() {
-		t.Skip("skipping standard library test in short mode.")
+		t.Skip("skipping standard library load test in short mode.")
 	}
 
 	cmd := exec.Command("go", "list", "./...")
@@ -34,63 +32,49 @@ func TestStdLibAll(t *testing.T) {
 	}
 	all := strings.Split(strings.TrimSpace(string(b)), "\n")
 
-	ignore := map[string]bool{
-		"builtin": true,
-	}
+	testPackageRestoresCorrectlyWithImports(t, all...)
 
-	for _, pkgPath := range all {
-
-		if ignore[pkgPath] {
-			continue
-		}
-
-		t.Run(pkgPath, func(t *testing.T) {
-			testPackageRestoresCorrectly(t, pkgPath)
-		})
-
-	}
 }
 
-func testPackageRestoresCorrectly(t *testing.T, path string) {
+func testPackageRestoresCorrectlyWithImports(t *testing.T, path ...string) {
 	t.Helper()
-	conf := loader.Config{
-		ParserMode: parser.ParseComments,
-	}
-	conf.Import(path)
-	prog, err := conf.Load()
+	pkgs, err := Load(nil, path...)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
-	pi := prog.Package(path)
-	for _, astFile := range pi.Files {
+	for _, p := range pkgs {
 
-		_, fname := filepath.Split(prog.Fset.File(astFile.Pos()).Name())
+		t.Run(p.PkgPath, func(t *testing.T) {
 
-		t.Run(fname, func(t *testing.T) {
-			expected := &bytes.Buffer{}
-			if err := format.Node(expected, prog.Fset, astFile); err != nil {
-				t.Fatal(err)
-			}
+			// must use go/build package resolver for standard library because of https://github.com/golang/go/issues/26924
+			r := NewRestorer()
+			r.Path = p.PkgPath
+			r.Resolver = &gobuild.RestorerResolver{Dir: p.Dir}
 
-			dstFile, err := DecorateFile(prog.Fset, astFile)
-			if err != nil {
-				t.Fatal(err)
-			}
+			for _, file := range p.Files {
 
-			restoredFset, restoredFile, err := RestoreFile(dstFile)
-			if err != nil {
-				t.Fatal(err)
-			}
+				fpath := p.Decorator.Filenames[file]
+				_, fname := filepath.Split(fpath)
 
-			output := &bytes.Buffer{}
-			if err := format.Node(output, restoredFset, restoredFile); err != nil {
-				t.Fatal(err)
-			}
+				t.Run(fname, func(t *testing.T) {
+					buf := &bytes.Buffer{}
+					if err := r.Fprint(buf, file); err != nil {
+						t.Fatal(err)
+					}
 
-			if expected.String() != output.String() {
-				t.Errorf("diff:\n%s", diff(expected.String(), output.String()))
+					existing, err := ioutil.ReadFile(fpath)
+					if err != nil {
+						t.Fatal(err)
+					}
+					expect, err := format.Source(existing)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if string(expect) != buf.String() {
+						t.Errorf("diff:\n%s", diff(string(expect), buf.String()))
+					}
+				})
 			}
 		})
-
 	}
 }
