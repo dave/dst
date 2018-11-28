@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/andreyvit/diff"
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator/resolver/gopackages"
 	"github.com/dave/dst/dstutil/dummy"
@@ -1121,8 +1120,7 @@ func TestRestorerResolver(t *testing.T) {
 				}
 
 				if buf.String() != string(expected) {
-					t.Errorf("expected: %s\ngot: %s", string(expected), buf.String())
-					t.Errorf("diff: %s", diff.LineDiff(string(expected), buf.String()))
+					t.Errorf("diff:\n%s", diff(string(expected), buf.String()))
 				}
 
 			})

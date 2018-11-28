@@ -13,7 +13,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/andreyvit/diff"
 	"golang.org/x/tools/go/loader"
 )
 
@@ -89,7 +88,7 @@ func testPackageRestoresCorrectly(t *testing.T, path string) {
 			}
 
 			if expected.String() != output.String() {
-				t.Error(diff.LineDiff(expected.String(), output.String()))
+				t.Errorf("diff:\n%s", diff(expected.String(), output.String()))
 			}
 		})
 

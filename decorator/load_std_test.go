@@ -12,8 +12,6 @@ import (
 	"testing"
 
 	"github.com/dave/dst/decorator/resolver/gobuild"
-
-	"github.com/andreyvit/diff"
 )
 
 func TestLoadStdLibAll(t *testing.T) {
@@ -83,7 +81,7 @@ func testPackageRestoresCorrectlyWithImports(t *testing.T, path string) {
 					t.Fatal(err)
 				}
 				if string(expect) != buf.String() {
-					t.Error(diff.LineDiff(string(expect), buf.String()))
+					t.Errorf("diff:\n%s", diff(string(expect), buf.String()))
 				}
 			})
 		}

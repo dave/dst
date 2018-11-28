@@ -25,12 +25,10 @@ func NewRestorer() *Restorer {
 
 // NewRestorerWithImports returns a restorer with import management attributes set.
 func NewRestorerWithImports(path string, resolver resolver.RestorerResolver) *Restorer {
-	return &Restorer{
-		Map:      newMap(),
-		Fset:     token.NewFileSet(),
-		Path:     path,
-		Resolver: resolver,
-	}
+	res := NewRestorer()
+	res.Path = path
+	res.Resolver = resolver
+	return res
 }
 
 type Restorer struct {

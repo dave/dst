@@ -143,8 +143,7 @@ var j /*b*/ int`,
 			}
 
 			if buf.String() != test.expect {
-				t.Errorf("expected: %s\ngot: %s", test.expect, buf.String())
-				//t.Errorf("diff: %s", diff.LineDiff(test.expect, buf.String()))
+				t.Errorf("diff:\n%s", diff(test.expect, buf.String()))
 			}
 		})
 	}

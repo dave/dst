@@ -2,15 +2,12 @@ package decorator
 
 import (
 	"bytes"
-	"fmt"
 	"go/format"
 	"go/parser"
 	"go/token"
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/andreyvit/diff"
 )
 
 func TestDecorator(t *testing.T) {
@@ -474,9 +471,7 @@ BlockStmt [Lbrace "\n"]`,
 			debug(buf, file)
 
 			if normalize(test.expect) != normalize(buf.String()) {
-				t.Errorf("diff: %s", diff.LineDiff(normalize(test.expect), normalize(buf.String())))
-
-				fmt.Println(buf.String())
+				t.Errorf("diff:\n%s", diff(normalize(test.expect), normalize(buf.String())))
 			}
 
 		})

@@ -7,7 +7,7 @@ import (
 	"go/token"
 	"testing"
 
-	"github.com/andreyvit/diff"
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 func TestFragment(t *testing.T) {
@@ -257,9 +257,13 @@ func TestFragment(t *testing.T) {
 			if test.expect == "" {
 				t.Error(buf.String())
 			} else if normalize(buf.String()) != normalize(test.expect) {
-				t.Errorf("diff: %s", diff.LineDiff(normalize(test.expect), normalize(buf.String())))
-				t.Error(buf.String())
+				t.Errorf("diff:\n%s", diff(normalize(test.expect), normalize(buf.String())))
 			}
 		})
 	}
+}
+
+func diff(expect, found string) string {
+	dmp := diffmatchpatch.New()
+	return dmp.DiffPrettyText(dmp.DiffMain(expect, found, false))
 }

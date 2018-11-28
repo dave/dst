@@ -26,24 +26,15 @@ func NewDecorator(fset *token.FileSet) *Decorator {
 
 // NewDecoratorWithImports returns a new decorator with import management enabled.
 func NewDecoratorWithImports(fset *token.FileSet, path string, resolver resolver.DecoratorResolver) *Decorator {
-	return &Decorator{
-		Map:       newMap(),
-		Filenames: map[*dst.File]string{},
-		Fset:      fset,
-		Path:      path,
-		Resolver:  resolver,
-	}
+	dec := NewDecorator(fset)
+	dec.Path = path
+	dec.Resolver = resolver
+	return dec
 }
 
 // NewDecoratorFromPackage returns a new decorator configured to decorate files in pkg.
 func NewDecoratorFromPackage(pkg *packages.Package) *Decorator {
-	return &Decorator{
-		Map:       newMap(),
-		Filenames: map[*dst.File]string{},
-		Fset:      pkg.Fset,
-		Path:      pkg.PkgPath,
-		Resolver:  gotypes.New(pkg.TypesInfo.Uses),
-	}
+	return NewDecoratorWithImports(pkg.Fset, pkg.PkgPath, gotypes.New(pkg.TypesInfo.Uses))
 }
 
 type Decorator struct {

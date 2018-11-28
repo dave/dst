@@ -17,6 +17,7 @@ import (
 	"github.com/dave/dst/decorator"
 	"github.com/dave/dst/decorator/resolver/goast"
 	"github.com/dave/dst/decorator/resolver/gopackages"
+	"github.com/dave/dst/decorator/resolver/gotypes"
 	"github.com/dave/dst/decorator/resolver/guess"
 	"golang.org/x/tools/go/packages"
 )
@@ -174,6 +175,58 @@ func ExampleImports() {
 	//import "fmt"
 	//
 	//func main() { fmt.Println("Hello, World!") }
+}
+
+func ExampleGoTypesImport() {
+
+	// Create a simple module in a temporary directory
+	dir, err := createTempFiles(map[string]string{
+		"go.mod": "module root",
+		"main.go": `package main
+
+			import . "fmt" 
+
+			func main() {
+				Println("a")
+			}`,
+	})
+	defer os.RemoveAll(dir)
+	if err != nil {
+		panic(err)
+	}
+
+	// Use golang.org/x/tools/go/packages.Load to load the package and parse the syntax
+	pkgs, err := packages.Load(&packages.Config{Dir: dir, Mode: packages.LoadSyntax}, "root")
+	if err != nil {
+		panic(err)
+	}
+	p := pkgs[0]
+
+	// Create a new decorator to decorate files in the package. This could also be done with the
+	// convenience function NewDecoratorFromPackage, but we show the manual method here.
+	dec := decorator.NewDecoratorWithImports(p.Fset, p.PkgPath, gotypes.New(p.TypesInfo.Uses))
+
+	f, err := dec.DecorateFile(p.Syntax[0])
+	if err != nil {
+		panic(err)
+	}
+
+	res := decorator.NewRestorerWithImports("root", gopackages.New(dir))
+	fr := res.FileRestorer()
+	fr.Alias["fmt"] = "" // change the dot-import to a regular import
+
+	if err := fr.Print(f); err != nil {
+		panic(err)
+	}
+
+	//Output:
+	//package main
+	//
+	//import "fmt"
+	//
+	//func main() {
+	//	fmt.Println("a")
+	//}
 }
 
 func ExampleClone() {

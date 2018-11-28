@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"go/format"
 	"testing"
-
-	"github.com/andreyvit/diff"
 )
 
 func TestRestorer(t *testing.T) {
@@ -665,9 +663,7 @@ const d = 1
 			}
 
 			if buf.String() != test.code {
-				//fmt.Println("expected:", test.code)
-				//fmt.Println("found:", buf.String())
-				t.Errorf("diff: %s", diff.LineDiff(test.code, buf.String()))
+				t.Errorf("diff:\n%s", diff(test.code, buf.String()))
 			}
 		})
 	}
