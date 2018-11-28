@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/dave/dst/decorator/dummy"
 	"github.com/dave/dst/decorator/resolver"
 	"github.com/dave/dst/decorator/resolver/gopackages"
-	"github.com/dave/dst/dstutil/dummy"
 )
 
 func TestRestorerResolver(t *testing.T) {
@@ -21,12 +21,16 @@ func TestRestorerResolver(t *testing.T) {
 		{
 			name: "gopackages.Resolver",
 			resolve: func() (end func(), root string, r *gopackages.RestorerResolver) {
-				src := dummy.Dir{
-					"main":   dummy.Dir{"main.go": dummy.Src("package main \n\n func main(){}")},
-					"foo":    dummy.Dir{"foo.go": dummy.Src("package foo \n\n func A(){}")},
-					"go.mod": dummy.Src("module root"),
+				src := map[string]string{
+					"main/main.go": "package main \n\n func main(){}",
+					"foo/foo.go":   "package foo \n\n func A(){}",
+					"go.mod":       "module root",
 				}
-				root = dummy.TempDir(src)
+				var err error
+				root, err = dummy.TempDir(src)
+				if err != nil {
+					t.Fatal(err)
+				}
 				end = func() { os.RemoveAll(root) }
 				r = &gopackages.RestorerResolver{}
 				return

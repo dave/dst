@@ -11,10 +11,42 @@ import (
 	"gopkg.in/src-d/go-billy.v4/memfs"
 )
 
-func BuildContext(src Item) (bc *build.Context) {
+func BuildContext(m map[string]string) (*build.Context, error) {
+
+	goroot := "/goroot/"
+	gopath := "/gopath/"
+	dir := filepath.Join(gopath, "src")
 
 	fs := memfs.New()
-	src.create("/gopath/", "src", fs)
+	if err := fs.MkdirAll(dir, 0777); err != nil {
+		return nil, err
+	}
+
+	for fpathrel, src := range m {
+		if strings.HasSuffix(fpathrel, "/") {
+			// just a dir
+			if err := fs.MkdirAll(filepath.Join(dir, fpathrel), 0777); err != nil {
+				return nil, err
+			}
+		} else {
+			fpath := filepath.Join(dir, fpathrel)
+			fdir, _ := filepath.Split(fpath)
+			if err := fs.MkdirAll(fdir, 0777); err != nil {
+				return nil, err
+			}
+			f, err := fs.Create(fpath)
+			if err != nil {
+				return nil, err
+			}
+			if _, err := io.Copy(f, strings.NewReader(src)); err != nil {
+				_ = f.Close()
+				return nil, err
+			}
+			if err := f.Close(); err != nil {
+				return nil, err
+			}
+		}
+	}
 
 	// This is from build.hasSubdir - which reports if dir is within root by performing
 	// lexical analysis only.
@@ -31,10 +63,15 @@ func BuildContext(src Item) (bc *build.Context) {
 		return filepath.ToSlash(dir[len(root):]), true
 	}
 
-	goroot := "/goroot/"
-	gopath := "/gopath/"
+	convertGoroot := func(fpath string) (string, error) {
+		rel, err := filepath.Rel(goroot, fpath)
+		if err != nil {
+			return "", err
+		}
+		return filepath.Join(build.Default.GOROOT, rel), nil
+	}
 
-	bc = &build.Context{
+	bc := &build.Context{
 		GOARCH:        build.Default.GOARCH,
 		GOOS:          build.Default.GOOS,
 		GOROOT:        goroot,
@@ -68,7 +105,8 @@ func BuildContext(src Item) (bc *build.Context) {
 		// If IsDir is nil, Import calls os.Stat and uses the result's IsDir method.
 		IsDir: func(name string) bool {
 			if _, ok := hasSubDir(goroot, name); ok {
-				fi, err := os.Stat(name)
+				converted, _ := convertGoroot(name)
+				fi, err := os.Stat(converted)
 				return err == nil && fi.IsDir()
 			}
 			info, err := fs.Lstat(name)
@@ -92,7 +130,11 @@ func BuildContext(src Item) (bc *build.Context) {
 		// If ReadDir is nil, Import uses ioutil.ReadDir.
 		ReadDir: func(name string) (fi []os.FileInfo, err error) {
 			if _, ok := hasSubDir(goroot, name); ok {
-				return ioutil.ReadDir(name)
+				converted, err := convertGoroot(name)
+				if err != nil {
+					return nil, err
+				}
+				return ioutil.ReadDir(converted)
 			}
 			return fs.ReadDir(name)
 		},
@@ -101,10 +143,14 @@ func BuildContext(src Item) (bc *build.Context) {
 		// If OpenFile is nil, Import uses os.Open.
 		OpenFile: func(path string) (io.ReadCloser, error) {
 			if _, ok := hasSubDir(goroot, path); ok {
-				return os.Open(path)
+				converted, err := convertGoroot(path)
+				if err != nil {
+					return nil, err
+				}
+				return os.Open(converted)
 			}
 			return fs.Open(path)
 		},
 	}
-	return bc
+	return bc, nil
 }

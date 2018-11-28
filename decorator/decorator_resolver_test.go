@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/dave/dst"
-	"github.com/dave/dst/dstutil/dummy"
+	"github.com/dave/dst/decorator/dummy"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -18,31 +18,28 @@ func TestDecoratorResolver(t *testing.T) {
 	tests := []struct {
 		skip, solo bool
 		name       string
-		src        dummy.Dir
+		src        map[string]string
 		cases      []tc
 	}{
 		{
 			name: "simple",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import (
-							"root/a"
-							. "root/b"
-						)
+					import (
+						"root/a"
+						. "root/b"
+					)
 
-						func main(){
-							a.A()
-							B()
-							C()
-						}
-					`),
-					"c.go": dummy.Src("package main\n\nfunc C(){}"),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"go.mod": dummy.Src("module root"),
+					func main(){
+						a.A()
+						B()
+						C()
+					}`,
+				"main/c.go": "package main \n\n func C(){}",
+				"a/a.go":    "package a \n\n func A(){}",
+				"b/b.go":    "package b \n\n func B(){}",
+				"go.mod":    "module root",
 			},
 			cases: []tc{
 				{
@@ -83,7 +80,10 @@ func TestDecoratorResolver(t *testing.T) {
 				t.Skip()
 			}
 
-			root := dummy.TempDir(test.src)
+			root, err := dummy.TempDir(test.src)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			pkgs, err := packages.Load(
 				&packages.Config{

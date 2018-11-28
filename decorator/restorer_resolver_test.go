@@ -12,8 +12,8 @@ import (
 	"testing"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator/dummy"
 	"github.com/dave/dst/decorator/resolver/gopackages"
-	"github.com/dave/dst/dstutil/dummy"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -28,27 +28,22 @@ func TestRestorerResolver(t *testing.T) {
 	tests := []struct {
 		name  string
 		root  string // root package path - default "root"
-		src   dummy.Dir
+		src   map[string]string
 		cases []tc
 	}{
 		{
 			name: "simple",
 			root: "a.b",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main 
 
-						func main(){}
-					`),
-				},
-				"a": dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b": dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"fmt": dummy.Dir{
-					"a": dummy.Dir{"fmt.go": dummy.Src("package fmt \n\n func A(){}")},
-					"b": dummy.Dir{"fmt.go": dummy.Src("package fmt \n\n func B(){}")},
-					"c": dummy.Dir{"fmt.go": dummy.Src("package fmt \n\n func C(){}")},
-				},
-				"go.mod": dummy.Src("module a.b"),
+					func main(){}`,
+				"a/a.go":       "package a \n\n func A(){}",
+				"b/b.go":       "package b \n\n func B(){}",
+				"fmt/a/fmt.go": "package fmt \n\n func A(){}",
+				"fmt/b/fmt.go": "package fmt \n\n func B(){}",
+				"fmt/c/fmt.go": "package fmt \n\n func C(){}",
+				"go.mod":       "module a.b",
 			},
 			cases: []tc{
 				{
@@ -170,18 +165,15 @@ func TestRestorerResolver(t *testing.T) {
 		{
 			name: "single-existing-import-ab",
 			root: "a.b",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import "a.b/a"
+					import "a.b/a"
 
-						func main() { a.A() }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"go.mod": dummy.Src("module a.b"),
+					func main() { a.A() }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"go.mod": "module a.b",
 			},
 			cases: []tc{
 				{
@@ -249,18 +241,15 @@ func TestRestorerResolver(t *testing.T) {
 		},
 		{
 			name: "single-existing-import",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import "root/a"
+					import "root/a"
 
-						func main() { a.A() }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"go.mod": dummy.Src("module root"),
+					func main() { a.A() }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"go.mod": "module root",
 			},
 			cases: []tc{
 				{
@@ -350,18 +339,15 @@ func TestRestorerResolver(t *testing.T) {
 
 		{
 			name: "existing-anon",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import _ "root/a"
+					import _ "root/a"
 
-						func main() { }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"go.mod": dummy.Src("module root"),
+					func main() { }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"go.mod": "module root",
 			},
 			cases: []tc{
 				{
@@ -437,29 +423,25 @@ func TestRestorerResolver(t *testing.T) {
 				},
 			},
 		},
-
 		{
 			name: "block-not-rearranged",
 			root: "a.b",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import (
-							"a.b/a"
-							"a.b/b"
-							"a.b/c"
-							"fmt"
-						)
+					import (
+						"a.b/a"
+						"a.b/b"
+						"a.b/c"
+						"fmt"
+					)
 
-						func main() { a.A(); b.B(); c.C(); fmt.Print() }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"c":      dummy.Dir{"c.go": dummy.Src("package c \n\n func C(){}")},
-				"d":      dummy.Dir{"d.go": dummy.Src("package d \n\n func D(){}")},
-				"go.mod": dummy.Src("module a.b"),
+					func main() { a.A(); b.B(); c.C(); fmt.Print() }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"c/c.go": "package c \n\n func C(){}",
+				"d/d.go": "package d \n\n func D(){}",
+				"go.mod": "module a.b",
 			},
 			cases: []tc{
 				{
@@ -505,27 +487,24 @@ func TestRestorerResolver(t *testing.T) {
 		{
 			name: "two-blocks-not-arranged",
 			root: "a.b",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import (
-							"a.b/a"
-							"fmt"
-						)
+					import (
+						"a.b/a"
+						"fmt"
+					)
 
-						import (
-							"a.b/b"
-							"io"
-						)
+					import (
+						"a.b/b"
+						"io"
+					)
 
-						func main() { a.A(); b.B(); io.Copy(nil, nil); fmt.Print() }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"c":      dummy.Dir{"c.go": dummy.Src("package c \n\n func C(){}")},
-				"go.mod": dummy.Src("module a.b"),
+					func main() { a.A(); b.B(); io.Copy(nil, nil); fmt.Print() }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"c/c.go": "package c \n\n func C(){}",
+				"go.mod": "module a.b",
 			},
 			cases: []tc{
 				{
@@ -553,24 +532,20 @@ func TestRestorerResolver(t *testing.T) {
 				},
 			},
 		},
-
 		{
 			name: "two-existing",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import (
-							"root/a"
-							"root/b"
-						)
+					import (
+						"root/a"
+						"root/b"
+					)
 
-						func main() { a.A(); b.B() }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"go.mod": dummy.Src("module root"),
+					func main() { a.A(); b.B() }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"go.mod": "module root",
 			},
 			cases: []tc{
 				{
@@ -588,34 +563,30 @@ func TestRestorerResolver(t *testing.T) {
 				},
 			},
 		},
-
 		{
 			name: "two-blocks",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						// first-import-block
-						import (
-							"root/a"
-							"root/b"
-						)
+					// first-import-block
+					import (
+						"root/a"
+						"root/b"
+					)
 
-						// second-import-block
-						import (
-							"root/c"
-							"root/d"
-						)
+					// second-import-block
+					import (
+						"root/c"
+						"root/d"
+					)
 
-						func main() { a.A(); b.B(); c.C(); d.D(); }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"c":      dummy.Dir{"c.go": dummy.Src("package c \n\n func C(){}")},
-				"d":      dummy.Dir{"d.go": dummy.Src("package d \n\n func D(){}")},
-				"e":      dummy.Dir{"e.go": dummy.Src("package e \n\n func E(){}")},
-				"go.mod": dummy.Src("module root"),
+					func main() { a.A(); b.B(); c.C(); d.D(); }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"c/c.go": "package c \n\n func C(){}",
+				"d/d.go": "package d \n\n func D(){}",
+				"e/e.go": "package e \n\n func E(){}",
+				"go.mod": "module root",
 			},
 			cases: []tc{
 				{
@@ -681,26 +652,23 @@ func TestRestorerResolver(t *testing.T) {
 		{
 			name: "first-block-decorated",
 			root: "a.b",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import (
-							// before c
-							"a.b/c" // after c
-							// before a
-							"a.b/a" // after a
-							// before fmt
-							"fmt" // after fmt
-						)
+					import (
+						// before c
+						"a.b/c" // after c
+						// before a
+						"a.b/a" // after a
+						// before fmt
+						"fmt" // after fmt
+					)
 
-						func main() { a.A(); c.C(); fmt.Print() }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"c":      dummy.Dir{"c.go": dummy.Src("package c \n\n func C(){}")},
-				"go.mod": dummy.Src("module a.b"),
+					func main() { a.A(); c.C(); fmt.Print() }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"c/c.go": "package c \n\n func C(){}",
+				"go.mod": "module a.b",
 			},
 			cases: []tc{
 				{
@@ -730,26 +698,23 @@ func TestRestorerResolver(t *testing.T) {
 		{
 			name: "first-block-spacing",
 			root: "foo.bar",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import (
+					import (
 
-							"foo.bar/a"
+						"foo.bar/a"
 
-							"fmt"
+						"fmt"
 							
-							"bytes"
+						"bytes"
 
-						)
+					)
 
-						func main() { a.A(); fmt.Print(); bytes.Title([]byte{}); }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"go.mod": dummy.Src("module foo.bar"),
+					func main() { a.A(); fmt.Print(); bytes.Title([]byte{}); }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"go.mod": "module foo.bar",
 			},
 			cases: []tc{
 				{
@@ -797,18 +762,15 @@ func TestRestorerResolver(t *testing.T) {
 		},
 		{
 			name: "existing-alias",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import a1 "root/a"
+					import a1 "root/a"
 
-						func main() { a1.A() }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"go.mod": dummy.Src("module root"),
+					func main() { a1.A() }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"go.mod": "module root",
 			},
 			cases: []tc{
 				{
@@ -843,18 +805,15 @@ func TestRestorerResolver(t *testing.T) {
 		},
 		{
 			name: "existing-alias-package-name",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import a "root/a"
+					import a "root/a"
 
-						func main() { a.A() }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"go.mod": dummy.Src("module root"),
+					func main() { a.A() }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"go.mod": "module root",
 			},
 			cases: []tc{
 				{
@@ -877,28 +836,25 @@ func TestRestorerResolver(t *testing.T) {
 		},
 		{
 			name: "two-blocks-with-alias",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import (
-							aa "root/a"
-							bb "root/b"
-						)
+					import (
+						aa "root/a"
+						bb "root/b"
+					)
 
-						import (
-							cc "root/c"
-							dd "root/d"
-						)
+					import (
+						cc "root/c"
+						dd "root/d"
+					)
 
-						func main() { aa.A(); bb.B(); cc.C(); dd.D(); }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"c":      dummy.Dir{"c.go": dummy.Src("package c \n\n func C(){}")},
-				"d":      dummy.Dir{"d.go": dummy.Src("package d \n\n func D(){}")},
-				"go.mod": dummy.Src("module root"),
+					func main() { aa.A(); bb.B(); cc.C(); dd.D(); }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"c/c.go": "package c \n\n func C(){}",
+				"d/d.go": "package d \n\n func D(){}",
+				"go.mod": "module root",
 			},
 			cases: []tc{
 				{
@@ -926,23 +882,20 @@ func TestRestorerResolver(t *testing.T) {
 		},
 		{
 			name: "dot-imports",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import (
-							. "root/a"
-							"root/b"
-							cc "root/c"
-						)
+					import (
+						. "root/a"
+						"root/b"
+						cc "root/c"
+					)
 
-						func main() { A(); b.B(); cc.C(); }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"b.go": dummy.Src("package b \n\n func B(){}")},
-				"c":      dummy.Dir{"c.go": dummy.Src("package c \n\n func C(){}")},
-				"go.mod": dummy.Src("module root"),
+					func main() { A(); b.B(); cc.C(); }`,
+				"a/a.go": "package a \n\n func A(){}",
+				"b/b.go": "package b \n\n func B(){}",
+				"c/c.go": "package c \n\n func C(){}",
+				"go.mod": "module root",
 			},
 			cases: []tc{
 				{
@@ -1003,20 +956,17 @@ func TestRestorerResolver(t *testing.T) {
 		},
 		{
 			name: "conflict",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import (
-							"root/a"
-						)
+					import (
+						"root/a"
+					)
 
-						func main() { a.A(); }
-					`),
-				},
-				"a":      dummy.Dir{"a.go": dummy.Src("package a \n\n func A(){}")},
-				"b":      dummy.Dir{"a": dummy.Dir{"a.go": dummy.Src("package a \n\n func AA(){}")}},
-				"go.mod": dummy.Src("module root"),
+					func main() { a.A(); }`,
+				"a/a.go":   "package a \n\n func A(){}",
+				"b/a/a.go": "package a \n\n func AA(){}",
+				"go.mod":   "module root",
 			},
 			cases: []tc{
 				{
@@ -1042,18 +992,15 @@ func TestRestorerResolver(t *testing.T) {
 		},
 		{
 			name: "binary-bug",
-			src: dummy.Dir{
-				"main": dummy.Dir{
-					"main.go": dummy.Src(`package main
+			src: map[string]string{
+				"main/main.go": `package main
 
-						import "encoding/binary"
+					import "encoding/binary"
 
-						func main() {
-							_ = binary.LittleEndian.Uint16(nil)
-						}
-					`),
-				},
-				"go.mod": dummy.Src("module root"),
+					func main() {
+						_ = binary.LittleEndian.Uint16(nil)
+					}`,
+				"go.mod": "module root",
 			},
 			cases: []tc{
 				{
@@ -1092,7 +1039,10 @@ func TestRestorerResolver(t *testing.T) {
 					t.Skip()
 				}
 
-				rootDir := dummy.TempDir(test.src)
+				rootDir, err := dummy.TempDir(test.src)
+				if err != nil {
+					t.Fatal(err)
+				}
 				defer os.RemoveAll(rootDir)
 				mainDir := filepath.Join(rootDir, "main")
 				mainPkg := "root/main"

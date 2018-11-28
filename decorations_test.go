@@ -7,14 +7,12 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
+	"github.com/dave/dst/decorator/dummy"
 	"github.com/dave/dst/decorator/resolver/goast"
 	"github.com/dave/dst/decorator/resolver/gopackages"
 	"github.com/dave/dst/decorator/resolver/gotypes"
@@ -102,34 +100,10 @@ func ExampleManualImports() {
 
 }
 
-func createTempFiles(m map[string]string) (dir string, err error) {
-	if dir, err = ioutil.TempDir("", ""); err != nil {
-		return
-	}
-	for fpathrel, src := range m {
-		if strings.HasSuffix(fpathrel, "/") {
-			// just a dir
-			if err = os.MkdirAll(filepath.Join(dir, fpathrel), 0777); err != nil {
-				return
-			}
-		} else {
-			fpath := filepath.Join(dir, fpathrel)
-			fdir, _ := filepath.Split(fpath)
-			if err = os.MkdirAll(fdir, 0777); err != nil {
-				return
-			}
-			if err = ioutil.WriteFile(fpath, []byte(src), 0666); err != nil {
-				return
-			}
-		}
-	}
-	return
-}
-
 func ExampleImports() {
 
 	// Create a simple module in a temporary directory
-	dir, err := createTempFiles(map[string]string{
+	dir, err := dummy.TempDir(map[string]string{
 		"go.mod":  "module root",
 		"main.go": "package main \n\n func main() {}",
 	})
@@ -180,7 +154,7 @@ func ExampleImports() {
 func ExampleGoTypesImport() {
 
 	// Create a simple module in a temporary directory
-	dir, err := createTempFiles(map[string]string{
+	dir, err := dummy.TempDir(map[string]string{
 		"go.mod": "module root",
 		"main.go": `package main
 

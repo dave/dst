@@ -4,9 +4,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/dave/dst/decorator/dummy"
 	"github.com/dave/dst/decorator/resolver"
 	"github.com/dave/dst/decorator/resolver/gobuild"
-	"github.com/dave/dst/dstutil/dummy"
 )
 
 func TestRestorerResolver(t *testing.T) {
@@ -20,17 +20,17 @@ func TestRestorerResolver(t *testing.T) {
 		{
 			name: "gobuild.Resolver",
 			resolve: func() (end func(), root string, r *gobuild.RestorerResolver) {
-				src := dummy.Dir{
-					"main1": dummy.Dir{
-						"vendor":   dummy.Dir{"a": dummy.Dir{"a.go": dummy.Src("package a1 \n\n func A(){}")}},
-						"main1.go": dummy.Src("package main \n\n func main(){}"),
-					},
-					"main2": dummy.Dir{
-						"main2.go": dummy.Src("package main \n\n func main(){}"),
-					},
-					"a": dummy.Dir{"a.go": dummy.Src("package a2 \n\n func A(){}")},
+				src := map[string]string{
+					"main1/vendor/a/a.go": "package a1 \n\n func A(){}",
+					"main1/main1.go":      "package main \n\n func main(){}",
+					"main2/main2.go":      "package main \n\n func main(){}",
+					"a/a.go":              "package a2 \n\n func A(){}",
 				}
-				r = &gobuild.RestorerResolver{Context: dummy.BuildContext(src)}
+				bc, err := dummy.BuildContext(src)
+				if err != nil {
+					t.Fatal(err)
+				}
+				r = &gobuild.RestorerResolver{Context: bc}
 				root = "/gopath/src"
 				return
 			},

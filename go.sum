@@ -1,5 +1,11 @@
+github.com/dave/gopackages v0.0.0-20170318123100-46e7023ec56e h1:l99YKCdrK4Lvb/zTupt0GMPfNbncAGf8Cv/t1sYLOg0=
+github.com/dave/gopackages v0.0.0-20170318123100-46e7023ec56e/go.mod h1:i00+b/gKdIDIxuLDFob7ustLAVqhsZRk2qVZrArELGQ=
 github.com/dave/jennifer v1.2.0 h1:S15ZkFMRoJ36mGAQgWL1tnr0NQJh9rZ8qatseX/VbBc=
 github.com/dave/jennifer v1.2.0/go.mod h1:fIb+770HOpJ2fmN9EPPKOqm1vMGhB+TwXKMZhrIygKg=
+github.com/dave/kerr v0.0.0-20170318121727-bc25dd6abe8e h1:xURkGi4RydhyaYR6PzcyHTueQudxY4LgxN1oYEPJHa0=
+github.com/dave/kerr v0.0.0-20170318121727-bc25dd6abe8e/go.mod h1:qZqlPyPvfsDJt+3wHJ1EvSXDuVjFTK0j2p/ca+gtsb8=
+github.com/dave/rebecca v0.9.1 h1:jxVfdOxRirbXL28vXMvUvJ1in3djwkVKXCq339qhBL0=
+github.com/dave/rebecca v0.9.1/go.mod h1:N6XYdMD/OKw3lkF3ywh8Z6wPGuwNFDNtWYEMFWEmXBA=
 github.com/google/pprof v0.0.0-20181127221834-b4f47329b966 h1:zpjeU3rN5R22t0iguDarIAL75+2acLnDqGLOiPttMjk=
 github.com/google/pprof v0.0.0-20181127221834-b4f47329b966/go.mod h1:zfwlbNMJ+OItoe0UupaVj+oy1omPYYDuagoSzA8v9mc=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6 h1:UDMh68UUwekSh5iP2OMhRRZJiiBccgV7axzUG8vi56c=
