@@ -168,16 +168,21 @@ func (r *FileRestorer) updateImports() error {
 
 	// list of the import block(s)
 	var blocks []*dst.GenDecl
+
+	// hasCgoBlock is only true if the "C" import is on it's own in a block at the start of the
+	// file. If so, this is avoided. If there are no more imports in the file, and a new block is
+	// added, it should be added below this block.
 	var hasCgoBlock bool
 
-	// map of package path -> alias for all packages currently in the imports block(s)
-	imports := map[string]string{}
+	// map of package path -> alias for all packages currently in the imports block(s). Alias can
+	// be an alias, an empty string, "_" or "."
+	importsFound := map[string]string{}
 
-	// list of package paths that occur in the source
-	packages := map[string]bool{}
+	// a list of all packages that occur in the source (package path -> true)
+	packagesInUse := map[string]bool{}
 
-	all := map[string]bool{}
-	var allOrdered []string
+	// a list of all the imports that will be in the imports block after the update
+	importsRequired := map[string]bool{}
 
 	dst.Inspect(r.file, func(n dst.Node) bool {
 		switch n := n.(type) {
@@ -188,11 +193,8 @@ func (r *FileRestorer) updateImports() error {
 			if n.Path == r.Path {
 				return true
 			}
-			if _, ok := packages[n.Path]; !ok {
-				packages[n.Path] = true
-				all[n.Path] = true
-				allOrdered = append(allOrdered, n.Path)
-			}
+			packagesInUse[n.Path] = true
+			importsRequired[n.Path] = true
 
 		case *dst.GenDecl:
 			if n.Tok != token.IMPORT {
@@ -208,9 +210,13 @@ func (r *FileRestorer) updateImports() error {
 		case *dst.ImportSpec:
 			path := mustUnquote(n.Path.Value)
 			if n.Name == nil {
-				imports[path] = ""
+				importsFound[path] = ""
 			} else {
-				imports[path] = n.Name.Name
+				importsFound[path] = n.Name.Name
+			}
+			if path == "C" {
+				// never remove the "C" import
+				importsRequired["C"] = true
 			}
 		}
 		return true
@@ -219,7 +225,43 @@ func (r *FileRestorer) updateImports() error {
 	// resolved names of all packages in use
 	resolved := map[string]string{}
 
-	for path := range packages {
+	// the effective alias requested - the manually supplied alias will override the alias from the
+	// import block
+	effectiveAlias := map[string]string{}
+	for path, alias := range importsFound {
+		if alias == "" {
+			continue
+		}
+		if a, ok := r.Alias[path]; ok && a == "" {
+			continue
+		}
+		if alias == "_" && packagesInUse[path] {
+			continue
+		}
+		effectiveAlias[path] = alias
+	}
+	for path, alias := range r.Alias {
+		if alias == "" {
+			continue
+		}
+		if alias == "_" && packagesInUse[path] {
+			continue
+		}
+		effectiveAlias[path] = alias
+	}
+
+	// any anonymous imports
+	for path, alias := range effectiveAlias {
+		if alias == "_" {
+			importsRequired[path] = true
+		}
+	}
+
+	for path := range packagesInUse {
+		if _, ok := effectiveAlias[path]; ok {
+			// no need to resolve the path of a package that has an alias
+			continue
+		}
 		name, err := r.Resolver.ResolvePackage(path)
 		if err != nil {
 			return err
@@ -227,53 +269,25 @@ func (r *FileRestorer) updateImports() error {
 		resolved[path] = name
 	}
 
-	// make a list of packages we should remove from the import block(s)
-	deletions := map[string]bool{}
-	for path, alias := range imports {
-		if alias == "_" || path == "C" || r.Alias[path] == "_" {
-			// never remove anonymous imports, or the "C" import
-			if !all[path] {
-				all[path] = true
-				allOrdered = append(allOrdered, path)
-			}
-			continue
-		}
-		if packages[path] {
-			// if the package is still in use, don't remove
-			continue
-		}
-		deletions[path] = true
+	// We sort the required imports so that the order going into the alias conflict detection
+	// routine is determinate. Without this, in a conflict, the package that receives the automatic
+	// renamed alias would be different every time.
+	importsRequiredOrdered := make([]string, len(importsRequired))
+	i := 0
+	for path := range importsRequired {
+		importsRequiredOrdered[i] = path
+		i++
 	}
+	sort.Slice(importsRequiredOrdered, func(i, j int) bool { return packagePathOrderLess(importsRequiredOrdered[i], importsRequiredOrdered[j]) })
 
-	// make a list of the packages we should add to the first import block, and the packages we
-	// should convert from anonymous import to normal import
-	additions := map[string]bool{}
-	unanon := map[string]bool{}
-	for path := range packages {
-		if alias, ok := imports[path]; ok {
-			if alias == "_" {
-				unanon[path] = true
-			}
-		} else {
-			additions[path] = true
-		}
-	}
+	// alias in the imports block (alias, empty string, "_" or "."
+	aliases := map[string]string{}
 
-	// any anonymous imports manually added with FileRestorer.Alias should be added too
-	for path, alias := range r.Alias {
-		if alias == "_" && !all[path] {
-			additions[path] = true
-			all[path] = true
-			allOrdered = append(allOrdered, path)
-		}
-	}
+	// name in the code (name or empty string for dot imports). This is consumed later by the
+	// restoreIdent method, so is a field on FileRestorer.
+	r.packageNames = map[string]string{}
 
-	sort.Slice(allOrdered, func(i, j int) bool { return packagePathOrderLess(allOrdered[i], allOrdered[j]) })
-
-	// work out the actual aliases for all packages (and rename conflicts)
-	aliases := map[string]string{}       // alias in the package block
-	r.packageNames = map[string]string{} // name in the code
-
+	// conflict returns true if the provided name already exists in the packageNames list
 	conflict := func(name string) bool {
 		for _, n := range r.packageNames {
 			if name == n {
@@ -283,18 +297,22 @@ func (r *FileRestorer) updateImports() error {
 		return false
 	}
 
-	// Finds a unique alias given a path and a preferred alias. If preferred == "", we look up the
-	// name of the package in the resolved map.
+	// findAlias finds a unique alias given a path and a preferred alias
 	findAlias := func(path, preferred string) (name, alias string) {
 
 		// if we pass in a preferred alias we should always return an alias even when the alias
-		// matches the package name.
+		// matches the package name. If for some reason the source file has aliased an import with
+		// the package name, we shouldn't remove this.
 		aliased := preferred != ""
 
-		if preferred == "" {
+		if !aliased {
+			// if there is no preferred alias, we look up the name of the package in the resolved
+			// names map.
 			preferred = resolved[path]
 		}
 
+		// if the current name has a conflict, increment a modifier until a non-conflicting name is
+		// found
 		modifier := 1
 		current := preferred
 		for conflict(current) {
@@ -303,88 +321,37 @@ func (r *FileRestorer) updateImports() error {
 		}
 
 		if !aliased && current == resolved[path] {
+			// if we didn't supply an alias and the resultant name matches the default package name,
+			// return empty string for alias indicating that no alias is required.
 			return current, ""
 		}
 
 		return current, current
 	}
 
-	for _, path := range allOrdered {
-		if deletions[path] {
-			// ignore if it's going to be deleted
+	for _, path := range importsRequiredOrdered {
+
+		alias := effectiveAlias[path]
+
+		if alias == "." || alias == "_" {
+			// no conflict checking for dot-imports or anonymous imports
+			r.packageNames[path], aliases[path] = "", alias
 			continue
 		}
 
-		// if we set the alias to "_" but the package is still in use, we should ignore the alias
-		ignoreAlias := r.Alias[path] == "_" && packages[path]
-
-		var alias string
-		if a, ok := r.Alias[path]; ok && !ignoreAlias {
-			// If we have provided a custom alias, use this
-			alias = a
-		} else if a, ok := imports[path]; ok {
-			// ... otherwise use the alias from the existing imports block
-			alias = a
-		}
-
-		if alias == "." {
-			// no conflict checking for dot-imports
-			aliases[path] = "."
-			r.packageNames[path] = ""
-			continue
-		}
-		if alias == "_" {
-			if unanon[path] {
-				// for anonymous imports that we are converting to regular imports...
-				r.packageNames[path], aliases[path] = findAlias(path, "")
-			} else {
-				// no conflict checking for anonymous imports
-				aliases[path] = "_"
-				r.packageNames[path] = ""
-			}
-			continue
-		}
+		// regular imports have a unique name chosen.
 		r.packageNames[path], aliases[path] = findAlias(path, alias)
 	}
 
-	// convert any anonymous imports to regular imports
-	if len(unanon) > 0 {
-		for _, blk := range blocks {
-			for _, spec := range blk.Specs {
-				spec := spec.(*dst.ImportSpec)
-				path := mustUnquote(spec.Path.Value)
-				if !unanon[path] {
-					continue
-				}
-				if aliases[path] == "" {
-					spec.Name = nil
-					continue
-				}
-				spec.Name = &dst.Ident{Name: aliases[path]}
-			}
-		}
-	}
-
-	// update the alias for any that need it
-	for _, blk := range blocks {
-		for _, spec := range blk.Specs {
-			spec := spec.(*dst.ImportSpec)
-			path := mustUnquote(spec.Path.Value)
-			if spec.Name == nil && aliases[path] != "" {
-				// missing alias
-				spec.Name = &dst.Ident{Name: aliases[path]}
-			} else if spec.Name != nil && aliases[path] == "" {
-				// alias needs to be removed
-				spec.Name = nil
-			} else if spec.Name != nil && aliases[path] != spec.Name.Name {
-				// alias wrong
-				spec.Name.Name = aliases[path]
-			}
-		}
-	}
-
 	// make any additions
-	if len(additions) > 0 {
+	var added bool
+	for _, path := range importsRequiredOrdered {
+
+		if _, ok := importsFound[path]; ok {
+			continue
+		}
+
+		added = true
 
 		// if there's currently no import blocks, we must create one
 		if len(blocks) == 0 {
@@ -404,57 +371,70 @@ func (r *FileRestorer) updateImports() error {
 			blocks = append(blocks, gd)
 		}
 
-		specs := blocks[0].Specs
-
-		for path := range additions {
-			is := &dst.ImportSpec{
-				Path: &dst.BasicLit{Kind: token.STRING, Value: fmt.Sprintf("%q", path)},
-			}
-			if aliases[path] != "" {
-				is.Name = &dst.Ident{
-					Name: aliases[path],
-				}
-			}
-			specs = append(specs, is)
+		is := &dst.ImportSpec{
+			Path: &dst.BasicLit{Kind: token.STRING, Value: fmt.Sprintf("%q", path)},
 		}
-
-		// rearrange import block
-		sort.Slice(specs, func(i, j int) bool {
-			return packagePathOrderLess(
-				mustUnquote(specs[i].(*dst.ImportSpec).Path.Value),
-				mustUnquote(specs[j].(*dst.ImportSpec).Path.Value),
-			)
-		})
-
-		blocks[0].Specs = specs
+		if aliases[path] != "" {
+			is.Name = &dst.Ident{
+				Name: aliases[path],
+			}
+		}
+		blocks[0].Specs = append(blocks[0].Specs, is)
 	}
 
+	if added {
+		// rearrange import block
+		sort.Slice(blocks[0].Specs, func(i, j int) bool {
+			return packagePathOrderLess(
+				mustUnquote(blocks[0].Specs[i].(*dst.ImportSpec).Path.Value),
+				mustUnquote(blocks[0].Specs[j].(*dst.ImportSpec).Path.Value),
+			)
+		})
+	}
+
+	// import blocks that are empty will be removed from the File Decls list later
 	deleteBlocks := map[dst.Decl]bool{}
 
-	if len(deletions) > 0 {
-		for _, blk := range blocks {
-			specs := make([]dst.Spec, 0, len(blk.Specs))
-			for _, spec := range blk.Specs {
-				path := mustUnquote(spec.(*dst.ImportSpec).Path.Value)
-				if deletions[path] {
-					continue
+	// update / delete any import specs from all blocks
+	for _, block := range blocks {
+		specs := make([]dst.Spec, 0, len(block.Specs))
+		for _, spec := range block.Specs {
+			spec := spec.(*dst.ImportSpec)
+			path := mustUnquote(spec.Path.Value)
+			if importsRequired[path] {
+				if spec.Name == nil && aliases[path] != "" {
+					// missing alias
+					spec.Name = &dst.Ident{Name: aliases[path]}
+				} else if spec.Name != nil && aliases[path] == "" {
+					// alias needs to be removed
+					spec.Name = nil
+				} else if spec.Name != nil && aliases[path] != spec.Name.Name {
+					// alias wrong
+					spec.Name.Name = aliases[path]
 				}
 				specs = append(specs, spec)
 			}
-			blk.Specs = specs
-			if len(specs) == 0 {
-				deleteBlocks[blk] = true
-			} else if len(specs) == 1 {
-				blk.Lparen = false
-				blk.Rparen = false
+		}
+
+		count := len(specs)
+
+		if count != len(block.Specs) {
+
+			block.Specs = specs
+
+			if count == 0 {
+				deleteBlocks[block] = true
+			} else if count == 1 {
+				block.Lparen = false
+				block.Rparen = false
 			} else {
-				blk.Lparen = true
-				blk.Rparen = true
+				block.Lparen = true
+				block.Rparen = true
 			}
 		}
 	}
 
-	if len(additions) > 0 {
+	if added {
 		// imports with a period in the path are assumed to not be standard library packages, so
 		// get a newline separating them from standard library packages. We remove any other
 		// newlines found in this block. We do this after the deletions because the first non-stdlib
@@ -483,6 +463,7 @@ func (r *FileRestorer) updateImports() error {
 		}
 	}
 
+	// finally remove any deleted blocks from the File Decls list
 	if len(deleteBlocks) > 0 {
 		decls := make([]dst.Decl, 0, len(r.file.Decls))
 		for _, decl := range r.file.Decls {

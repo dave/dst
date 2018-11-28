@@ -365,6 +365,48 @@ func TestRestorerResolver(t *testing.T) {
 			},
 			cases: []tc{
 				{
+					name: "change-to-no-alias",
+					desc: "changing an anonymous alias to standard should remove the import if it's not used",
+					restorer: func(r *FileRestorer) {
+						r.Alias["root/a"] = ""
+					},
+					expect: `package main
+
+						func main() { }`,
+				},
+				{
+					name: "change-to-no-alias-add-usage",
+					desc: "changing an anonymous alias to standard should not remove the import if it's used",
+					restorer: func(r *FileRestorer) {
+						r.Alias["root/a"] = ""
+					},
+					mutate: func(f *dst.File) {
+						b := f.Decls[1].(*dst.FuncDecl).Body
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/a", Name: "A"}}})
+					},
+					expect: `package main
+
+						import "root/a"
+
+						func main() { a.A() }`,
+				},
+				{
+					name: "change-to-alias-add-usage",
+					desc: "changing an anonymous alias to a custom alias should not remove the import if it's used",
+					restorer: func(r *FileRestorer) {
+						r.Alias["root/a"] = "b"
+					},
+					mutate: func(f *dst.File) {
+						b := f.Decls[1].(*dst.FuncDecl).Body
+						b.List = append(b.List, &dst.ExprStmt{X: &dst.CallExpr{Fun: &dst.Ident{Path: "root/a", Name: "A"}}})
+					},
+					expect: `package main
+
+						import b "root/a"
+
+						func main() { b.A() }`,
+				},
+				{
 					name: "add-standard",
 					desc: "adding a standard import to a file with an anon import, the anon import stays anon",
 					mutate: func(f *dst.File) {
