@@ -6,15 +6,15 @@ import (
 	"github.com/dave/dst/decorator/resolver"
 )
 
-func New(dir string) *PackageResolver {
-	return &PackageResolver{Dir: dir}
+func New(dir string) *RestorerResolver {
+	return &RestorerResolver{Dir: dir}
 }
 
-func WithContext(dir string, context *build.Context) *PackageResolver {
-	return &PackageResolver{Dir: dir, Context: context}
+func WithContext(dir string, context *build.Context) *RestorerResolver {
+	return &RestorerResolver{Dir: dir, Context: context}
 }
 
-type PackageResolver struct {
+type RestorerResolver struct {
 	// FindPackage is called during Load to create the build.Package for a given import path from a
 	// given directory. If FindPackage is nil, (*build.Context).Import is used. A client may use
 	// this hook to adapt to a proprietary build system that does not follow the "go build" layout
@@ -27,7 +27,7 @@ type PackageResolver struct {
 	Dir         string
 }
 
-func (r *PackageResolver) ResolvePackage(importPath string) (string, error) {
+func (r *RestorerResolver) ResolvePackage(importPath string) (string, error) {
 
 	fp := r.FindPackage
 	if fp == nil {

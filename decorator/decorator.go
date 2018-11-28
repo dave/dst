@@ -25,7 +25,7 @@ func NewDecorator(fset *token.FileSet) *Decorator {
 }
 
 // NewDecoratorWithImports returns a new decorator with import management enabled.
-func NewDecoratorWithImports(fset *token.FileSet, path string, resolver resolver.IdentResolver) *Decorator {
+func NewDecoratorWithImports(fset *token.FileSet, path string, resolver resolver.DecoratorResolver) *Decorator {
 	return &Decorator{
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
@@ -55,7 +55,7 @@ type Decorator struct {
 	// *ast.SelectorExpr nodes. Usually a remote identifier is a SelectorExpr qualified identifier,
 	// but in the case of dot-imports they can be simply Ident nodes. During decoration, remote
 	// identifiers are replaced with *dst.Ident with Path set to the path of imported package.
-	Resolver resolver.IdentResolver
+	Resolver resolver.DecoratorResolver
 	// Local package path - required if Resolver is set.
 	Path string
 }

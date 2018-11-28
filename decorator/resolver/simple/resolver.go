@@ -2,16 +2,16 @@ package simple
 
 import "github.com/dave/dst/decorator/resolver"
 
-func New(m map[string]string) PackageResolver {
-	return PackageResolver(m)
+func New(m map[string]string) RestorerResolver {
+	return RestorerResolver(m)
 }
 
-// PackageResolver is a map of package path -> package name. Names are resolved from this map, and
+// RestorerResolver is a map of package path -> package name. Names are resolved from this map, and
 // if a name doesn't exist in the map, an error is returned. Note that Guess is not a NodeResolver,
 // so can't properly resolve identifiers in dot import packages.
-type PackageResolver map[string]string
+type RestorerResolver map[string]string
 
-func (r PackageResolver) ResolvePackage(importPath string) (string, error) {
+func (r RestorerResolver) ResolvePackage(importPath string) (string, error) {
 	if n, ok := r[importPath]; ok {
 		return n, nil
 	}

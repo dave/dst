@@ -7,18 +7,18 @@ import (
 	"github.com/dave/dst/decorator/resolver/simple"
 )
 
-func TestPackageResolver(t *testing.T) {
+func TestRestorerResolver(t *testing.T) {
 	type tc struct{ importPath, expectName string }
 	tests := []struct {
 		skip, solo bool
 		name       string
-		resolve    func() (end func(), r resolver.PackageResolver)
+		resolve    func() (end func(), r resolver.RestorerResolver)
 		cases      []tc
 	}{
 		{
-			name: "simple.PackageResolver",
-			resolve: func() (end func(), r resolver.PackageResolver) {
-				r = simple.PackageResolver{
+			name: "simple.RestorerResolver",
+			resolve: func() (end func(), r resolver.RestorerResolver) {
+				r = simple.RestorerResolver{
 					"a/b/c": "d",
 				}
 				return

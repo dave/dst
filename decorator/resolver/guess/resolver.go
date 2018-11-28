@@ -2,20 +2,20 @@ package guess
 
 import "strings"
 
-func New() PackageResolver {
-	return PackageResolver{}
+func New() RestorerResolver {
+	return RestorerResolver{}
 }
 
-func WithMap(m map[string]string) PackageResolver {
-	return PackageResolver(m)
+func WithMap(m map[string]string) RestorerResolver {
+	return RestorerResolver(m)
 }
 
-// PackageResolver is a map of package path -> package name. Names are resolved from this map, and
+// RestorerResolver is a map of package path -> package name. Names are resolved from this map, and
 // if a name doesn't exist in the map, the package name is guessed from the last part of the path
 // (after the last slash).
-type PackageResolver map[string]string
+type RestorerResolver map[string]string
 
-func (r PackageResolver) ResolvePackage(importPath string) (string, error) {
+func (r RestorerResolver) ResolvePackage(importPath string) (string, error) {
 	if n, ok := r[importPath]; ok {
 		return n, nil
 	}

@@ -35,7 +35,7 @@ func TestPositions(t *testing.T) {
 
 	dec := NewDecorator(prog.Fset)
 	dec.Path = path
-	dec.Resolver = &goast.IdentResolver{PackageResolver: &guess.PackageResolver{}}
+	dec.Resolver = &goast.DecoratorResolver{RestorerResolver: &guess.RestorerResolver{}}
 
 	file, err := dec.DecorateFile(astFile)
 	if err != nil {

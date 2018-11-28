@@ -7,18 +7,18 @@ import (
 	"github.com/dave/dst/decorator/resolver/guess"
 )
 
-func TestPackageResolver(t *testing.T) {
+func TestRestorerResolver(t *testing.T) {
 	type tc struct{ importPath, expectName string }
 	tests := []struct {
 		skip, solo bool
 		name       string
-		resolve    func() (end func(), r resolver.PackageResolver)
+		resolve    func() (end func(), r resolver.RestorerResolver)
 		cases      []tc
 	}{
 		{
-			name: "guess.PackageResolver",
-			resolve: func() (end func(), r resolver.PackageResolver) {
-				r = guess.PackageResolver{
+			name: "guess.RestorerResolver",
+			resolve: func() (end func(), r resolver.RestorerResolver) {
+				r = guess.RestorerResolver{
 					"a/b/c": "d",
 				}
 				return

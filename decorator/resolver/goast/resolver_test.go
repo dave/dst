@@ -8,7 +8,7 @@ import (
 	"github.com/dave/dst/decorator"
 )
 
-func TestGoAstIdentResolver(t *testing.T) {
+func TestGoAstDecoratorResolver(t *testing.T) {
 	type tc struct{ id, expect string }
 	tests := []struct {
 		skip, solo bool

@@ -10,17 +10,17 @@ import (
 	"github.com/dave/dst/dstutil/dummy"
 )
 
-func TestPackageResolver(t *testing.T) {
+func TestRestorerResolver(t *testing.T) {
 	type tc struct{ importPath, fromDir, expectName string }
 	tests := []struct {
 		skip, solo bool
 		name       string
-		resolve    func() (end func(), root string, r *gopackages.PackageResolver)
+		resolve    func() (end func(), root string, r *gopackages.RestorerResolver)
 		cases      []tc
 	}{
 		{
 			name: "gopackages.Resolver",
-			resolve: func() (end func(), root string, r *gopackages.PackageResolver) {
+			resolve: func() (end func(), root string, r *gopackages.RestorerResolver) {
 				src := dummy.Dir{
 					"main":   dummy.Dir{"main.go": dummy.Src("package main \n\n func main(){}")},
 					"foo":    dummy.Dir{"foo.go": dummy.Src("package foo \n\n func A(){}")},
@@ -28,7 +28,7 @@ func TestPackageResolver(t *testing.T) {
 				}
 				root = dummy.TempDir(src)
 				end = func() { os.RemoveAll(root) }
-				r = &gopackages.PackageResolver{}
+				r = &gopackages.RestorerResolver{}
 				return
 			},
 			cases: []tc{

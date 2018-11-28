@@ -24,7 +24,7 @@ func NewRestorer() *Restorer {
 }
 
 // NewRestorerWithImports returns a restorer with import management attributes set.
-func NewRestorerWithImports(path string, resolver resolver.PackageResolver) *Restorer {
+func NewRestorerWithImports(path string, resolver resolver.RestorerResolver) *Restorer {
 	return &Restorer{
 		Map:      newMap(),
 		Fset:     token.NewFileSet(),
@@ -41,7 +41,7 @@ type Restorer struct {
 	// block is updated. All remote identifiers are updated (sometimes this involves changing
 	// SelectorExpr.X.Name, or even swapping between Ident and SelectorExpr). To force specific
 	// import alias names, use the FileRestorer.Alias map.
-	Resolver resolver.PackageResolver
+	Resolver resolver.RestorerResolver
 	// Local package path - required if Resolver is set.
 	Path string
 }

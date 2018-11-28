@@ -11,29 +11,29 @@ import (
 	"github.com/dave/dst/decorator/resolver/guess"
 )
 
-func New() *IdentResolver {
-	return &IdentResolver{}
+func New() *DecoratorResolver {
+	return &DecoratorResolver{}
 }
 
-func WithResolver(resolver resolver.PackageResolver) *IdentResolver {
-	return &IdentResolver{PackageResolver: resolver}
+func WithResolver(resolver resolver.RestorerResolver) *DecoratorResolver {
+	return &DecoratorResolver{RestorerResolver: resolver}
 }
 
-// IdentResolver is a simple ident resolver that parses the imports block of the file and resolves
+// DecoratorResolver is a simple ident resolver that parses the imports block of the file and resolves
 // qualified identifiers using resolved package names. It is not possible to resolve identifiers in
 // dot-imported packages without the full export data of the imported package, so this resolver will
-// return an error if it encounters a dot-import. See gotypes.IdentResolver for a dot-imports
+// return an error if it encounters a dot-import. See gotypes.DecoratorResolver for a dot-imports
 // capable ident resolver.
-type IdentResolver struct {
-	PackageResolver resolver.PackageResolver
-	filesM          sync.Mutex
-	files           map[*ast.File]map[string]string
+type DecoratorResolver struct {
+	RestorerResolver resolver.RestorerResolver
+	filesM           sync.Mutex
+	files            map[*ast.File]map[string]string
 }
 
-func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
+func (r *DecoratorResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
 
-	if r.PackageResolver == nil {
-		r.PackageResolver = guess.New()
+	if r.RestorerResolver == nil {
+		r.RestorerResolver = guess.New()
 	}
 
 	imports, err := r.imports(file)
@@ -64,7 +64,7 @@ func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Id
 	return path, nil
 }
 
-func (r *IdentResolver) imports(file *ast.File) (map[string]string, error) {
+func (r *DecoratorResolver) imports(file *ast.File) (map[string]string, error) {
 	r.filesM.Lock()
 	defer r.filesM.Unlock()
 
@@ -110,21 +110,21 @@ func (r *IdentResolver) imports(file *ast.File) (map[string]string, error) {
 			switch name {
 			case ".":
 				// We can't resolve "." imports, so throw an error
-				outer = fmt.Errorf("goast.IdentResolver unsupported dot-import found for %s", path)
+				outer = fmt.Errorf("goast.DecoratorResolver unsupported dot-import found for %s", path)
 				return false
 			case "_":
 				// Don't need to worry about _ imports
 				return false
 			case "":
 				var err error
-				name, err = r.PackageResolver.ResolvePackage(path)
+				name, err = r.RestorerResolver.ResolvePackage(path)
 				if err != nil {
 					outer = err
 					return false
 				}
 			}
 			if p, ok := imports[name]; ok {
-				outer = fmt.Errorf("goast.IdentResolver found multiple packages using name %s: %s and %s", name, p, path)
+				outer = fmt.Errorf("goast.DecoratorResolver found multiple packages using name %s: %s and %s", name, p, path)
 				return false
 			}
 			imports[name] = path

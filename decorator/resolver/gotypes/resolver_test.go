@@ -11,7 +11,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func TestIdentResolver(t *testing.T) {
+func TestDecoratorResolver(t *testing.T) {
 	type tc struct{ id, expect string }
 	tests := []struct {
 		skip, solo bool

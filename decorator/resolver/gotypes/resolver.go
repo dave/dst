@@ -6,18 +6,18 @@ import (
 	"go/types"
 )
 
-func New(uses map[*ast.Ident]types.Object) *IdentResolver {
-	return &IdentResolver{Uses: uses}
+func New(uses map[*ast.Ident]types.Object) *DecoratorResolver {
+	return &DecoratorResolver{Uses: uses}
 }
 
-type IdentResolver struct {
+type DecoratorResolver struct {
 	Uses map[*ast.Ident]types.Object // Types info - must include Uses
 }
 
-func (r *IdentResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
+func (r *DecoratorResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
 
 	if r.Uses == nil {
-		return "", errors.New("gotypes.IdentResolver needs Uses in types info")
+		return "", errors.New("gotypes.DecoratorResolver needs Uses in types info")
 	}
 
 	se, ok := parent.(*ast.SelectorExpr)

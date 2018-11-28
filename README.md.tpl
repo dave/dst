@@ -112,14 +112,13 @@ enables systems that refer to `ast` nodes (such as `go/types`) to be used:
 
 ## Resolvers
 
-Managing the imports block is non-trivial. There are two separate interfaces defined by the 
-[resolver package](https://github.com/dave/dst/tree/master/decorator/resolver) which allow the 
-decorator and restorer to automatically manage the imports block.
+There are two separate interfaces defined by the [resolver package](https://github.com/dave/dst/tree/master/decorator/resolver) 
+which allow the decorator and restorer to automatically manage the imports block.
 
-The decorator uses an `IdentResolver` which resolves the package path of any `*ast.Ident`. This is 
+The decorator uses a `DecoratorResolver` which resolves the package path of any `*ast.Ident`. This is 
 complicated by dot-import syntax ([see below](#dot-imports)).
 
-The restorer uses a `PackageResolver` which resolves the name of any package given the path. This 
+The restorer uses a `RestorerResolver` which resolves the name of any package given the path. This 
 is complicated by vendoring and Go modules.
 
 When `Resolver` is set on `Decorator` or `Restorer`, the `Path` property must be set to the local 
@@ -128,42 +127,48 @@ package path.
 Several implementations of both interfaces that are suitable for different environments are 
 provided:
 
-### IdentResolver implementations for Decorator
+### DecoratorResolver
 
-#### gotypes.IdentResolver
+#### gotypes
 
-This implementation provides full compatibility with dot-imports. However it requires full export 
-data for all imported packages, so the `Uses` map from `go/types.Info` is required. There are 
-many ways of loading ast and generating `go/types.Info`. Using `golang.org/x/tools/go/packages.Load` 
-is recommended for full modules compatibility. See the [decorator.Load](https://godoc.org/github.com/dave/dst/decorator#Load)
+The [gotypes](https://github.com/dave/dst/blob/master/decorator/resolver/gotypes/resolver.go) 
+package provides a `DecoratorResolver` with full dot-import compatibility. However it requires full 
+export data for all imported packages, so the `Uses` map from `go/types.Info` is required. There 
+are several methods of generating `go/types.Info`. Using `golang.org/x/tools/go/packages.Load` is 
+recommended for full Go modules compatibility. See the [decorator.Load](https://godoc.org/github.com/dave/dst/decorator#Load)
 convenience function to automate this.
 
-#### goast.IdentResolver
+#### goast
 
-This is a simplified implementation that only needs to scan a single ast file. This is unable to 
-resolve identifiers from dot-imported packages, so will panic if a dot-import is encountered in the 
-import block. It uses the provided `PackageResolver` to resolve the names of all imported packages. 
-If no `PackageResolver` is provided, `guess.PackageResolver` is used. 
+The [goast](https://github.com/dave/dst/blob/master/decorator/resolver/goast/resolver.go) package 
+provides a simplified `DecoratorResolver` that only needs to scan a single ast file. This is unable 
+to resolve identifiers from dot-imported packages, so will panic if a dot-import is encountered in 
+the import block. It uses the provided `RestorerResolver` to resolve the names of all imported 
+packages. If no `RestorerResolver` is provided, the [guess](#guess-and-simple) implementation is used. 
 
-### PackageResolver implementations for Restorer
+### RestorerResolver
 
-#### gopackages.PackageResolver
+#### gopackages
 
-This implementation provides full compatibility with Go modules. It uses `golang.org/x/tools/go/packages` 
-to load the package data. This may be very slow, and uses the `go` command line tool to query 
-package data, so may not be compatible with some environments. 
+The [gopackages](https://github.com/dave/dst/blob/master/decorator/resolver/gopackages/resolver.go) 
+package provides a `RestorerResolver` with full compatibility with Go modules. It uses 
+`golang.org/x/tools/go/packages` to load the package data. This may be very slow, and uses the `go` 
+command line tool to query package data, so may not be compatible with some environments. 
 
-#### gobuild.PackageResolver
+#### gobuild
 
-This is an alternative implementation that uses the legacy `go/build` system to load the imported 
-package data. This may be needed in some circumstances and provides better performance than 
-`go/packages`. However, this is not Go modules aware.
+The [gobuild](https://github.com/dave/dst/blob/master/decorator/resolver/gobuild/resolver.go) 
+package provides an alternative `RestorerResolver` that uses the legacy `go/build` system to load 
+the imported package data. This may be needed in some circumstances and provides better performance 
+than `go/packages`. However, this is not Go modules aware.
 
-#### guess.PackageResolver and simple.PackageResolver
+#### guess and simple
 
-These are very simple implementations that may be useful in certain circumstances, or where 
-performance is critical. `simple.PackageResolver` resolves paths only if they occur in a provided 
-map. `guess.PackageResolver` guesses the package name based on the last part of the path.
+The [guess](https://github.com/dave/dst/blob/master/decorator/resolver/guess/resolver.go) and 
+[simple](https://github.com/dave/dst/blob/master/decorator/resolver/simple/resolver.go) packages
+provide simple `RestorerResolver` implementations that may be useful in certain circumstances, or 
+where performance is critical. `simple` resolves paths only if they occur in a provided map. 
+`guess` guesses the package name based on the last part of the path.
 
 ### Example
 

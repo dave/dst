@@ -7,20 +7,20 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func New(dir string) *PackageResolver {
-	return &PackageResolver{Dir: dir}
+func New(dir string) *RestorerResolver {
+	return &RestorerResolver{Dir: dir}
 }
 
-func WithConfig(dir string, config packages.Config) *PackageResolver {
-	return &PackageResolver{Config: config, Dir: dir}
+func WithConfig(dir string, config packages.Config) *RestorerResolver {
+	return &RestorerResolver{Config: config, Dir: dir}
 }
 
-type PackageResolver struct {
+type RestorerResolver struct {
 	Dir    string
 	Config packages.Config
 }
 
-func (r *PackageResolver) ResolvePackage(path string) (string, error) {
+func (r *RestorerResolver) ResolvePackage(path string) (string, error) {
 
 	if r.Dir != "" {
 		r.Config.Dir = r.Dir
