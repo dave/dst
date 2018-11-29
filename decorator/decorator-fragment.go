@@ -53,8 +53,10 @@ func (f *fileDecorator) addNewlineFragment(pos token.Pos, empty bool) {
 
 func (f *fileDecorator) fragment(node ast.Node) {
 
+	// For all nodes, we add decoration, token and string fragments
 	f.addNodeFragments(node)
 
+	// If we're decorating a *ast.Package or *ast.File, we add comment and newline fragments
 	if f.Fset != nil {
 		processFile := func(astf *ast.File) {
 			avoid := map[int]bool{}
@@ -74,7 +76,8 @@ func (f *fileDecorator) fragment(node ast.Node) {
 						// multi line comment
 						if endLine > startLine {
 							for i := startLine; i < endLine; i++ {
-								avoid[i+1] = true // we avoid the lines that follow the lines in the comment
+								// we avoid the lines that follow the lines in the comment
+								avoid[i+1] = true
 							}
 						}
 					}
@@ -95,26 +98,31 @@ func (f *fileDecorator) fragment(node ast.Node) {
 					// multi line string
 					if endLine > startLine {
 						for i := startLine; i < endLine; i++ {
-							avoid[i+1] = true // we avoid the lines that follow the lines in the string
+							// we avoid the lines that follow the lines in the string
+							avoid[i+1] = true
 						}
 					}
 
 				case *badFragment:
 
-					// Newlines inside bad nodes are not printed by the formatter, so there is no need
-					// to reconstruct them in the restorer.
+					// Newlines inside bad nodes are not printed by the formatter, so there is no
+					// need to reconstruct them in the restorer.
 
 					startLine := f.Fset.Position(frag.Pos).Line
 					endLine := f.Fset.Position(frag.Pos + token.Pos(frag.Length)).Line
 
 					if endLine > startLine {
 						for i := startLine; i < endLine; i++ {
-							avoid[i+1] = true // we avoid the lines that follow the lines in the node
+							// we avoid the lines that follow the lines in the node
+							avoid[i+1] = true
 						}
 					}
 				}
 			}
 
+			// Finding the positions of each newline is not easy. We step through the file one byte
+			// at a time and get the line number from the FileSet. As the line number increments,
+			// we know where the newlines are.
 			line := 1
 			tokenf := f.Fset.File(astf.Pos())
 			max := tokenf.Base() + tokenf.Size()
@@ -122,14 +130,18 @@ func (f *fileDecorator) fragment(node ast.Node) {
 				pos := f.Fset.Position(token.Pos(i))
 				if pos.Line != line {
 
+					// if the line number has changed, we're on a new line
+
 					line = pos.Line
 
 					if avoid[line] {
+						// ignore if it's in the avoid list - e.g. inside a comment or multi-line
+						// string
 						continue
 					}
 
-					// Peek ahead to the next position in the fset. If we're on another new line, we have
-					// an empty line:
+					// peek ahead to the next position in the fset. If we're on another new line,
+					// we have an empty line:
 					nextLine := line
 					if i < max-1 {
 						// can't peek forward at the end of the file
@@ -137,10 +149,15 @@ func (f *fileDecorator) fragment(node ast.Node) {
 					}
 
 					if nextLine != line {
+						// add an empty line fragment
 						f.addNewlineFragment(token.Pos(i-1), true)
+
+						// for empty lines, increment past the second "\n" manually:
 						line = nextLine
 						i++
+
 					} else {
+						// add a new line fragment
 						f.addNewlineFragment(token.Pos(i-1), false)
 					}
 
@@ -159,11 +176,17 @@ func (f *fileDecorator) fragment(node ast.Node) {
 
 	}
 
+	// the comments and newline fragments will be after the node fragments, so we sort the entire
+	// list by fset position, ensuring that fragments with equal position stay in the original
+	// order. This ensures that decorations get added to the correct attachment points (which may
+	// occur at the same fset position).
 	sort.SliceStable(f.fragments, func(i, j int) bool {
 		return f.fragments[i].Position() < f.fragments[j].Position()
 	})
 
-	// Search for nodes and comments that start directly after newlines. We note their indent.
+	// We calculate the indent of the start and end of each node and comment. This is used to
+	// during the decoration attachment algorithm to correctly attach hanging indent comments. See
+	// issues 9 and 18 for more info.
 	currentIndent := 0
 	for i, frag := range f.fragments {
 		if i == 0 || f.fragments[i-1].Newline() {
@@ -180,30 +203,6 @@ func (f *fileDecorator) fragment(node ast.Node) {
 		case *commentFragment:
 			frag.Indent = currentIndent
 		}
-	}
-}
-
-func appendDecoration(m map[ast.Node]map[string][]string, n ast.Node, pos, text string) {
-	if m[n] == nil {
-		m[n] = map[string][]string{}
-	}
-	m[n][pos] = append(m[n][pos], text)
-}
-
-func appendNewLine(m map[ast.Node]map[string][]string, n ast.Node, pos string, empty bool) {
-	if m[n] == nil {
-		m[n] = map[string][]string{}
-	}
-	num := 1
-	if empty {
-		num = 2
-	}
-	decs := m[n][pos]
-	if len(decs) > 0 && strings.HasPrefix(decs[len(decs)-1], "//") {
-		num--
-	}
-	for i := 0; i < num; i++ {
-		m[n][pos] = append(m[n][pos], "\n")
 	}
 }
 
@@ -377,6 +376,30 @@ func (f *fileDecorator) link() {
 	}
 
 	return
+}
+
+func appendDecoration(m map[ast.Node]map[string][]string, n ast.Node, pos, text string) {
+	if m[n] == nil {
+		m[n] = map[string][]string{}
+	}
+	m[n][pos] = append(m[n][pos], text)
+}
+
+func appendNewLine(m map[ast.Node]map[string][]string, n ast.Node, pos string, empty bool) {
+	if m[n] == nil {
+		m[n] = map[string][]string{}
+	}
+	num := 1
+	if empty {
+		num = 2
+	}
+	decs := m[n][pos]
+	if len(decs) > 0 && strings.HasPrefix(decs[len(decs)-1], "//") {
+		num--
+	}
+	for i := 0; i < num; i++ {
+		m[n][pos] = append(m[n][pos], "\n")
+	}
 }
 
 func (f *fileDecorator) attachToDecoration(frags []fragment, decorations map[ast.Node]map[string][]string, dec *decorationFragment) {

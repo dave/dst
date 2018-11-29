@@ -317,12 +317,9 @@ func (f *fileDecorator) resolvePath(force bool, parent ast.Node, parentName, par
 	}
 
 	if !force {
-
-		key := parentName + "." + parentField
-		if avoid[key] {
+		if avoid[parentName+"."+parentField] {
 			return "", nil
 		}
-
 		if parentFieldType != "Expr" {
 			panic(fmt.Sprintf("decorateIdent: unsupported parentName %s, parentField %s, parentFieldType %s", parentName, parentField, parentFieldType))
 		}
@@ -363,12 +360,15 @@ func stripVendor(path string) string {
 }
 
 func (f *fileDecorator) decorateObject(o *ast.Object) (*dst.Object, error) {
+
 	if o == nil {
 		return nil, nil
 	}
+
 	if do, ok := f.Dst.Objects[o]; ok {
 		return do, nil
 	}
+
 	/*
 		// An Object describes a named language entity such as a package,
 		// constant, type, variable, function (incl. methods), or label.
@@ -436,12 +436,15 @@ func (f *fileDecorator) decorateObject(o *ast.Object) (*dst.Object, error) {
 }
 
 func (f *fileDecorator) decorateScope(s *ast.Scope) (*dst.Scope, error) {
+
 	if s == nil {
 		return nil, nil
 	}
+
 	if ds, ok := f.Dst.Scopes[s]; ok {
 		return ds, nil
 	}
+
 	/*
 		// A Scope maintains the set of named language entities declared
 		// in the scope and a link to the immediately surrounding (outer)
@@ -452,8 +455,8 @@ func (f *fileDecorator) decorateScope(s *ast.Scope) (*dst.Scope, error) {
 			Objects map[string]*Object
 		}
 	*/
-	out := &dst.Scope{}
 
+	out := &dst.Scope{}
 	f.Dst.Scopes[s] = out
 	f.Ast.Scopes[out] = s
 
@@ -463,6 +466,7 @@ func (f *fileDecorator) decorateScope(s *ast.Scope) (*dst.Scope, error) {
 	}
 	out.Outer = outer
 	out.Objects = map[string]*dst.Object{}
+
 	for k, v := range s.Objects {
 		ob, err := f.decorateObject(v)
 		if err != nil {
@@ -517,6 +521,7 @@ func debug(w io.Writer, file dst.Node) {
 	fmt.Fprint(w, result)
 }
 
+// mergeDecorations merges several decoration lists and line spaces into a single decoration list
 func mergeDecorations(decorationsOrLineSpace ...interface{}) []string {
 	var endsWithNewLine bool
 	var out []string

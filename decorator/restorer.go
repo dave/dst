@@ -139,9 +139,7 @@ func (r *FileRestorer) RestoreFile(file *dst.File) (*ast.File, error) {
 		f.Comments = append(f.Comments, cg)
 	}
 
-	size := r.fileSize()
-
-	ff := r.Fset.AddFile(r.Name, r.base, size)
+	ff := r.Fset.AddFile(r.Name, r.base, r.fileSize())
 	if !ff.SetLines(r.lines) {
 		panic("ff.SetLines failed")
 	}
@@ -478,6 +476,9 @@ func (r *FileRestorer) updateImports() error {
 	return nil
 }
 
+// restoreIdent is a special case for restoring an ident. If the ident has a path and the imported
+// package is not a dot-import, we restore the Ident to a *ast.SelectorExpr with the correct name
+// in the X field.
 func (r *FileRestorer) restoreIdent(n *dst.Ident, parentName, parentField, parentFieldType string, allowDuplicate bool) ast.Node {
 
 	var name string
@@ -539,7 +540,6 @@ func packagePathOrderLess(pi, pj string) bool {
 	if idot != jdot {
 		return jdot
 	}
-
 	return pi < pj
 }
 
@@ -547,7 +547,8 @@ func (r *FileRestorer) fileSize() int {
 
 	// If a comment is at the end of a file, it will extend past the current cursor position...
 
-	end := int(r.cursor) // end pos of file
+	// end pos of file
+	end := int(r.cursor)
 
 	// check that none of the comments or newlines extend past the file end position. If so, increment.
 	for _, cg := range r.comments {

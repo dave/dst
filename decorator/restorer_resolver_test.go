@@ -1042,6 +1042,32 @@ func TestRestorerResolver(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "decorated-sel",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+					func main() { /*1*/ a. /*2*/ A. /*3*/ B() /*4*/ }`,
+				"a/a.go": "package a \n\n type T struct{} \n\n func (T)B(){} \n\n var A T",
+				"go.mod": "module root",
+			},
+			cases: []tc{
+				{
+					name: "change-to-dot",
+					desc: "ensure X decoration is not lost when converting from SelectorExpr to Ident",
+					restorer: func(r *FileRestorer) {
+						r.Alias["root/a"] = "."
+					},
+					expect: `package main
+			
+						import . "root/a"
+			
+						func main() { /*1*/ /*2*/ A. /*3*/ B() /*4*/ }`,
+				},
+			},
+		},
 	}
 	var solo bool
 	for _, test := range tests {
