@@ -14,9 +14,15 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
+// notest
+
 func generateDst(names []string) error {
 
 	f := NewFile("dst")
+
+	f.Comment("notest")
+	f.Line()
+
 	for _, name := range names {
 
 		if name == "Package" {

@@ -55,7 +55,7 @@ func (s SpaceType) String() string {
 	case NewLine:
 		return "NewLine"
 	case EmptyLine:
-		return "EmpryLine"
+		return "EmptyLine"
 	}
 	return ""
 }

@@ -1,6 +1,10 @@
 // File
 /*Start*/ package /*Package*/ data /*Name*/
 
+// --
+
+// notest
+
 // ImportSpec
 import (
 	/*Start*/ fmt /*Name*/ "fmt" /*End*/

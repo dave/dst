@@ -9,6 +9,7 @@ import (
 	"go/types"
 	"os"
 	"strconv"
+	"testing"
 
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
@@ -19,6 +20,70 @@ import (
 	"github.com/dave/dst/decorator/resolver/guess"
 	"golang.org/x/tools/go/packages"
 )
+
+func TestDecorations_All(t *testing.T) {
+	d := &dst.Decorations{"a", "b"}
+	expected := "[a b]"
+	found := fmt.Sprint(d.All())
+	if expected != found {
+		t.Fatalf("expected %s, found %s", expected, found)
+	}
+}
+
+func TestDecorations_Append(t *testing.T) {
+	d := &dst.Decorations{"a", "b"}
+	d.Append("c")
+	found := fmt.Sprint(*d)
+	expected := "[a b c]"
+	if expected != found {
+		t.Fatalf("expected %s, found %s", expected, found)
+	}
+}
+
+func TestDecorations_Clear(t *testing.T) {
+	d := &dst.Decorations{"a", "b"}
+	d.Clear()
+	found := fmt.Sprint(*d)
+	expected := "[]"
+	if expected != found {
+		t.Fatalf("expected %s, found %s", expected, found)
+	}
+}
+
+func TestDecorations_Replace(t *testing.T) {
+	d := &dst.Decorations{"a", "b"}
+	d.Replace("c")
+	found := fmt.Sprint(*d)
+	expected := "[c]"
+	if expected != found {
+		t.Fatalf("expected %s, found %s", expected, found)
+	}
+}
+
+func TestDecorations_Prepend(t *testing.T) {
+	d := &dst.Decorations{"a", "b"}
+	d.Prepend("c")
+	found := fmt.Sprint(*d)
+	expected := "[c a b]"
+	if expected != found {
+		t.Fatalf("expected %s, found %s", expected, found)
+	}
+}
+
+func TestSpaceType_String(t *testing.T) {
+	if dst.None.String() != "None" {
+		t.Fatalf("expected None, found %s", dst.None.String())
+	}
+	if dst.NewLine.String() != "NewLine" {
+		t.Fatalf("expected NewLine, found %s", dst.NewLine.String())
+	}
+	if dst.EmptyLine.String() != "EmptyLine" {
+		t.Fatalf("expected EmptyLine, found %s", dst.EmptyLine.String())
+	}
+	if dst.SpaceType(99).String() != "" {
+		t.Fatalf("expected , found %s", dst.SpaceType(99).String())
+	}
+}
 
 func ExampleAlias() {
 

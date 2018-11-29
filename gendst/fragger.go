@@ -7,6 +7,8 @@ import (
 	. "github.com/dave/jennifer/jen"
 )
 
+// notest
+
 func generateFragger(names []string) error {
 	f := NewFile("decorator")
 	f.Func().Params(Id("f").Op("*").Id("fileDecorator")).Id("addNodeFragments").Params(Id("n").Qual("go/ast", "Node")).Block(

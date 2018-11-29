@@ -7,6 +7,8 @@ import (
 	. "github.com/dave/jennifer/jen"
 )
 
+// notest
+
 const DSTPATH = "github.com/dave/dst"
 
 func generateDecorator(names []string) error {

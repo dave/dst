@@ -1,5 +1,7 @@
 package dst
 
+// notest
+
 // Decorations returns the decorations that are common to all nodes (Before, Start, End, After).
 func (n *ArrayType) Decorations() *NodeDecs {
 	return &n.Decs.NodeDecs

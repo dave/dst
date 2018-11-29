@@ -7,6 +7,8 @@ import (
 	. "github.com/dave/jennifer/jen"
 )
 
+// notest
+
 func generateRestorer(names []string) error {
 
 	f := NewFile("decorator")

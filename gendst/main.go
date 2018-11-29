@@ -6,6 +6,8 @@ import (
 	"github.com/dave/dst/gendst/data"
 )
 
+// notest
+
 func main() {
 	if err := run(); err != nil {
 		panic(err)

@@ -7,6 +7,8 @@ import (
 	. "github.com/dave/jennifer/jen"
 )
 
+// notest
+
 func generateClone(names []string) error {
 
 	f := NewFilePathName(DSTPATH, "dst")
