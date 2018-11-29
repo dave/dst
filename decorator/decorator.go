@@ -219,43 +219,6 @@ func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, parentName, parent
 	f.Dst.Nodes[n.Sel] = out
 	f.Ast.Nodes[out] = n
 
-	/*
-		This is rather messy. We must merge the SelectorExpr decorations into an Ident. The Ident
-		has an X decoration attachment point, but we don't have a simple place to merge the X.After
-		and Sel.Before line-spacing. This is rather an edge case, but we can fix it by converting
-		the line-spacing to "\n" decorations before / after the X decoration. This will at least
-		mean that decorated / restored code with no mutations should be byte-perfect.
-
-		Here's a list of the decorations we're merging:
-
-		{1}{2}{3}{4}[  X  ].{5}{6}{7}{8}{9}[ Sel ]{10}{11}{12}{13}
-
-		1: SelectorExpr Before Space     - f.before[n]
-		2: SelectorExpr Start Decoration - f.decorations[n]["Start"]
-		3: X Before Space                - f.before[n.X]
-		4: X Start Decoration            - f.decorations[n.X]["Start"]
-
-		5: X End Decoration              - f.decorations[n.X]["End"]
-		6: X After Space                 - f.after[n.X]
-		7: SelectorExpr X Decoration     - f.decorations[n]["X"]
-		8: Sel Before Space              - f.before[n.Sel]
-		9: Sel Start Decoration          - f.decorations[n.Sel]["Start"]
-
-		10: Sel End decoration           - f.decorations[n.Sel]["End"]
-		11: Sel After Space              - f.after[n.Sel]
-		12: SelectorExpr End Decoration  - f.decorations[n]["End"]
-		13: SelectorExpr After Space     - f.after[n]
-
-		1-4:   merge into Ident.Before / Ident.Start
-		5-9:   merge into Ident.X (convert line spaces to decorations)
-		10-13: merge into Ident.End / Ident.After
-	*/
-
-	out.Decs.Before = mergeLineSpace(f.before[n], f.before[n.X])
-	out.Decs.After = mergeLineSpace(f.after[n], f.after[n.Sel])
-	spaceBeforeX := f.after[n.X]
-	spaceAfterX := f.before[n.Sel]
-
 	// String: Name
 	out.Name = n.Sel.Name
 
@@ -269,87 +232,77 @@ func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, parentName, parent
 	// Path: Path
 	out.Path = path
 
-	nd, nok := f.decorations[n]
-	xd, xok := f.decorations[n.X]
-	sd, sok := f.decorations[n.Sel]
+	/*
+		This is rather messy. We must merge the SelectorExpr decorations into an Ident. The Ident
+		has an X decoration attachment point, but we don't have a simple place to merge the X.After
+		and Sel.Before line-spacing. This is rather an edge case, but we can fix it by converting
+		the line-spacing to "\n" decorations before / after the X decoration. This will mean that
+		decorated / restored code with no mutations should be byte-perfect, which is essential.
 
-	if nok {
-		if decs, ok := nd["Start"]; ok {
-			out.Decs.Start.Append(decs...)
-		}
+		Here's a list of the decorations we're merging:
+
+		{1}{2}{3}{4}[  X  ].{5}{6}{7}{8}{9}[ Sel ]{10}{11}{12}{13}
+
+		1: SelectorExpr Before Space     - f.before[n]
+
+		2: SelectorExpr Start Decoration - f.decorations[n]["Start"]
+		3: X Before Space                - f.before[n.X]
+		4: X Start Decoration            - f.decorations[n.X]["Start"]
+
+		5: X End Decoration              - f.decorations[n.X]["End"]
+		6: X After Space                 - f.after[n.X]
+		7: SelectorExpr X Decoration     - f.decorations[n]["X"]
+		8: Sel Before Space              - f.before[n.Sel]
+		9: Sel Start Decoration          - f.decorations[n.Sel]["Start"]
+
+		10: Sel End decoration           - f.decorations[n.Sel]["End"]
+		11: Sel After Space              - f.after[n.Sel]
+		12: SelectorExpr End Decoration  - f.decorations[n]["End"]
+
+		13: SelectorExpr After Space     - f.after[n]
+
+		1:     set Ident.Before
+		2-4:   merge into Ident.Start
+		5-9:   merge into Ident.X
+		10-12: merge into Ident.End
+		13:    set Ident.After
+	*/
+
+	out.Decs.Before = f.before[n]
+	out.Decs.After = f.after[n]
+
+	var nStart, xBefore, xStart, xEnd, xAfter, nX, sBefore, sStart, sEnd, sAfter, nEnd interface{}
+
+	xBefore = f.before[n.X]
+	xAfter = f.after[n.X]
+
+	sBefore = f.before[n.Sel]
+	sAfter = f.after[n.Sel]
+
+	if decs, ok := f.decorations[n]; ok {
+		nStart = decs["Start"]
+		nX = decs["X"]
+		nEnd = decs["End"]
+	}
+	if decs, ok := f.decorations[n.X]; ok {
+		xStart = decs["Start"]
+		xEnd = decs["End"]
+	}
+	if decs, ok := f.decorations[n.Sel]; ok {
+		sStart = decs["Start"]
+		sEnd = decs["End"]
 	}
 
-	if xok {
-		if decs, ok := xd["Start"]; ok {
-			out.Decs.Start.Append(decs...)
-		}
-		if decs, ok := xd["End"]; ok {
-			out.Decs.X.Append(decs...)
-		}
+	if iStart := mergeDecorations(nStart, xBefore, xStart); len(iStart) > 0 {
+		out.Decs.Start.Append(iStart...)
 	}
 
-	var hasXDecorations bool
-	if nok {
-		if decs, ok := nd["X"]; ok {
-			hasXDecorations = len(decs) > 0
-		}
+	if iX := mergeDecorations(xEnd, xAfter, nX, sBefore, sStart); len(iX) > 0 {
+		out.Decs.X.Append(iX...)
 	}
 
-	if !hasXDecorations {
-
-		// if there's no x decoration, we should merge the two line spaces because they are
-		// adjoining.
-		mergedSpace := mergeLineSpace(spaceBeforeX, spaceAfterX)
-		if mergedSpace == dst.NewLine {
-			out.Decs.X.Append("\n")
-		} else if mergedSpace == dst.EmptyLine {
-			out.Decs.X.Append("\n", "\n")
-		}
-
-	} else {
-
-		if spaceBeforeX == dst.NewLine {
-			out.Decs.X.Append("\n")
-		} else if spaceBeforeX == dst.EmptyLine {
-			out.Decs.X.Append("\n", "\n")
-		}
-
-		// we know there's some x decorations, so no need for the checks
-		decs := nd["X"]
-		out.Decs.X.Append(decs...)
-
-		// does the last x decoration introduce a new-line? (e.g. "//" comment or "\n")
-		xDecorationEndsInNewline := decs[len(decs)-1] == "\n" || strings.HasPrefix(decs[len(decs)-1], "//")
-
-		// we reduce the number of "\n" emitted if the last x-decoration adds a line ("//" or "\n")
-		if spaceAfterX == dst.NewLine {
-			if xDecorationEndsInNewline {
-				// nothing to do
-			} else {
-				out.Decs.X.Append("\n")
-			}
-		} else if spaceAfterX == dst.EmptyLine {
-			if xDecorationEndsInNewline {
-				out.Decs.X.Append("\n")
-			} else {
-				out.Decs.X.Append("\n", "\n")
-			}
-		}
-	}
-
-	if sok {
-		if decs, ok := sd["Start"]; ok {
-			out.Decs.X.Append(decs...)
-		}
-		if decs, ok := sd["End"]; ok {
-			out.Decs.End.Append(decs...)
-		}
-	}
-
-	if nok {
-		if decs, ok := nd["End"]; ok {
-			out.Decs.End.Append(decs...)
-		}
+	if iEnd := mergeDecorations(sEnd, sAfter, nEnd); len(iEnd) > 0 {
+		out.Decs.End.Append(iEnd...)
 	}
 
 	return out, nil
@@ -577,4 +530,41 @@ func mergeLineSpace(spaces ...dst.SpaceType) dst.SpaceType {
 		return dst.NewLine
 	}
 	return dst.None
+}
+
+func mergeDecorations(decorationsOrLineSpace ...interface{}) []string {
+	var endsWithNewLine bool
+	var out []string
+	for _, v := range decorationsOrLineSpace {
+		switch v := v.(type) {
+		case nil:
+			// nothing
+		case []string:
+			if len(v) == 0 {
+				continue
+			}
+			out = append(out, v...)
+			endsWithNewLine = v[len(v)-1] == "\n" || strings.HasPrefix(v[len(v)-1], "//")
+		case dst.SpaceType:
+			switch v {
+			case dst.NewLine:
+				if endsWithNewLine {
+					// nothing to do
+				} else {
+					out = append(out, "\n")
+				}
+				endsWithNewLine = true
+			case dst.EmptyLine:
+				if endsWithNewLine {
+					out = append(out, "\n")
+				} else {
+					out = append(out, "\n", "\n")
+				}
+				endsWithNewLine = true
+			}
+		default:
+			panic(fmt.Sprintf("%T", v))
+		}
+	}
+	return out
 }
