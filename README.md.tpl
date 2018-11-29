@@ -172,7 +172,7 @@ where performance is critical. `simple` resolves paths only if they occur in a p
 
 ### Example
 
-Here's an example of supplying resolvers for the decorator and resolver:
+Here's an example of supplying resolvers for the decorator and restorer:
 
 {{ "ExampleManualImports" | example }}
 

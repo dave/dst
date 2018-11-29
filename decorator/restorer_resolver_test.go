@@ -462,7 +462,7 @@ func TestRestorerResolver(t *testing.T) {
 						func main() { b.B(); c.C(); fmt.Print() }`,
 				},
 				{
-					name: "no-addition",
+					name: "one-added-re-arrange",
 					desc: "re-arrange first import block if additions",
 					mutate: func(f *dst.File) {
 						b := f.Decls[1].(*dst.FuncDecl).Body
@@ -483,7 +483,6 @@ func TestRestorerResolver(t *testing.T) {
 				},
 			},
 		},
-
 		{
 			name: "two-blocks-not-arranged",
 			root: "a.b",
