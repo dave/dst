@@ -1,7 +1,9 @@
 package dummy
 
 import (
+	"bytes"
 	"go/build"
+	"go/format"
 	"io"
 	"io/ioutil"
 	"os"
@@ -34,11 +36,23 @@ func BuildContext(m map[string]string) (*build.Context, error) {
 			if err := fs.MkdirAll(fdir, 0777); err != nil {
 				return nil, err
 			}
+
+			var formatted []byte
+			if strings.HasSuffix(fpath, ".go") {
+				var err error
+				formatted, err = format.Source([]byte(src))
+				if err != nil {
+					return nil, err
+				}
+			} else {
+				formatted = []byte(src)
+			}
+
 			f, err := fs.Create(fpath)
 			if err != nil {
 				return nil, err
 			}
-			if _, err := io.Copy(f, strings.NewReader(src)); err != nil {
+			if _, err := io.Copy(f, bytes.NewReader(formatted)); err != nil {
 				_ = f.Close()
 				return nil, err
 			}

@@ -15,8 +15,11 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// NewDecorator returns a new decorator.
+// NewDecorator returns a new decorator. If fset is nil, a new FileSet is created.
 func NewDecorator(fset *token.FileSet) *Decorator {
+	if fset == nil {
+		fset = token.NewFileSet()
+	}
 	return &Decorator{
 		Map:       newMap(),
 		Filenames: map[*dst.File]string{},
@@ -37,10 +40,12 @@ func NewDecoratorFromPackage(pkg *packages.Package) *Decorator {
 	return NewDecoratorWithImports(pkg.Fset, pkg.PkgPath, gotypes.New(pkg.TypesInfo.Uses))
 }
 
+// Decorator converts ast nodes into dst nodes, and converts decoration info from the ast fileset
+// to the dst nodes. Create a new Decorator for each package you need to decorate.
 type Decorator struct {
-	Map
+	Map                            // Mapping between ast and dst Nodes, Objects and Scopes
 	Filenames map[*dst.File]string // Source file names
-	Fset      *token.FileSet
+	Fset      *token.FileSet       // The ast FileSet containing ast decoration info for the files
 
 	// If a Resolver is provided, it is used to resolve remote identifiers from *ast.Ident and
 	// *ast.SelectorExpr nodes. Usually a remote identifier is a SelectorExpr qualified identifier,
@@ -57,8 +62,8 @@ func (d *Decorator) Parse(src interface{}) (*dst.File, error) {
 	return d.ParseFile("", src, parser.ParseComments)
 }
 
-// ParseFile uses parser.ParseFile to parse and decorate a Go source file. The ParseComments flag is
-// added to mode if it doesn't exist.
+// ParseFile uses parser.ParseFile to parse and decorate a Go source file. The ParseComments flag
+// is added to mode if it doesn't exist.
 func (d *Decorator) ParseFile(filename string, src interface{}, mode parser.Mode) (*dst.File, error) {
 
 	// If ParseFile returns an error and also a non-nil file, the errors were just parse errors so
@@ -94,6 +99,7 @@ func (d *Decorator) ParseDir(dir string, filter func(os.FileInfo) bool, mode par
 	return out, nil
 }
 
+// DecorateFile decorates *ast.File and returns *dst.File
 func (d *Decorator) DecorateFile(f *ast.File) (*dst.File, error) {
 	file, err := d.DecorateNode(f)
 	if err != nil {
@@ -102,7 +108,7 @@ func (d *Decorator) DecorateFile(f *ast.File) (*dst.File, error) {
 	return file.(*dst.File), nil
 }
 
-// Decorate decorates an ast.Node and returns a dst.Node
+// DecorateNode decorates ast.Node and returns dst.Node
 func (d *Decorator) DecorateNode(n ast.Node) (dst.Node, error) {
 
 	if d.Resolver == nil && d.Path != "" {
@@ -171,8 +177,8 @@ type decorationInfo struct {
 	decs []string
 }
 
-// Never need to resolve idents that are in these fields (decorateSelectorExpr will force
-// SelectorExpr.Sel to be resolved)
+// We never need to resolve idents that are in these fields (decorateSelectorExpr will override
+// this check with the force parameter for SelectorExpr.Sel when needed).
 var avoid = map[string]bool{
 	"Field.Names":       true,
 	"LabeledStmt.Label": true,
@@ -185,19 +191,24 @@ var avoid = map[string]bool{
 	"SelectorExpr.Sel":  true,
 }
 
+// decorateSelectorExpr is a special case for decorating a SelectorExpr, which might return an
+// Ident if the resolver determines that the SelectorExpr represents a qualified ident.
 func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, parentName, parentField, parentFieldType string, n *ast.SelectorExpr) (dst.Node, error) {
 
-	var path string
-	if f.Resolver != nil {
-		p, err := f.resolvePath(true, n, "SelectorExpr", "Sel", "Ident", n.Sel)
-		if err != nil {
-			return nil, err
-		}
-		path = p
+	if f.Resolver == nil {
+		// continue to default logic in decorateNode
+		return nil, nil
+	}
+
+	// resolve the path with force == true, so we skip the tests that would normally prevent the
+	// Sel field of SelectorExpr from being resolved.
+	path, err := f.resolvePath(true, n, "SelectorExpr", "Sel", "Ident", n.Sel)
+	if err != nil {
+		return nil, err
 	}
 
 	if path == "" {
-		// continue to default logic in decorateNode
+		// path == "" -> not a qualified ident -> continue to default logic in decorateNode
 		return nil, nil
 	}
 
@@ -208,8 +219,42 @@ func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, parentName, parent
 	f.Dst.Nodes[n.Sel] = out
 	f.Ast.Nodes[out] = n
 
-	out.Decs.Before = mergeLineSpace(f.before[n], f.before[n.Sel], f.before[n.X])
-	out.Decs.After = mergeLineSpace(f.after[n], f.after[n.Sel], f.after[n.X])
+	/*
+		This is rather messy. We must merge the SelectorExpr decorations into an Ident. The Ident
+		has an X decoration attachment point, but we don't have a simple place to merge the X.After
+		and Sel.Before line-spacing. This is rather an edge case, but we can fix it by converting
+		the line-spacing to "\n" decorations before / after the X decoration. This will at least
+		mean that decorated / restored code with no mutations should be byte-perfect.
+
+		Here's a list of the decorations we're merging:
+
+		{1}{2}{3}{4}[  X  ].{5}{6}{7}{8}{9}[ Sel ]{10}{11}{12}{13}
+
+		1: SelectorExpr Before Space     - f.before[n]
+		2: SelectorExpr Start Decoration - f.decorations[n]["Start"]
+		3: X Before Space                - f.before[n.X]
+		4: X Start Decoration            - f.decorations[n.X]["Start"]
+
+		5: X End Decoration              - f.decorations[n.X]["End"]
+		6: X After Space                 - f.after[n.X]
+		7: SelectorExpr X Decoration     - f.decorations[n]["X"]
+		8: Sel Before Space              - f.before[n.Sel]
+		9: Sel Start Decoration          - f.decorations[n.Sel]["Start"]
+
+		10: Sel End decoration           - f.decorations[n.Sel]["End"]
+		11: Sel After Space              - f.after[n.Sel]
+		12: SelectorExpr End Decoration  - f.decorations[n]["End"]
+		13: SelectorExpr After Space     - f.after[n]
+
+		1-4:   merge into Ident.Before / Ident.Start
+		5-9:   merge into Ident.X (convert line spaces to decorations)
+		10-13: merge into Ident.End / Ident.After
+	*/
+
+	out.Decs.Before = mergeLineSpace(f.before[n], f.before[n.X])
+	out.Decs.After = mergeLineSpace(f.after[n], f.after[n.Sel])
+	spaceBeforeX := f.after[n.X]
+	spaceAfterX := f.before[n.Sel]
 
 	// String: Name
 	out.Name = n.Sel.Name
@@ -243,9 +288,52 @@ func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, parentName, parent
 		}
 	}
 
+	var hasXDecorations bool
 	if nok {
 		if decs, ok := nd["X"]; ok {
-			out.Decs.X.Append(decs...)
+			hasXDecorations = len(decs) > 0
+		}
+	}
+
+	if !hasXDecorations {
+
+		// if there's no x decoration, we should merge the two line spaces because they are
+		// adjoining.
+		mergedSpace := mergeLineSpace(spaceBeforeX, spaceAfterX)
+		if mergedSpace == dst.NewLine {
+			out.Decs.X.Append("\n")
+		} else if mergedSpace == dst.EmptyLine {
+			out.Decs.X.Append("\n", "\n")
+		}
+
+	} else {
+
+		if spaceBeforeX == dst.NewLine {
+			out.Decs.X.Append("\n")
+		} else if spaceBeforeX == dst.EmptyLine {
+			out.Decs.X.Append("\n", "\n")
+		}
+
+		// we know there's some x decorations, so no need for the checks
+		decs := nd["X"]
+		out.Decs.X.Append(decs...)
+
+		// does the last x decoration introduce a new-line? (e.g. "//" comment or "\n")
+		xDecorationEndsInNewline := decs[len(decs)-1] == "\n" || strings.HasPrefix(decs[len(decs)-1], "//")
+
+		// we reduce the number of "\n" emitted if the last x-decoration adds a line ("//" or "\n")
+		if spaceAfterX == dst.NewLine {
+			if xDecorationEndsInNewline {
+				// nothing to do
+			} else {
+				out.Decs.X.Append("\n")
+			}
+		} else if spaceAfterX == dst.EmptyLine {
+			if xDecorationEndsInNewline {
+				out.Decs.X.Append("\n")
+			} else {
+				out.Decs.X.Append("\n", "\n")
+			}
 		}
 	}
 

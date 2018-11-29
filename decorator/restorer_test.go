@@ -618,6 +618,18 @@ const d = 1
 			func /*FuncDeclDoc*/ (a *b) /*FuncDeclRecv*/ c /*FuncDeclName*/ (d, e int) (f, g int) /*FuncDeclType*/ {
 			}`,
 		},
+		{
+			name: "sel-space-decoration",
+			code: `package main
+            
+				import "root/a"
+            
+            	func main() {
+            		a. /*a*/
+            
+           				A()
+           		}`,
+		},
 	}
 	var solo bool
 	for _, test := range tests {

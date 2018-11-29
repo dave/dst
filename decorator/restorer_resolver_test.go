@@ -1138,7 +1138,7 @@ func TestRestorerResolver(t *testing.T) {
 				}
 
 				if buf.String() != string(expected) {
-					t.Errorf("diff:\n%s", diff(string(expected), buf.String()))
+					t.Errorf("expect: %s \n\n found: %s \n\n diff:\n%s", string(expected), buf.String(), diff(string(expected), buf.String()))
 				}
 
 			})
@@ -1155,5 +1155,356 @@ func TestPackageOrder(t *testing.T) {
 	found := fmt.Sprint(paths)
 	if found != expect {
 		t.Errorf("expect %s, found %s", expect, found)
+	}
+}
+
+func TestRestorerDecorationResolver(t *testing.T) {
+	tests := []struct {
+		skip, solo bool
+		name       string
+		src        map[string]string
+	}{
+		{
+			name: "sel",
+			src: map[string]string{
+				"main/main.go": `package main
+            
+					import "root/a"
+            
+            		func main() {
+            			a.A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space",
+			src: map[string]string{
+				"main/main.go": `package main
+            
+					import "root/a"
+            
+            		func main() {
+            			a.
+							A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-decoration",
+			src: map[string]string{
+				"main/main.go": `package main
+            
+					import "root/a"
+            
+            		func main() {
+            			a. /*a*/ A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-decoration",
+			src: map[string]string{
+				"main/main.go": `package main
+            
+					import "root/a"
+            
+            		func main() {
+            			a. /*a*/
+							A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-decoration-1",
+			src: map[string]string{
+				"main/main.go": `package main
+            
+					import "root/a"
+            
+            		func main() {
+            			a. /*a*/
+            
+            				A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-decoration-2",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+					func main() {
+						a.
+							/*a*/ A()
+					}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-decoration-3",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+            		func main() {
+            			a.
+            				/*a*/
+            				A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-decoration-4",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+            		func main() {
+            			a.
+            				/*a*/
+
+            				A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-decoration-5",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+            		func main() {
+            			a.
+            				
+							/*a*/ A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-decoration-6",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+            		func main() {
+            			a.
+            				
+							/*a*/
+							A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-decoration-7",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+            		func main() {
+            			a.
+            				
+							/*a*/
+
+							A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-line-comment",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+            		func main() {
+            			a. // a
+							A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-line-comment-1",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+            		func main() {
+            			a.
+							// a
+							A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-line-comment-2",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+            		func main() {
+            			a.
+
+							// a
+							A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-line-comment-3",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+            		func main() {
+            			a.
+							// a
+
+							A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+		{
+			name: "sel-space-line-comment-4",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import "root/a"
+
+            		func main() {
+            			a.
+
+							// a
+
+							A()
+            		}`,
+				"a/a.go": "package a \n\n func A(){}",
+				"go.mod": "module root",
+			},
+		},
+	}
+	var solo bool
+	for _, test := range tests {
+		if test.solo {
+			solo = true
+			break
+		}
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if solo && !test.solo {
+				t.Skip()
+			}
+			if test.skip {
+				t.Skip()
+			}
+
+			// format code and check it hasn't changed
+			expected, err := format.Source([]byte(test.src["main/main.go"]))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if normalize(string(expected)) != normalize(test.src["main/main.go"]) {
+				t.Fatalf("code changed after gofmt. before: \n%s\nafter:\n%s", test.src["main/main.go"], string(expected))
+			}
+
+			rootDir, err := dummy.TempDir(test.src)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer os.RemoveAll(rootDir)
+			mainDir := filepath.Join(rootDir, "main")
+			mainPkg := "root/main"
+
+			cfg := &packages.Config{
+				Mode: packages.LoadSyntax,
+				Dir:  mainDir,
+			}
+
+			pkgs, err := packages.Load(cfg, mainPkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(pkgs) != 1 {
+				t.Fatalf("expected 1 package, found %d", len(pkgs))
+			}
+			pkg := pkgs[0]
+
+			if len(pkg.Errors) > 0 {
+				for _, v := range pkg.Errors {
+					t.Error(v.Error())
+				}
+				t.Fatal("errors loading package")
+			}
+
+			d := NewDecoratorFromPackage(pkg)
+
+			var file *dst.File
+			for _, sf := range pkg.Syntax {
+				if _, name := filepath.Split(pkg.Fset.File(sf.Pos()).Name()); name == "main.go" {
+					var err error
+					file, err = d.DecorateFile(sf)
+					if err != nil {
+						t.Fatal(err)
+					}
+					break
+				}
+			}
+
+			r := NewRestorerWithImports(mainPkg, gopackages.New(mainDir))
+			fr := r.FileRestorer()
+
+			restoredFile, err := fr.RestoreFile(file)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			buf := &bytes.Buffer{}
+			if err := format.Node(buf, fr.Fset, restoredFile); err != nil {
+				t.Fatal(err)
+			}
+
+			if buf.String() != string(expected) {
+				t.Errorf("expect: %s \n\n found: %s \n\n diff:\n%s", string(expected), buf.String(), diff(string(expected), buf.String()))
+			}
+		})
 	}
 }
