@@ -240,6 +240,9 @@ func Clone(n Node) Node {
 			out.Args = append(out.Args, Clone(v).(Expr))
 		}
 
+		// Token: Ellipsis
+		out.Ellipsis = n.Ellipsis
+
 		// Decoration: Ellipsis
 		out.Decs.Ellipsis = append(out.Decs.Ellipsis, n.Decs.Ellipsis...)
 
@@ -512,6 +515,9 @@ func Clone(n Node) Node {
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
 
+		// Token: Opening
+		out.Opening = n.Opening
+
 		// Decoration: Opening
 		out.Decs.Opening = append(out.Decs.Opening, n.Decs.Opening...)
 
@@ -519,6 +525,9 @@ func Clone(n Node) Node {
 		for _, v := range n.List {
 			out.List = append(out.List, Clone(v).(*Field))
 		}
+
+		// Token: Closing
+		out.Closing = n.Closing
 
 		// Decoration: End
 		out.Decs.End = append(out.Decs.End, n.Decs.End...)
@@ -616,6 +625,9 @@ func Clone(n Node) Node {
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
 
+		// Token: Func
+		out.Type.Func = n.Type.Func
+
 		// Decoration: Func
 		out.Decs.Func = append(out.Decs.Func, n.Decs.Func...)
 
@@ -697,6 +709,9 @@ func Clone(n Node) Node {
 		// Decoration: Start
 		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
 
+		// Token: Func
+		out.Func = n.Func
+
 		// Decoration: Func
 		out.Decs.Func = append(out.Decs.Func, n.Decs.Func...)
 
@@ -733,6 +748,9 @@ func Clone(n Node) Node {
 		// Decoration: Tok
 		out.Decs.Tok = append(out.Decs.Tok, n.Decs.Tok...)
 
+		// Token: Lparen
+		out.Lparen = n.Lparen
+
 		// Decoration: Lparen
 		out.Decs.Lparen = append(out.Decs.Lparen, n.Decs.Lparen...)
 
@@ -740,6 +758,9 @@ func Clone(n Node) Node {
 		for _, v := range n.Specs {
 			out.Specs = append(out.Specs, Clone(v).(Spec))
 		}
+
+		// Token: Rparen
+		out.Rparen = n.Rparen
 
 		// Decoration: End
 		out.Decs.End = append(out.Decs.End, n.Decs.End...)
@@ -1423,6 +1444,9 @@ func Clone(n Node) Node {
 		if n.Name != nil {
 			out.Name = Clone(n.Name).(*Ident)
 		}
+
+		// Token: Assign
+		out.Assign = n.Assign
 
 		// Decoration: Name
 		out.Decs.Name = append(out.Decs.Name, n.Decs.Name...)

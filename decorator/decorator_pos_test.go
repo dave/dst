@@ -55,6 +55,9 @@ func TestPositions(t *testing.T) {
 		_, _, infos := getDecorationInfo(n)
 		for _, info := range infos {
 			for _, text := range info.decs {
+				if text == "// notest" {
+					continue
+				}
 				if r1.MatchString(text) || r2.MatchString(text) {
 					if currentNodeType != "" && !done {
 						t.Fatalf("missed %s %d", currentNodeType, currentTestIndex)

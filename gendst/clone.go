@@ -35,7 +35,11 @@ func generateClone(names []string) error {
 						case data.Token:
 							if frag.TokenField != nil {
 								g.Line().Commentf("Token: %s", frag.Name)
-								g.Add(frag.TokenField.Get("out")).Op("=").Add(frag.Token.Get("n", false))
+								g.Add(frag.TokenField.Get("out")).Op("=").Add(frag.TokenField.Get("n"))
+							}
+							if frag.ExistsField != nil {
+								g.Line().Commentf("Token: %s", frag.Name)
+								g.Add(frag.ExistsField.Get("out")).Op("=").Add(frag.ExistsField.Get("n"))
 							}
 						case data.String:
 							g.Line().Commentf("String: %s", frag.Name)
