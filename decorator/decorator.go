@@ -185,15 +185,11 @@ var avoid = map[string]bool{
 	"SelectorExpr.Sel":  true,
 }
 
-var decorateAvoid = map[string]bool{
-	"SelectorExpr.X": true, // we avoid this in the decorator, but not the restorer
-}
-
 func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, parentName, parentField, parentFieldType string, n *ast.SelectorExpr) (dst.Node, error) {
 
 	var path string
 	if f.Resolver != nil {
-		p, err := f.resolvePath(true, n, "", "", "", n.Sel)
+		p, err := f.resolvePath(true, n, "SelectorExpr", "Sel", "Ident", n.Sel)
 		if err != nil {
 			return nil, err
 		}
@@ -274,13 +270,14 @@ func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, parentName, parent
 
 func (f *fileDecorator) resolvePath(force bool, parent ast.Node, parentName, parentField, parentFieldType string, id *ast.Ident) (string, error) {
 
+	if f.Resolver == nil {
+		panic("resolvePath needs a Resolver")
+	}
+
 	if !force {
-		if f.Resolver == nil {
-			panic("resolvePath needs a Resolver")
-		}
 
 		key := parentName + "." + parentField
-		if avoid[key] || decorateAvoid[key] {
+		if avoid[key] {
 			return "", nil
 		}
 
@@ -289,7 +286,7 @@ func (f *fileDecorator) resolvePath(force bool, parent ast.Node, parentName, par
 		}
 	}
 
-	path, err := f.Resolver.ResolveIdent(f.file, parent, id)
+	path, err := f.Resolver.ResolveIdent(f.file, parent, parentField, id)
 	if err != nil {
 		return "", err
 	}

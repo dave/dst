@@ -30,7 +30,7 @@ type DecoratorResolver struct {
 	files            map[*ast.File]map[string]string
 }
 
-func (r *DecoratorResolver) ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (string, error) {
+func (r *DecoratorResolver) ResolveIdent(file *ast.File, parent ast.Node, parentField string, id *ast.Ident) (string, error) {
 
 	if r.RestorerResolver == nil {
 		r.RestorerResolver = guess.New()
@@ -42,7 +42,7 @@ func (r *DecoratorResolver) ResolveIdent(file *ast.File, parent ast.Node, id *as
 	}
 
 	se, ok := parent.(*ast.SelectorExpr)
-	if !ok {
+	if !ok || parentField != "Sel" {
 		return "", nil
 	}
 

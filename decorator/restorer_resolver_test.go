@@ -1016,6 +1016,32 @@ func TestRestorerResolver(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "dot-imported-ident-in-x-of-sel",
+			src: map[string]string{
+				"main/main.go": `package main
+
+					import . "root/a"
+
+					func main() { A.B() }`,
+				"a/a.go": "package a \n\n type T struct{} \n\n func (T)B(){} \n\n var A T",
+				"go.mod": "module root",
+			},
+			cases: []tc{
+				{
+					name: "change-to-normal",
+					desc: "ensure Ident in X position of SelectorExpr has been resolved",
+					restorer: func(r *FileRestorer) {
+						r.Alias["root/a"] = ""
+					},
+					expect: `package main
+			
+						import "root/a"
+			
+						func main() { a.A.B() }`,
+				},
+			},
+		},
 	}
 	var solo bool
 	for _, test := range tests {

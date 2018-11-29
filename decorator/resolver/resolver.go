@@ -19,7 +19,7 @@ type RestorerResolver interface {
 //
 // Returns path != "" is the node is a remote reference.
 type DecoratorResolver interface {
-	ResolveIdent(file *ast.File, parent ast.Node, id *ast.Ident) (path string, err error)
+	ResolveIdent(file *ast.File, parent ast.Node, parentField string, id *ast.Ident) (path string, err error)
 }
 
 var PackageNotFoundError = errors.New("package not found")

@@ -147,6 +147,7 @@ func TestDecoratorResolver(t *testing.T) {
 			res := gotypes.New(pkg.TypesInfo.Uses)
 
 			parents := map[string]ast.Node{}
+			parentFields := map[string]string{}
 			nodes := map[string]*ast.Ident{}
 			for _, f := range pkg.Syntax {
 				_, fname := filepath.Split(pkg.Fset.File(f.Pos()).Name())
@@ -158,10 +159,12 @@ func TestDecoratorResolver(t *testing.T) {
 					case *ast.SelectorExpr:
 						nodes[n.Sel.Name] = n.Sel
 						parents[n.Sel.Name] = n
+						parentFields[n.Sel.Name] = "Sel"
 					case *ast.Ident:
 						if _, ok := nodes[n.Name]; !ok {
 							nodes[n.Name] = n
 							parents[n.Name] = nil
+							parentFields[n.Name] = ""
 						}
 					}
 					return true
@@ -171,7 +174,7 @@ func TestDecoratorResolver(t *testing.T) {
 			for _, c := range test.cases {
 				//ast.Print(pkg.Fset, parents[c.id])
 				//ast.Print(pkg.Fset, nodes[c.id])
-				path, err := res.ResolveIdent(nil, parents[c.id], nodes[c.id])
+				path, err := res.ResolveIdent(nil, parents[c.id], parentFields[c.id], nodes[c.id])
 				if err != nil {
 					t.Error(err)
 				}
