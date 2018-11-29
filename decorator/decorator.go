@@ -233,13 +233,14 @@ func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, parentName, parent
 	out.Path = path
 
 	/*
-		This is rather messy. We must merge the SelectorExpr decorations into an Ident. The Ident
-		has an X decoration attachment point, but we don't have a simple place to merge the X.After
-		and Sel.Before line-spacing. This is rather an edge case, but we can fix it by converting
-		the line-spacing to "\n" decorations before / after the X decoration. This will mean that
-		decorated / restored code with no mutations should be byte-perfect, which is essential.
+		We must merge the SelectorExpr decorations into an Ident. The Ident has an X decoration
+		attachment point, but we don't have a simple place to store the decorations and line
+		spacing from the X / Sel child nodes. This is rather an edge case, but we can fix it by
+		merging the line-spacing with decorations (line spacing becomes "\n" decorations) and
+		adding these to the Ident decorations. This will mean that decorated / restored code with
+		no mutations should be byte-perfect, which is essential.
 
-		Here's a list of the decorations we're merging:
+		Here's a list of the decorations / line spacings we're merging:
 
 		{1}{2}{3}{4}[  X  ].{5}{6}{7}{8}{9}[ Sel ]{10}{11}{12}{13}
 
