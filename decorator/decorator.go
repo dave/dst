@@ -517,22 +517,6 @@ func debug(w io.Writer, file dst.Node) {
 	fmt.Fprint(w, result)
 }
 
-func mergeLineSpace(spaces ...dst.SpaceType) dst.SpaceType {
-	var hasNewLine bool
-	for _, v := range spaces {
-		switch v {
-		case dst.EmptyLine:
-			return dst.EmptyLine
-		case dst.NewLine:
-			hasNewLine = true
-		}
-	}
-	if hasNewLine {
-		return dst.NewLine
-	}
-	return dst.None
-}
-
 func mergeDecorations(decorationsOrLineSpace ...interface{}) []string {
 	var endsWithNewLine bool
 	var out []string
