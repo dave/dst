@@ -2202,7 +2202,6 @@ var Info = map[string][]Part{
 			Comments   []*CommentGroup // list of all comments in the source file
 		}
 	*/
-	// TODO: File.Imports?
 	// TODO: File.Unresolved?
 	"File": {
 		Decoration{
@@ -2237,6 +2236,12 @@ var Info = map[string][]Part{
 		Scope{
 			Name:  "Scope",
 			Field: Field{"Scope"},
+		},
+		List{
+			Name:      "Imports",
+			Field:     Field{"Imports"},
+			Elem:      Struct{"ImportSpec"},
+			NoRestore: true,
 		},
 	},
 	/*
@@ -2368,6 +2373,7 @@ type List struct {
 	Field     FieldSpec
 	Elem      TypeSpec
 	Separator token.Token
+	NoRestore bool
 }
 
 type Map struct {

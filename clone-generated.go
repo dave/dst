@@ -565,6 +565,11 @@ func Clone(n Node) Node {
 		// Scope: Scope
 		out.Scope = CloneScope(n.Scope)
 
+		// List: Imports
+		for _, v := range n.Imports {
+			out.Imports = append(out.Imports, Clone(v).(*ImportSpec))
+		}
+
 		out.Decs.After = n.Decs.After
 
 		return out

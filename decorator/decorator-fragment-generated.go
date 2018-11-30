@@ -524,6 +524,11 @@ func (f *fileDecorator) addNodeFragments(n ast.Node) {
 			f.addNodeFragments(v)
 		}
 
+		// List: Imports
+		for _, v := range n.Imports {
+			f.addNodeFragments(v)
+		}
+
 	case *ast.ForStmt:
 
 		// Decoration: Start

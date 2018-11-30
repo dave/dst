@@ -795,6 +795,15 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		}
 		out.Scope = scope
 
+		// List: Imports
+		for _, v := range n.Imports {
+			child, err := f.decorateNode(n, "File", "Imports", "ImportSpec", v)
+			if err != nil {
+				return nil, err
+			}
+			out.Imports = append(out.Imports, child.(*dst.ImportSpec))
+		}
+
 		if nd, ok := f.decorations[n]; ok {
 			if decs, ok := nd["Start"]; ok {
 				out.Decs.Start = decs

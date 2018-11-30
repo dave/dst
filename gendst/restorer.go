@@ -109,6 +109,9 @@ func generateRestorer(names []string) error {
 								frag.Field.Get("out").Op("=").Id("r").Dot("restoreNode").Call(frag.Field.Get("n"), Lit(nodeName), Lit(frag.Field.FieldName()), Lit(frag.Type.TypeName()), Id("allowDuplicate")).Assert(frag.Type.Literal("go/ast")),
 							)
 						case data.List:
+							if frag.NoRestore {
+								continue
+							}
 							g.Line().Commentf("List: %s", frag.Name)
 							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
 								frag.Field.Get("out").Op("=").Append(
