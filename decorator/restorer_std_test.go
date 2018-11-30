@@ -51,7 +51,7 @@ func testPackageRestoresCorrectlyWithImports(t *testing.T, path ...string) {
 			r.Path = p.PkgPath
 			r.Resolver = &gobuild.RestorerResolver{Dir: p.Dir}
 
-			for _, file := range p.Files {
+			for _, file := range p.Syntax {
 
 				fpath := p.Decorator.Filenames[file]
 				_, fname := filepath.Split(fpath)

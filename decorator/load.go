@@ -27,13 +27,18 @@ func Load(cfg *packages.Config, patterns ...string) ([]*Package, error) {
 		return nil, err
 	}
 
-	var out []*Package
-	for _, pkg := range pkgs {
+	dpkgs := map[*packages.Package]*Package{}
 
+	var convert func(p *packages.Package) (*Package, error)
+	convert = func(pkg *packages.Package) (*Package, error) {
+		if dp, ok := dpkgs[pkg]; ok {
+			return dp, nil
+		}
 		p := &Package{
 			Package: pkg,
+			Imports: map[string]*Package{},
 		}
-
+		dpkgs[pkg] = p
 		if len(pkg.Syntax) > 0 {
 
 			// Only decorate files in the GoFiles list. Syntax also has preprocessed cgo files which
@@ -53,16 +58,32 @@ func Load(cfg *packages.Config, patterns ...string) ([]*Package, error) {
 				if err != nil {
 					return nil, err
 				}
-				p.Files = append(p.Files, file)
+				p.Syntax = append(p.Syntax, file)
 			}
 
 			dir, _ := filepath.Split(pkg.Fset.File(pkg.Syntax[0].Pos()).Name())
 			p.Dir = dir
+
+			for path, imp := range pkg.Imports {
+				dimp, err := convert(imp)
+				if err != nil {
+					return nil, err
+				}
+				p.Imports[path] = dimp
+			}
 		}
-
-		out = append(out, p)
-
+		return p, nil
 	}
+
+	var out []*Package
+	for _, pkg := range pkgs {
+		p, err := convert(pkg)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, p)
+	}
+
 	return out, nil
 }
 
@@ -70,7 +91,8 @@ type Package struct {
 	*packages.Package
 	Dir       string
 	Decorator *Decorator
-	Files     []*dst.File
+	Imports   map[string]*Package
+	Syntax    []*dst.File
 }
 
 func (p *Package) Save() error {
@@ -79,7 +101,7 @@ func (p *Package) Save() error {
 
 func (p *Package) save(writeFile func(filename string, data []byte, perm os.FileMode) error) error {
 	r := NewRestorerWithImports(p.PkgPath, gopackages.New(p.Dir))
-	for _, file := range p.Files {
+	for _, file := range p.Syntax {
 		buf := &bytes.Buffer{}
 		if err := r.Fprint(buf, file); err != nil {
 			return err
