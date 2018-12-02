@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator/resolver"
 	"github.com/dave/dst/decorator/resolver/gopackages"
 	"golang.org/x/tools/go/packages"
 )
@@ -96,11 +97,15 @@ type Package struct {
 }
 
 func (p *Package) Save() error {
-	return p.save(ioutil.WriteFile)
+	return p.save(gopackages.New(p.Dir), ioutil.WriteFile)
 }
 
-func (p *Package) save(writeFile func(filename string, data []byte, perm os.FileMode) error) error {
-	r := NewRestorerWithImports(p.PkgPath, gopackages.New(p.Dir))
+func (p *Package) SaveWithResolver(resolver resolver.RestorerResolver) error {
+	return p.save(resolver, ioutil.WriteFile)
+}
+
+func (p *Package) save(resolver resolver.RestorerResolver, writeFile func(filename string, data []byte, perm os.FileMode) error) error {
+	r := NewRestorerWithImports(p.PkgPath, resolver)
 	for _, file := range p.Syntax {
 		buf := &bytes.Buffer{}
 		if err := r.Fprint(buf, file); err != nil {
