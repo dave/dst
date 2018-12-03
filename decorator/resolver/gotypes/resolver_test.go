@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/dave/dst/decorator/dummy"
 	"github.com/dave/dst/decorator/resolver/gotypes"
 	"golang.org/x/tools/go/packages"
 )
@@ -123,7 +122,7 @@ func TestDecoratorResolver(t *testing.T) {
 				t.Skip()
 			}
 
-			root, err := dummy.TempDir(test.src)
+			root, err := tempDir(test.src)
 			if err != nil {
 				t.Fatal(err)
 			}

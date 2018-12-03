@@ -13,7 +13,6 @@ import (
 
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
-	"github.com/dave/dst/decorator/dummy"
 	"github.com/dave/dst/decorator/resolver/goast"
 	"github.com/dave/dst/decorator/resolver/gopackages"
 	"github.com/dave/dst/decorator/resolver/gotypes"
@@ -168,7 +167,7 @@ func ExampleManualImports() {
 func ExampleImports() {
 
 	// Create a simple module in a temporary directory
-	dir, err := dummy.TempDir(map[string]string{
+	dir, err := tempDir(map[string]string{
 		"go.mod":  "module root",
 		"main.go": "package main \n\n func main() {}",
 	})
@@ -219,7 +218,7 @@ func ExampleImports() {
 func ExampleGoTypesImport() {
 
 	// Create a simple module in a temporary directory
-	dir, err := dummy.TempDir(map[string]string{
+	dir, err := tempDir(map[string]string{
 		"go.mod": "module root",
 		"main.go": `package main
 

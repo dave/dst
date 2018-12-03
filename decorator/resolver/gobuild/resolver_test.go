@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/dave/dst/decorator/dummy"
 	"github.com/dave/dst/decorator/resolver"
 	"github.com/dave/dst/decorator/resolver/gobuild"
 )
@@ -26,7 +25,7 @@ func TestRestorerResolver(t *testing.T) {
 					"main2/main2.go":      "package main \n\n func main(){}",
 					"a/a.go":              "package a2 \n\n func A(){}",
 				}
-				bc, err := dummy.BuildContext(src)
+				bc, err := buildContext(src)
 				if err != nil {
 					t.Fatal(err)
 				}

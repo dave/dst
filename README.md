@@ -288,7 +288,7 @@ The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience fun
 
 ```go
 // Create a simple module in a temporary directory
-dir, err := dummy.TempDir(map[string]string{
+dir, err := tempDir(map[string]string{
 	"go.mod":	"module root",
 	"main.go":	"package main \n\n func main() {}",
 })

@@ -1,4 +1,4 @@
-package dummy
+package gopackages_test
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func TempDir(m map[string]string) (dir string, err error) {
+func tempDir(m map[string]string) (dir string, err error) {
 	if dir, err = ioutil.TempDir("", ""); err != nil {
 		return
 	}

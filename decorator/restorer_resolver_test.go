@@ -12,7 +12,6 @@ import (
 	"testing"
 
 	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/dummy"
 	"github.com/dave/dst/decorator/resolver/gopackages"
 	"golang.org/x/tools/go/packages"
 )
@@ -1090,7 +1089,7 @@ func TestRestorerResolver(t *testing.T) {
 					t.Skip()
 				}
 
-				rootDir, err := dummy.TempDir(test.src)
+				rootDir, err := tempDir(test.src)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -1471,7 +1470,7 @@ func TestRestorerDecorationResolver(t *testing.T) {
 				t.Fatalf("code changed after gofmt. before: \n%s\nafter:\n%s", test.src["main/main.go"], string(expected))
 			}
 
-			rootDir, err := dummy.TempDir(test.src)
+			rootDir, err := tempDir(test.src)
 			if err != nil {
 				t.Fatal(err)
 			}

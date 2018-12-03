@@ -1,4 +1,4 @@
-package dummy
+package gobuild_test
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	"gopkg.in/src-d/go-billy.v4/memfs"
 )
 
-func BuildContext(m map[string]string) (*build.Context, error) {
+func buildContext(m map[string]string) (*build.Context, error) {
 
 	goroot := "/goroot/"
 	gopath := "/gopath/"

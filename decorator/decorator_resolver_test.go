@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/dummy"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -80,7 +79,7 @@ func TestDecoratorResolver(t *testing.T) {
 				t.Skip()
 			}
 
-			root, err := dummy.TempDir(test.src)
+			root, err := tempDir(test.src)
 			if err != nil {
 				t.Fatal(err)
 			}

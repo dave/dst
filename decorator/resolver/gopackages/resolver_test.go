@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/dave/dst/decorator/dummy"
 	"github.com/dave/dst/decorator/resolver"
 	"github.com/dave/dst/decorator/resolver/gopackages"
 )
@@ -27,7 +26,7 @@ func TestRestorerResolver(t *testing.T) {
 					"go.mod":       "module root",
 				}
 				var err error
-				root, err = dummy.TempDir(src)
+				root, err = tempDir(src)
 				if err != nil {
 					t.Fatal(err)
 				}
