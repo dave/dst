@@ -334,8 +334,8 @@ func ExampleTypes() {
 	// Find the *dst.Ident for the definition of "i"
 	dstDef := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.DeclStmt).Decl.(*dst.GenDecl).Specs[0].(*dst.ValueSpec).Names[0]
 
-	// Find the *ast.Ident using the Ast.Nodes mapping
-	astDef := dec.Ast.Nodes[dstDef].(*ast.Ident)
+	// Find the *ast.Ident using the Ast map
+	astDef := dec.Ast[dstDef].(*ast.Ident)
 
 	// Find the types.Object corresponding to "i"
 	obj := typesInfo.Defs[astDef]
@@ -349,10 +349,10 @@ func ExampleTypes() {
 		astUses = append(astUses, id)
 	}
 
-	// Find each *dst.Ident in the Dst.Nodes mapping
+	// Find each *dst.Ident in the Dst map
 	var dstUses []*dst.Ident
 	for _, id := range astUses {
-		dstUses = append(dstUses, dec.Dst.Nodes[id].(*dst.Ident))
+		dstUses = append(dstUses, dec.Dst[id].(*dst.Ident))
 	}
 
 	// Change the name of the original definition and all uses

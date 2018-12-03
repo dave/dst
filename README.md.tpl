@@ -105,8 +105,8 @@ The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience fun
 
 ### Mappings
 
-The decorator exposes `Dst.Nodes` and `Ast.Nodes` which map between `ast.Node` and `dst.Node`. This 
-enables systems that refer to `ast` nodes (such as `go/types`) to be used:
+The decorator exposes `Dst` and `Ast` which map between `ast.Node` and `dst.Node`. This enables 
+systems that refer to `ast` nodes (such as `go/types`) to be used:
 
 {{ "ExampleTypes" | example }}
 

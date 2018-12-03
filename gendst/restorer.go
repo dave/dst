@@ -28,7 +28,7 @@ func generateRestorer(names []string) error {
 		Id("parentFieldType").String(),
 		Id("allowDuplicate").Bool(),
 	).Qual("go/ast", "Node").BlockFunc(func(g *Group) {
-		g.If(List(Id("an"), Id("ok")).Op(":=").Id("r").Dot("Ast").Dot("Nodes").Index(Id("n")), Id("ok")).Block(
+		g.If(List(Id("an"), Id("ok")).Op(":=").Id("r").Dot("Ast").Index(Id("n")), Id("ok")).Block(
 			If(Id("allowDuplicate")).Block(
 				Return(Id("an")),
 			).Else().Block(
@@ -48,8 +48,8 @@ func generateRestorer(names []string) error {
 						g.Line()
 					}
 					g.Id("out").Op(":=").Op("&").Qual("go/ast", nodeName).Values()
-					g.Id("r").Dot("Ast").Dot("Nodes").Index(Id("n")).Op("=").Id("out")
-					g.Id("r").Dot("Dst").Dot("Nodes").Index(Id("out")).Op("=").Id("n")
+					g.Id("r").Dot("Ast").Index(Id("n")).Op("=").Id("out")
+					g.Id("r").Dot("Dst").Index(Id("out")).Op("=").Id("n")
 
 					if nodeName != "Package" {
 						g.Id("r").Dot("applySpace").Call(Id("n").Dot("Decs").Dot("Before"))
@@ -123,11 +123,7 @@ func generateRestorer(names []string) error {
 							g.Line().Commentf("Map: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Map(String()).Add(frag.Elem.Literal("go/ast")).Values()
 							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).BlockFunc(func(g *Group) {
-								if frag.Elem.TypeName() == "Object" {
-									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreObject").Call(Id("v"))
-								} else {
-									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v"), Lit(nodeName), Lit(frag.Field.FieldName()), Lit(frag.Elem.TypeName()), Id("allowDuplicate")).Assert(frag.Elem.Literal("go/ast"))
-								}
+								g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("r").Dot("restoreNode").Call(Id("v"), Lit(nodeName), Lit(frag.Field.FieldName()), Lit(frag.Elem.TypeName()), Id("allowDuplicate")).Assert(frag.Elem.Literal("go/ast"))
 							})
 						case data.Bad:
 							g.Line().Comment("Bad")
@@ -141,12 +137,6 @@ func generateRestorer(names []string) error {
 							} else {
 								g.Add(frag.Field.Get("out")).Op("=").Add(frag.Field.Get("n"))
 							}
-						case data.Scope:
-							g.Line().Commentf("Scope: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Id("r").Dot("restoreScope").Call(frag.Field.Get("n"))
-						case data.Object:
-							g.Line().Commentf("Object: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Id("r").Dot("restoreObject").Call(frag.Field.Get("n"))
 						case data.PathDecoration:
 							// nothing
 						default:

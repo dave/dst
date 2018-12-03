@@ -61,21 +61,11 @@ func generateClone(names []string) error {
 							g.Line().Commentf("Map: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Map(String()).Add(frag.Elem.Literal(DSTPATH)).Values()
 							g.For(List(Id("k"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).BlockFunc(func(g *Group) {
-								if frag.Elem.TypeName() == "Object" {
-									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("CloneObject").Call(Id("v"))
-								} else {
-									g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("Clone").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH))
-								}
+								g.Add(frag.Field.Get("out")).Index(Id("k")).Op("=").Id("Clone").Call(Id("v")).Assert(frag.Elem.Literal(DSTPATH))
 							})
 						case data.Value:
 							g.Line().Commentf("Value: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Add(frag.Field.Get("n"))
-						case data.Scope:
-							g.Line().Commentf("Scope: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Id("CloneScope").Call(frag.Field.Get("n"))
-						case data.Object:
-							g.Line().Commentf("Object: %s", frag.Name)
-							g.Add(frag.Field.Get("out")).Op("=").Id("CloneObject").Call(frag.Field.Get("n"))
 						case data.Bad:
 							g.Line().Comment("Bad")
 							g.Add(frag.LengthField.Get("out")).Op("=").Add(frag.LengthField.Get("n"))

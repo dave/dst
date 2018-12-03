@@ -55,11 +55,9 @@ func generateFragger(names []string) error {
 							)
 						case data.Map:
 							g.Line().Commentf("Map: %s", frag.Name)
-							if frag.Elem.TypeName() != "Object" {
-								g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
-									Id("f").Dot("addNodeFragments").Call(Id("v")),
-								)
-							}
+							g.For(List(Id("_"), Id("v")).Op(":=").Range().Add(frag.Field.Get("n"))).Block(
+								Id("f").Dot("addNodeFragments").Call(Id("v")),
+							)
 						case data.Token:
 							g.Line().Commentf("Token: %s", frag.Name)
 							pos := Qual("go/token", "NoPos")
@@ -82,7 +80,7 @@ func generateFragger(names []string) error {
 						case data.Bad:
 							g.Line().Comment("Bad")
 							g.Id("f").Dot("addBadFragment").Call(Id("n"), frag.FromField.Get("n"), Int().Parens(frag.ToField.Get("n").Op("-").Add(frag.FromField.Get("n"))))
-						case data.Init, data.Value, data.Scope, data.Object, data.SpecialDecoration, data.PathDecoration:
+						case data.Init, data.Value, data.SpecialDecoration, data.PathDecoration:
 							// do nothing
 						default:
 							panic(fmt.Sprintf("unknown fragment type %T", frag))

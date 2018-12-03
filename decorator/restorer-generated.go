@@ -8,7 +8,7 @@ import (
 )
 
 func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFieldType string, allowDuplicate bool) ast.Node {
-	if an, ok := r.Ast.Nodes[n]; ok {
+	if an, ok := r.Ast[n]; ok {
 		if allowDuplicate {
 			return an
 		} else {
@@ -18,8 +18,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 	switch n := n.(type) {
 	case *dst.ArrayType:
 		out := &ast.ArrayType{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -55,8 +55,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.AssignStmt:
 		out := &ast.AssignStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -87,8 +87,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.BadDecl:
 		out := &ast.BadDecl{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -106,8 +106,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.BadExpr:
 		out := &ast.BadExpr{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -125,8 +125,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.BadStmt:
 		out := &ast.BadStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -144,8 +144,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.BasicLit:
 		out := &ast.BasicLit{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -167,8 +167,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.BinaryExpr:
 		out := &ast.BinaryExpr{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -202,8 +202,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.BlockStmt:
 		out := &ast.BlockStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -232,8 +232,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.BranchStmt:
 		out := &ast.BranchStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -259,8 +259,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.CallExpr:
 		out := &ast.CallExpr{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -306,8 +306,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.CaseClause:
 		out := &ast.CaseClause{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -350,8 +350,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.ChanType:
 		out := &ast.ChanType{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -399,8 +399,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.CommClause:
 		out := &ast.CommClause{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -446,8 +446,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.CompositeLit:
 		out := &ast.CompositeLit{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -487,8 +487,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.DeclStmt:
 		out := &ast.DeclStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -506,8 +506,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.DeferStmt:
 		out := &ast.DeferStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -532,8 +532,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.Ellipsis:
 		out := &ast.Ellipsis{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -558,8 +558,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.EmptyStmt:
 		out := &ast.EmptyStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -581,8 +581,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.ExprStmt:
 		out := &ast.ExprStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -600,8 +600,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.Field:
 		out := &ast.Field{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -632,8 +632,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.FieldList:
 		out := &ast.FieldList{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -666,8 +666,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.File:
 		out := &ast.File{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -695,16 +695,13 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 
 		// Decoration: End
 		r.applyDecorations(out, n.Decs.End, true)
-
-		// Scope: Scope
-		out.Scope = r.restoreScope(n.Scope)
 		r.applySpace(n.Decs.After)
 
 		return out
 	case *dst.ForStmt:
 		out := &ast.ForStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -763,8 +760,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.FuncDecl:
 		out := &ast.FuncDecl{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Init: Type
@@ -838,8 +835,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.FuncLit:
 		out := &ast.FuncLit{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -865,8 +862,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.FuncType:
 		out := &ast.FuncType{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -901,8 +898,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.GenDecl:
 		out := &ast.GenDecl{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -943,8 +940,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.GoStmt:
 		out := &ast.GoStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -976,8 +973,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		}
 
 		out := &ast.Ident{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -993,16 +990,13 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 
 		// Decoration: End
 		r.applyDecorations(out, n.Decs.End, true)
-
-		// Object: Obj
-		out.Obj = r.restoreObject(n.Obj)
 		r.applySpace(n.Decs.After)
 
 		return out
 	case *dst.IfStmt:
 		out := &ast.IfStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1056,8 +1050,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.ImportSpec:
 		out := &ast.ImportSpec{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1083,8 +1077,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.IncDecStmt:
 		out := &ast.IncDecStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1110,8 +1104,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.IndexExpr:
 		out := &ast.IndexExpr{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1151,8 +1145,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.InterfaceType:
 		out := &ast.InterfaceType{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1180,8 +1174,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.KeyValueExpr:
 		out := &ast.KeyValueExpr{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1214,8 +1208,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.LabeledStmt:
 		out := &ast.LabeledStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1248,8 +1242,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.MapType:
 		out := &ast.MapType{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1288,20 +1282,11 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.Package:
 		out := &ast.Package{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 
 		// Value: Name
 		out.Name = n.Name
-
-		// Scope: Scope
-		out.Scope = r.restoreScope(n.Scope)
-
-		// Map: Imports
-		out.Imports = map[string]*ast.Object{}
-		for k, v := range n.Imports {
-			out.Imports[k] = r.restoreObject(v)
-		}
 
 		// Map: Files
 		out.Files = map[string]*ast.File{}
@@ -1312,8 +1297,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.ParenExpr:
 		out := &ast.ParenExpr{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1345,8 +1330,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.RangeStmt:
 		out := &ast.RangeStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1413,8 +1398,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.ReturnStmt:
 		out := &ast.ReturnStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1439,8 +1424,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.SelectStmt:
 		out := &ast.SelectStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1465,8 +1450,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.SelectorExpr:
 		out := &ast.SelectorExpr{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1495,8 +1480,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.SendStmt:
 		out := &ast.SendStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1529,8 +1514,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.SliceExpr:
 		out := &ast.SliceExpr{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1597,8 +1582,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.StarExpr:
 		out := &ast.StarExpr{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1623,8 +1608,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.StructType:
 		out := &ast.StructType{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1652,8 +1637,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.SwitchStmt:
 		out := &ast.SwitchStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1694,8 +1679,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.TypeAssertExpr:
 		out := &ast.TypeAssertExpr{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1743,8 +1728,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.TypeSpec:
 		out := &ast.TypeSpec{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1776,8 +1761,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.TypeSwitchStmt:
 		out := &ast.TypeSwitchStmt{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1818,8 +1803,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.UnaryExpr:
 		out := &ast.UnaryExpr{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
@@ -1845,8 +1830,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		return out
 	case *dst.ValueSpec:
 		out := &ast.ValueSpec{}
-		r.Ast.Nodes[n] = out
-		r.Dst.Nodes[out] = n
+		r.Ast[n] = out
+		r.Dst[out] = n
 		r.applySpace(n.Decs.Before)
 
 		// Decoration: Start
