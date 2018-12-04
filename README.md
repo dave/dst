@@ -304,7 +304,7 @@ if err != nil {
 	panic(err)
 }
 p := pkgs[0]
-f := p.Syntax[0]
+f := p.Files[0]
 
 // Add a call expression. Note we don't have to use a SelectorExpr - just adding an Ident with
 // the imported package path will do. The restorer will add SelectorExpr where appropriate when
@@ -324,7 +324,7 @@ b.List = append(b.List, &dst.ExprStmt{
 // Create a restorer with the import manager enabled, and print the result. As you can see, the
 // import block is automatically managed, and the Println ident is converted to a SelectorExpr:
 r := decorator.NewRestorerWithImports("root", gopackages.New(dir))
-if err := r.Print(p.Syntax[0]); err != nil {
+if err := r.Print(p.Files[0]); err != nil {
 	panic(err)
 }
 
@@ -338,8 +338,8 @@ if err := r.Print(p.Syntax[0]); err != nil {
 
 ### Mappings
 
-The decorator exposes `Dst` and `Ast` which map between `ast.Node` and `dst.Node`. This enables 
-systems that refer to `ast` nodes (such as `go/types`) to be used:
+The decorator exposes `Dst.Nodes` and `Ast.Nodes` which map between `ast.Node` and `dst.Node`. This 
+enables systems that refer to `ast` nodes (such as `go/types`) to be used:
 
 ```go
 code := `package main
@@ -379,8 +379,8 @@ if err != nil {
 // Find the *dst.Ident for the definition of "i"
 dstDef := f.Decls[0].(*dst.FuncDecl).Body.List[0].(*dst.DeclStmt).Decl.(*dst.GenDecl).Specs[0].(*dst.ValueSpec).Names[0]
 
-// Find the *ast.Ident using the Ast map
-astDef := dec.Ast[dstDef].(*ast.Ident)
+// Find the *ast.Ident using the Ast.Nodes mapping
+astDef := dec.Ast.Nodes[dstDef].(*ast.Ident)
 
 // Find the types.Object corresponding to "i"
 obj := typesInfo.Defs[astDef]
@@ -394,10 +394,10 @@ for id, ob := range typesInfo.Uses {
 	astUses = append(astUses, id)
 }
 
-// Find each *dst.Ident in the Dst map
+// Find each *dst.Ident in the Dst.Nodes mapping
 var dstUses []*dst.Ident
 for _, id := range astUses {
-	dstUses = append(dstUses, dec.Dst[id].(*dst.Ident))
+	dstUses = append(dstUses, dec.Dst.Nodes[id].(*dst.Ident))
 }
 
 // Change the name of the original definition and all uses

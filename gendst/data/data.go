@@ -138,6 +138,7 @@ var Info = map[string][]Part{
 		Ident struct {
 			NamePos token.Pos // identifier position
 			Name    string    // identifier name
+			Obj     *Object   // denoted object; or nil
 		}
 	*/
 	"Ident": {
@@ -155,6 +156,10 @@ var Info = map[string][]Part{
 		},
 		Decoration{
 			Name: "End",
+		},
+		Object{
+			Name:  "Obj",
+			Field: Field{"Obj"},
 		},
 		PathDecoration{
 			Name:  "Path",
@@ -2191,10 +2196,13 @@ var Info = map[string][]Part{
 			Package    token.Pos       // position of "package" keyword
 			Name       *Ident          // package name
 			Decls      []Decl          // top-level declarations; or nil
+			Scope      *Scope          // package scope (this file only)
 			Imports    []*ImportSpec   // imports in this file
+			Unresolved []*Ident        // unresolved identifiers in this file
 			Comments   []*CommentGroup // list of all comments in the source file
 		}
 	*/
+	// TODO: File.Unresolved?
 	"File": {
 		Decoration{
 			Name: "Start",
@@ -2225,6 +2233,10 @@ var Info = map[string][]Part{
 			Name:    "End",
 			Disable: true,
 		},
+		Scope{
+			Name:  "Scope",
+			Field: Field{"Scope"},
+		},
 		List{
 			Name:      "Imports",
 			Field:     Field{"Imports"},
@@ -2238,6 +2250,8 @@ var Info = map[string][]Part{
 		//
 		type Package struct {
 			Name    string             // package name
+			Scope   *Scope             // package scope across all files
+			Imports map[string]*Object // map of package id -> package object
 			Files   map[string]*File   // Go source files by filename
 		}
 	*/
@@ -2245,6 +2259,15 @@ var Info = map[string][]Part{
 		Value{
 			Name:  "Name",
 			Field: Field{"Name"},
+		},
+		Scope{
+			Name:  "Scope",
+			Field: Field{"Scope"},
+		},
+		Map{
+			Name:  "Imports",
+			Field: Field{"Imports"},
+			Elem:  Struct{"Object"},
 		},
 		Map{
 			Name:  "Files",
@@ -2385,6 +2408,16 @@ type Value struct {
 	Name  string
 	Field FieldSpec
 	Value Code
+}
+
+type Scope struct {
+	Name  string
+	Field FieldSpec
+}
+
+type Object struct {
+	Name  string
+	Field FieldSpec
 }
 
 type Code interface {

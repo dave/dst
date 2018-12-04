@@ -43,7 +43,7 @@ func NewDecoratorFromPackage(pkg *packages.Package) *Decorator {
 // Decorator converts ast nodes into dst nodes, and converts decoration info from the ast fileset
 // to the dst nodes. Create a new Decorator for each package you need to decorate.
 type Decorator struct {
-	Map                            // Mapping between ast and dst Nodes
+	Map                            // Mapping between ast and dst Nodes, Objects and Scopes
 	Filenames map[*dst.File]string // Source file names
 	Fset      *token.FileSet       // The ast FileSet containing ast decoration info for the files
 
@@ -141,7 +141,7 @@ func (d *Decorator) DecorateNode(n ast.Node) (dst.Node, error) {
 	switch n := n.(type) {
 	case *ast.Package:
 		for k, v := range n.Files {
-			d.Filenames[d.Dst[v].(*dst.File)] = k
+			d.Filenames[d.Dst.Nodes[v].(*dst.File)] = k
 		}
 	case *ast.File:
 		d.Filenames[out.(*dst.File)] = d.Fset.File(n.Pos()).Name()
@@ -214,13 +214,20 @@ func (f *fileDecorator) decorateSelectorExpr(parent ast.Node, parentName, parent
 
 	// replace *ast.SelectorExpr with *dst.Ident and merge decorations
 	out := &dst.Ident{}
-	f.Dst[n] = out
-	f.Dst[n.X] = out
-	f.Dst[n.Sel] = out
-	f.Ast[out] = n
+	f.Dst.Nodes[n] = out
+	f.Dst.Nodes[n.X] = out
+	f.Dst.Nodes[n.Sel] = out
+	f.Ast.Nodes[out] = n
 
 	// String: Name
 	out.Name = n.Sel.Name
+
+	// Object: Obj
+	ob, err := f.decorateObject(n.Sel.Obj)
+	if err != nil {
+		return nil, err
+	}
+	out.Obj = ob
 
 	// Path: Path
 	out.Path = path
@@ -350,6 +357,125 @@ func stripVendor(path string) string {
 		return path
 	}
 	return path[i+len("vendor/"):]
+}
+
+func (f *fileDecorator) decorateObject(o *ast.Object) (*dst.Object, error) {
+
+	if o == nil {
+		return nil, nil
+	}
+
+	if do, ok := f.Dst.Objects[o]; ok {
+		return do, nil
+	}
+
+	/*
+		// An Object describes a named language entity such as a package,
+		// constant, type, variable, function (incl. methods), or label.
+		//
+		// The Data fields contains object-specific data:
+		//
+		//	Kind    Data type         Data value
+		//	Pkg     *Scope            package scope
+		//	Con     int               iota for the respective declaration
+		//
+		type Object struct {
+			Kind ObjKind
+			Name string      // declared name
+			Decl interface{} // corresponding Field, XxxSpec, FuncDecl, LabeledStmt, AssignStmt, Scope; or nil
+			Data interface{} // object-specific data; or nil
+			Type interface{} // placeholder for type information; may be nil
+		}
+	*/
+
+	out := &dst.Object{}
+	f.Dst.Objects[o] = out
+	f.Ast.Objects[out] = o
+	out.Kind = dst.ObjKind(o.Kind)
+	out.Name = o.Name
+
+	switch decl := o.Decl.(type) {
+	case *ast.Scope:
+		s, err := f.decorateScope(decl)
+		if err != nil {
+			return nil, err
+		}
+		out.Decl = s
+	case ast.Node:
+		n, err := f.decorateNode(nil, "", "", "", decl)
+		if err != nil {
+			return nil, err
+		}
+		out.Decl = n
+	case nil:
+	default:
+		panic(fmt.Sprintf("o.Decl is %T", o.Data))
+	}
+
+	switch data := o.Data.(type) {
+	case int:
+		out.Data = data
+	case *ast.Scope:
+		s, err := f.decorateScope(data)
+		if err != nil {
+			return nil, err
+		}
+		out.Data = s
+	case ast.Node:
+		n, err := f.decorateNode(nil, "", "", "", data)
+		if err != nil {
+			return nil, err
+		}
+		out.Data = n
+	case nil:
+	default:
+		panic(fmt.Sprintf("o.Data is %T", o.Data))
+	}
+
+	return out, nil
+}
+
+func (f *fileDecorator) decorateScope(s *ast.Scope) (*dst.Scope, error) {
+
+	if s == nil {
+		return nil, nil
+	}
+
+	if ds, ok := f.Dst.Scopes[s]; ok {
+		return ds, nil
+	}
+
+	/*
+		// A Scope maintains the set of named language entities declared
+		// in the scope and a link to the immediately surrounding (outer)
+		// scope.
+		//
+		type Scope struct {
+			Outer   *Scope
+			Objects map[string]*Object
+		}
+	*/
+
+	out := &dst.Scope{}
+	f.Dst.Scopes[s] = out
+	f.Ast.Scopes[out] = s
+
+	outer, err := f.decorateScope(s.Outer)
+	if err != nil {
+		return nil, err
+	}
+	out.Outer = outer
+	out.Objects = map[string]*dst.Object{}
+
+	for k, v := range s.Objects {
+		ob, err := f.decorateObject(v)
+		if err != nil {
+			return nil, err
+		}
+		out.Objects[k] = ob
+	}
+
+	return out, nil
 }
 
 func debug(w io.Writer, file dst.Node) {

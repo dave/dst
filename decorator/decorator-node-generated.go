@@ -6,14 +6,14 @@ import (
 )
 
 func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, parentFieldType string, n ast.Node) (dst.Node, error) {
-	if dn, ok := f.Dst[n]; ok {
+	if dn, ok := f.Dst.Nodes[n]; ok {
 		return dn, nil
 	}
 	switch n := n.(type) {
 	case *ast.ArrayType:
 		out := &dst.ArrayType{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -58,8 +58,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.AssignStmt:
 		out := &dst.AssignStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -100,8 +100,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.BadDecl:
 		out := &dst.BadDecl{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -121,8 +121,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.BadExpr:
 		out := &dst.BadExpr{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -142,8 +142,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.BadStmt:
 		out := &dst.BadStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -163,8 +163,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.BasicLit:
 		out := &dst.BasicLit{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -187,8 +187,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.BinaryExpr:
 		out := &dst.BinaryExpr{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -232,8 +232,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.BlockStmt:
 		out := &dst.BlockStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -266,8 +266,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.BranchStmt:
 		out := &dst.BranchStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -299,8 +299,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.CallExpr:
 		out := &dst.CallExpr{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -351,8 +351,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.CaseClause:
 		out := &dst.CaseClause{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -397,8 +397,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.ChanType:
 		out := &dst.ChanType{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -439,8 +439,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.CommClause:
 		out := &dst.CommClause{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -488,8 +488,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.CompositeLit:
 		out := &dst.CompositeLit{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -537,8 +537,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.DeclStmt:
 		out := &dst.DeclStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -564,8 +564,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.DeferStmt:
 		out := &dst.DeferStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -596,8 +596,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.Ellipsis:
 		out := &dst.Ellipsis{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -628,8 +628,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.EmptyStmt:
 		out := &dst.EmptyStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -651,8 +651,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.ExprStmt:
 		out := &dst.ExprStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -678,8 +678,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.Field:
 		out := &dst.Field{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -726,8 +726,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.FieldList:
 		out := &dst.FieldList{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -762,8 +762,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.File:
 		out := &dst.File{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -787,6 +787,13 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 			}
 			out.Decls = append(out.Decls, child.(dst.Decl))
 		}
+
+		// Scope: Scope
+		scope, err := f.decorateScope(n.Scope)
+		if err != nil {
+			return nil, err
+		}
+		out.Scope = scope
 
 		// List: Imports
 		for _, v := range n.Imports {
@@ -815,8 +822,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.ForStmt:
 		out := &dst.ForStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -887,8 +894,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.FuncDecl:
 		out := &dst.FuncDecl{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -971,8 +978,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.FuncLit:
 		out := &dst.FuncLit{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1010,8 +1017,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.FuncType:
 		out := &dst.FuncType{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1055,8 +1062,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.GenDecl:
 		out := &dst.GenDecl{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1097,8 +1104,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.GoStmt:
 		out := &dst.GoStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1129,14 +1136,21 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.Ident:
 		out := &dst.Ident{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
 
 		// String: Name
 		out.Name = n.Name
+
+		// Object: Obj
+		ob, err := f.decorateObject(n.Obj)
+		if err != nil {
+			return nil, err
+		}
+		out.Obj = ob
 
 		// Path: Path
 		if f.Resolver != nil {
@@ -1162,8 +1176,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.IfStmt:
 		out := &dst.IfStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1232,8 +1246,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.ImportSpec:
 		out := &dst.ImportSpec{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1271,8 +1285,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.IncDecStmt:
 		out := &dst.IncDecStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1304,8 +1318,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.IndexExpr:
 		out := &dst.IndexExpr{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1353,8 +1367,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.InterfaceType:
 		out := &dst.InterfaceType{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1388,8 +1402,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.KeyValueExpr:
 		out := &dst.KeyValueExpr{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1432,8 +1446,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.LabeledStmt:
 		out := &dst.LabeledStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1476,8 +1490,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.MapType:
 		out := &dst.MapType{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1524,11 +1538,28 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.Package:
 		out := &dst.Package{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		// Value: Name
 		out.Name = n.Name
+
+		// Scope: Scope
+		scope, err := f.decorateScope(n.Scope)
+		if err != nil {
+			return nil, err
+		}
+		out.Scope = scope
+
+		// Map: Imports
+		out.Imports = map[string]*dst.Object{}
+		for k, v := range n.Imports {
+			ob, err := f.decorateObject(v)
+			if err != nil {
+				return nil, err
+			}
+			out.Imports[k] = ob
+		}
 
 		// Map: Files
 		out.Files = map[string]*dst.File{}
@@ -1543,8 +1574,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.ParenExpr:
 		out := &dst.ParenExpr{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1580,8 +1611,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.RangeStmt:
 		out := &dst.RangeStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1658,8 +1689,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.ReturnStmt:
 		out := &dst.ReturnStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1690,8 +1721,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.SelectStmt:
 		out := &dst.SelectStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1732,8 +1763,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		}
 
 		out := &dst.SelectorExpr{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1773,8 +1804,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.SendStmt:
 		out := &dst.SendStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1817,8 +1848,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.SliceExpr:
 		out := &dst.SliceExpr{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1897,8 +1928,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.StarExpr:
 		out := &dst.StarExpr{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1929,8 +1960,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.StructType:
 		out := &dst.StructType{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -1964,8 +1995,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.SwitchStmt:
 		out := &dst.SwitchStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -2020,8 +2051,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.TypeAssertExpr:
 		out := &dst.TypeAssertExpr{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -2073,8 +2104,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.TypeSpec:
 		out := &dst.TypeSpec{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -2115,8 +2146,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.TypeSwitchStmt:
 		out := &dst.TypeSwitchStmt{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -2171,8 +2202,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.UnaryExpr:
 		out := &dst.UnaryExpr{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]
@@ -2204,8 +2235,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		return out, nil
 	case *ast.ValueSpec:
 		out := &dst.ValueSpec{}
-		f.Dst[n] = out
-		f.Ast[out] = n
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
 
 		out.Decs.Before = f.before[n]
 		out.Decs.After = f.after[n]

@@ -79,8 +79,10 @@ type FileRestorer struct {
 	comments        []*ast.CommentGroup
 	base            int
 	cursor          token.Pos
-	cursorAtNewLine token.Pos         // The cursor position directly after adding a newline decoration (or a line comment which ends in a "\n"). If we're still at this cursor position when we add a line space, reduce the "\n" by one.
-	packageNames    map[string]string // names in the code of all imported packages ("." for dot-imports)
+	nodeDecl        map[*ast.Object]dst.Node // Objects that have a ast.Node Decl (look up after file has been rendered)
+	nodeData        map[*ast.Object]dst.Node // Objects that have a ast.Node Data (look up after file has been rendered)
+	cursorAtNewLine token.Pos                // The cursor position directly after adding a newline decoration (or a line comment which ends in a "\n"). If we're still at this cursor position when we add a line space, reduce the "\n" by one.
+	packageNames    map[string]string        // names in the code of all imported packages ("." for dot-imports)
 }
 
 // Print uses format.Node to print a *dst.File to stdout
@@ -116,6 +118,8 @@ func (r *FileRestorer) RestoreFile(file *dst.File) (*ast.File, error) {
 
 	r.file = file
 	r.lines = []int{0} // initialise with the first line at Pos 0
+	r.nodeDecl = map[*ast.Object]dst.Node{}
+	r.nodeData = map[*ast.Object]dst.Node{}
 	r.packageNames = map[string]string{}
 	r.comments = []*ast.CommentGroup{}
 	r.cursorAtNewLine = 0
@@ -138,6 +142,17 @@ func (r *FileRestorer) RestoreFile(file *dst.File) (*ast.File, error) {
 	ff := r.Fset.AddFile(r.Name, r.base, r.fileSize())
 	if !ff.SetLines(r.lines) {
 		panic("ff.SetLines failed")
+	}
+
+	// Sometimes new nodes are created here (e.g. in RangeStmt the "Object" is an AssignStmt which
+	// never occurs in the actual code). These shouldn't have position information but perhaps it
+	// doesn't matter?
+	// TODO: Disable all position information on these nodes?
+	for o, dn := range r.nodeDecl {
+		o.Decl = r.restoreNode(dn, "", "", "", true)
+	}
+	for o, dn := range r.nodeData {
+		o.Data = r.restoreNode(dn, "", "", "", true)
 	}
 
 	return f, nil
@@ -489,10 +504,10 @@ func (r *FileRestorer) restoreIdent(n *dst.Ident, parentName, parentField, paren
 
 	// restore to a SelectorExpr
 	out := &ast.SelectorExpr{}
-	r.Ast[n] = out
-	r.Dst[out] = n
-	r.Dst[out.Sel] = n
-	r.Dst[out.X] = n
+	r.Ast.Nodes[n] = out
+	r.Dst.Nodes[out] = n
+	r.Dst.Nodes[out.Sel] = n
+	r.Dst.Nodes[out.X] = n
 	r.applySpace(n.Decs.Before)
 
 	// Decoration: Start
@@ -675,6 +690,99 @@ func (r *FileRestorer) applySpace(space dst.SpaceType) {
 		r.cursor++
 		r.cursorAtNewLine = r.cursor
 	}
+}
+
+func (r *FileRestorer) restoreObject(o *dst.Object) *ast.Object {
+	if o == nil {
+		return nil
+	}
+	if ro, ok := r.Ast.Objects[o]; ok {
+		return ro
+	}
+	/*
+		// An Object describes a named language entity such as a package,
+		// constant, type, variable, function (incl. methods), or label.
+		//
+		// The Data fields contains object-specific data:
+		//
+		//	Kind    Data type         Data value
+		//	Pkg     *Scope            package scope
+		//	Con     int               iota for the respective declaration
+		//
+		type Object struct {
+			Kind ObjKind
+			Name string      // declared name
+			Decl interface{} // corresponding Field, XxxSpec, FuncDecl, LabeledStmt, AssignStmt, Scope; or nil
+			Data interface{} // object-specific data; or nil
+			Type interface{} // placeholder for type information; may be nil
+		}
+	*/
+	out := &ast.Object{}
+
+	r.Ast.Objects[o] = out
+	r.Dst.Objects[out] = o
+
+	out.Kind = ast.ObjKind(o.Kind)
+	out.Name = o.Name
+
+	switch decl := o.Decl.(type) {
+	case *dst.Scope:
+		out.Decl = r.restoreScope(decl)
+	case dst.Node:
+		// Can't use restoreNode here because we aren't at the right cursor position, so we store a link
+		// to the Object and Node so we can look the Nodes up in the cache after the file is fully processed.
+		r.nodeDecl[out] = decl
+	case nil:
+	default:
+		panic(fmt.Sprintf("o.Decl is %T", o.Decl))
+	}
+
+	switch data := o.Data.(type) {
+	case int:
+		out.Data = data
+	case *dst.Scope:
+		out.Data = r.restoreScope(data)
+	case dst.Node:
+		// Can't use restoreNode here because we aren't at the right cursor position, so we store a link
+		// to the Object and Node so we can look the Nodes up in the cache after the file is fully processed.
+		r.nodeData[out] = data
+	case nil:
+	default:
+		panic(fmt.Sprintf("o.Data is %T", o.Data))
+	}
+
+	return out
+}
+
+func (r *FileRestorer) restoreScope(s *dst.Scope) *ast.Scope {
+	if s == nil {
+		return nil
+	}
+	if rs, ok := r.Ast.Scopes[s]; ok {
+		return rs
+	}
+	/*
+		// A Scope maintains the set of named language entities declared
+		// in the scope and a link to the immediately surrounding (outer)
+		// scope.
+		//
+		type Scope struct {
+			Outer   *Scope
+			Objects map[string]*Object
+		}
+	*/
+	out := &ast.Scope{}
+
+	r.Ast.Scopes[s] = out
+	r.Dst.Scopes[out] = s
+
+	out.Outer = r.restoreScope(s.Outer)
+	out.Objects = map[string]*ast.Object{}
+	for k, v := range s.Objects {
+		out.Objects[k] = r.restoreObject(v)
+	}
+
+	return out
 }
 
 func mustUnquote(s string) string {

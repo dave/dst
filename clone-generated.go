@@ -562,6 +562,9 @@ func Clone(n Node) Node {
 		// Decoration: End
 		out.Decs.End = append(out.Decs.End, n.Decs.End...)
 
+		// Scope: Scope
+		out.Scope = CloneScope(n.Scope)
+
 		// List: Imports
 		for _, v := range n.Imports {
 			out.Imports = append(out.Imports, Clone(v).(*ImportSpec))
@@ -808,6 +811,9 @@ func Clone(n Node) Node {
 
 		// Decoration: End
 		out.Decs.End = append(out.Decs.End, n.Decs.End...)
+
+		// Object: Obj
+		out.Obj = CloneObject(n.Obj)
 
 		// Path: Path
 		out.Path = n.Path
@@ -1066,6 +1072,15 @@ func Clone(n Node) Node {
 
 		// Value: Name
 		out.Name = n.Name
+
+		// Scope: Scope
+		out.Scope = CloneScope(n.Scope)
+
+		// Map: Imports
+		out.Imports = map[string]*Object{}
+		for k, v := range n.Imports {
+			out.Imports[k] = CloneObject(v)
+		}
 
 		// Map: Files
 		out.Files = map[string]*File{}
