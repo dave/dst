@@ -304,7 +304,7 @@ if err != nil {
 	panic(err)
 }
 p := pkgs[0]
-f := p.Files[0]
+f := p.Syntax[0]
 
 // Add a call expression. Note we don't have to use a SelectorExpr - just adding an Ident with
 // the imported package path will do. The restorer will add SelectorExpr where appropriate when
@@ -324,7 +324,7 @@ b.List = append(b.List, &dst.ExprStmt{
 // Create a restorer with the import manager enabled, and print the result. As you can see, the
 // import block is automatically managed, and the Println ident is converted to a SelectorExpr:
 r := decorator.NewRestorerWithImports("root", gopackages.New(dir))
-if err := r.Print(p.Files[0]); err != nil {
+if err := r.Print(p.Syntax[0]); err != nil {
 	panic(err)
 }
 

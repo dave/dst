@@ -74,6 +74,7 @@ type FileRestorer struct {
 	*Restorer
 	Alias           map[string]string // Map of package path -> package alias for imports
 	Name            string            // The name of the restored file in the FileSet. Can usually be left empty.
+	Extras          bool              // Resore Objects, Scopes etc. Not needed for printing the resultant AST. If set to true, Objects and Scopes must be carefully managed to avoid duplicate nodes.
 	file            *dst.File
 	lines           []int
 	comments        []*ast.CommentGroup
@@ -144,15 +145,16 @@ func (r *FileRestorer) RestoreFile(file *dst.File) (*ast.File, error) {
 		panic("ff.SetLines failed")
 	}
 
-	// Sometimes new nodes are created here (e.g. in RangeStmt the "Object" is an AssignStmt which
-	// never occurs in the actual code). These shouldn't have position information but perhaps it
-	// doesn't matter?
-	// TODO: Disable all position information on these nodes?
-	for o, dn := range r.nodeDecl {
-		o.Decl = r.restoreNode(dn, "", "", "", true)
-	}
-	for o, dn := range r.nodeData {
-		o.Data = r.restoreNode(dn, "", "", "", true)
+	if r.Extras {
+		// Sometimes new nodes are created here (e.g. in RangeStmt the "Object" is an AssignStmt
+		// which never occurs in the actual code). These shouldn't have position information but
+		// perhaps it doesn't matter?
+		for o, dn := range r.nodeDecl {
+			o.Decl = r.restoreNode(dn, "", "", "", true)
+		}
+		for o, dn := range r.nodeData {
+			o.Data = r.restoreNode(dn, "", "", "", true)
+		}
 	}
 
 	return f, nil
@@ -693,6 +695,9 @@ func (r *FileRestorer) applySpace(space dst.SpaceType) {
 }
 
 func (r *FileRestorer) restoreObject(o *dst.Object) *ast.Object {
+	if !r.Extras {
+		return nil
+	}
 	if o == nil {
 		return nil
 	}
@@ -755,6 +760,9 @@ func (r *FileRestorer) restoreObject(o *dst.Object) *ast.Object {
 }
 
 func (r *FileRestorer) restoreScope(s *dst.Scope) *ast.Scope {
+	if !r.Extras {
+		return nil
+	}
 	if s == nil {
 		return nil
 	}
