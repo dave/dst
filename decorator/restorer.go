@@ -510,7 +510,7 @@ func (r *FileRestorer) restoreIdent(n *dst.Ident, parentName, parentField, paren
 	r.Dst.Nodes[out] = n
 	r.Dst.Nodes[out.Sel] = n
 	r.Dst.Nodes[out.X] = n
-	r.applySpace(n.Decs.Before)
+	r.applySpace(n, "Before", n.Decs.Before)
 
 	// Decoration: Start
 	r.applyDecorations(out, n.Decs.Start, false)
@@ -529,7 +529,7 @@ func (r *FileRestorer) restoreIdent(n *dst.Ident, parentName, parentField, paren
 
 	// Decoration: End
 	r.applyDecorations(out, n.Decs.End, true)
-	r.applySpace(n.Decs.After)
+	r.applySpace(n, "After", n.Decs.After)
 
 	return out
 
@@ -670,7 +670,14 @@ func (r *FileRestorer) applyDecorations(node ast.Node, decorations dst.Decoratio
 	}
 }
 
-func (r *FileRestorer) applySpace(space dst.SpaceType) {
+func (r *FileRestorer) applySpace(node dst.Node, position string, space dst.SpaceType) {
+	switch node.(type) {
+	case *dst.BadDecl, *dst.BadExpr, *dst.BadStmt:
+		if position == "After" {
+			// BadXXX are always followed by an empty line
+			space = dst.EmptyLine
+		}
+	}
 	var newlines int
 	switch space {
 	case dst.NewLine:

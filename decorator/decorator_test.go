@@ -5,6 +5,7 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -499,6 +500,101 @@ func ExampleParseCommentsFlag() {
 	//
 	//// a
 	//func main() {}
+
+}
+
+func TestBad(t *testing.T) {
+	tests := []struct {
+		name, code string
+	}{
+		{
+			name: "decl",
+			code: `package a
+
+				%BADDECL%
+			`,
+		},
+		{
+			name: "stmt",
+			code: `package a
+
+				func a() {
+					%BADSTMT%
+				}
+			`,
+		},
+		{
+			name: "expr",
+			code: `package a
+
+				func a() {
+					var a = %BADEXPR%
+				}
+			`,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			fset := token.NewFileSet()
+			af, err := parser.ParseFile(fset, "", test.code, parser.ParseComments)
+			if err == nil {
+				t.Fatal("expected error, found none")
+			}
+			abuf := &bytes.Buffer{}
+			if err := format.Node(abuf, fset, af); err != nil {
+				t.Fatal(err)
+			}
+
+			df, err := ParseFile(token.NewFileSet(), "", test.code, parser.ParseComments)
+			if err == nil {
+				t.Fatal("expected error, found none")
+			}
+
+			dbuf := &bytes.Buffer{}
+			if err := Fprint(dbuf, df); err != nil {
+				t.Fatal(err)
+			}
+
+			compare(t, abuf.String(), dbuf.String())
+		})
+	}
+}
+
+func TestDecorator_ParseDir(t *testing.T) {
+
+	code := map[string]string{
+		"a.go": `package a
+
+		// a
+		func a(){}`,
+		"b.go": `package a
+
+		// b
+		func b(){}`,
+	}
+	dir, err := tempDir(code)
+
+	pkg, err := ParseDir(token.NewFileSet(), dir, nil, 0)
+	if err != nil {
+		panic(err)
+	}
+	p := pkg["a"]
+
+	if len(pkg) != 1 {
+		t.Fatalf("expected 1 package, found %d", len(pkg))
+	}
+
+	actual := map[string]string{}
+	for fpath, file := range p.Files {
+		_, fname := filepath.Split(fpath)
+		buf := &bytes.Buffer{}
+		if err := Fprint(buf, file); err != nil {
+			t.Fatal(err)
+		}
+		actual[fname] = buf.String()
+	}
+
+	compareDir(t, dir, actual)
 
 }
 
