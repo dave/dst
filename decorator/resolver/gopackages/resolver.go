@@ -37,7 +37,7 @@ func (r *RestorerResolver) ResolvePackage(path string) (string, error) {
 		return "", fmt.Errorf("%d packages found for %s, %s", len(pkgs), path, r.Config.Dir)
 	}
 	if len(pkgs) == 0 {
-		return "", resolver.PackageNotFoundError
+		return "", resolver.ErrPackageNotFound
 	}
 
 	p := pkgs[0]

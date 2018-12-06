@@ -62,7 +62,7 @@ func TestRestorerResolver(t *testing.T) {
 				if end != nil {
 					end() // delete temp dir if created
 				}
-				if err == resolver.PackageNotFoundError {
+				if err == resolver.ErrPackageNotFound {
 					name = ""
 				} else if err != nil {
 					t.Errorf("error resolving path %s from dir %s: %v", c.importPath, fromDir, err)

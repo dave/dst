@@ -166,7 +166,6 @@ func generateRestorer(names []string) error {
 				Panic(Qual("fmt", "Sprintf").Call(Lit("%T"), Id("n"))),
 			)
 		})
-		g.Return(Nil())
 	})
 
 	return f.Save("./decorator/restorer-generated.go")

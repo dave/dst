@@ -1565,5 +1565,4 @@ func Clone(n Node) Node {
 	default:
 		panic(fmt.Sprintf("%T", n))
 	}
-	return nil
 }

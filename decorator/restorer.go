@@ -31,9 +31,11 @@ func NewRestorerWithImports(path string, resolver resolver.RestorerResolver) *Re
 	return res
 }
 
+// Restorer restores dst.Node to ast.Node
 type Restorer struct {
 	Map
-	Fset *token.FileSet // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
+	Fset   *token.FileSet // Fset is the *token.FileSet in use. Set this to use a pre-existing FileSet.
+	Extras bool           // Resore Objects, Scopes etc. Not needed for printing the resultant AST. If set to true, Objects and Scopes must be carefully managed to avoid duplicate nodes.
 
 	// If a Resolver is provided, the names of all imported packages are resolved, and the imports
 	// block is updated. All remote identifiers are updated (sometimes this involves changing
@@ -63,6 +65,7 @@ func (pr *Restorer) RestoreFile(file *dst.File) (*ast.File, error) {
 	return pr.FileRestorer().RestoreFile(file)
 }
 
+// FileRestorer restores a specific file with extra options
 func (pr *Restorer) FileRestorer() *FileRestorer {
 	return &FileRestorer{
 		Restorer: pr,
@@ -70,11 +73,11 @@ func (pr *Restorer) FileRestorer() *FileRestorer {
 	}
 }
 
+// FileRestorer restores a specific file with extra options
 type FileRestorer struct {
 	*Restorer
 	Alias           map[string]string // Map of package path -> package alias for imports
 	Name            string            // The name of the restored file in the FileSet. Can usually be left empty.
-	Extras          bool              // Resore Objects, Scopes etc. Not needed for printing the resultant AST. If set to true, Objects and Scopes must be carefully managed to avoid duplicate nodes.
 	file            *dst.File
 	lines           []int
 	comments        []*ast.CommentGroup

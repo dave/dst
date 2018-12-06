@@ -102,7 +102,6 @@ func generateClone(names []string) error {
 				Panic(Qual("fmt", "Sprintf").Call(Lit("%T"), Id("n"))),
 			)
 		})
-		g.Return(Nil())
 	})
 
 	return f.Save("./clone-generated.go")

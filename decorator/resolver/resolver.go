@@ -22,4 +22,5 @@ type DecoratorResolver interface {
 	ResolveIdent(file *ast.File, parent ast.Node, parentField string, id *ast.Ident) (path string, err error)
 }
 
-var PackageNotFoundError = errors.New("package not found")
+// ErrPackageNotFound means the package is not found
+var ErrPackageNotFound = errors.New("package not found")

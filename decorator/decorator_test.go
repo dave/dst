@@ -479,8 +479,7 @@ BlockStmt [Lbrace "\n"]`,
 	}
 }
 
-func ExampleParseCommentsFlag() {
-
+func TestParseFile_Comments(t *testing.T) {
 	code := `package a
 
 		// a
@@ -491,16 +490,11 @@ func ExampleParseCommentsFlag() {
 		panic(err)
 	}
 
-	if err := Print(f); err != nil {
+	buf := &bytes.Buffer{}
+	if err := Fprint(buf, f); err != nil {
 		panic(err)
 	}
-
-	//Output:
-	//package a
-	//
-	//// a
-	//func main() {}
-
+	compareSrc(t, code, buf.String())
 }
 
 func TestBad(t *testing.T) {

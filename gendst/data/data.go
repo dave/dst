@@ -976,10 +976,10 @@ var Info = map[string][]Part{
 			Name: "Begin",
 			Token: Double{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement {
-					return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Dir").Op("==").Qual("go/ast", "RECV")).Block(jen.Return(jen.Qual("go/token", "ARROW"))).Else().Block(jen.Return(jen.Qual("go/token", "CHAN")))).Call()
+					return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Dir").Op("==").Qual("go/ast", "RECV")).Block(jen.Return(jen.Qual("go/token", "ARROW"))), jen.Return(jen.Qual("go/token", "CHAN"))).Call()
 				}),
 				Dst: Expr(func(n *jen.Statement) *jen.Statement {
-					return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Dir").Op("==").Qual(DSTPATH, "RECV")).Block(jen.Return(jen.Qual("go/token", "ARROW"))).Else().Block(jen.Return(jen.Qual("go/token", "CHAN")))).Call()
+					return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Dir").Op("==").Qual(DSTPATH, "RECV")).Block(jen.Return(jen.Qual("go/token", "ARROW"))), jen.Return(jen.Qual("go/token", "CHAN"))).Call()
 				}),
 			},
 			PositionField: Field{"Begin"},
@@ -1501,7 +1501,7 @@ var Info = map[string][]Part{
 		Token{
 			Name: "Case",
 			Token: Expr(func(n *jen.Statement) *jen.Statement {
-				return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("List").Op("==").Nil()).Block(jen.Return(jen.Qual("go/token", "DEFAULT"))).Else().Block(jen.Return(jen.Qual("go/token", "CASE")))).Call()
+				return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("List").Op("==").Nil()).Block(jen.Return(jen.Qual("go/token", "DEFAULT"))), jen.Return(jen.Qual("go/token", "CASE"))).Call()
 			}),
 			PositionField: Field{"Case"},
 		},
@@ -1643,7 +1643,7 @@ var Info = map[string][]Part{
 		Token{
 			Name: "Case",
 			Token: Expr(func(n *jen.Statement) *jen.Statement {
-				return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Comm").Op("==").Nil()).Block(jen.Return(jen.Qual("go/token", "DEFAULT"))).Else().Block(jen.Return(jen.Qual("go/token", "CASE")))).Call()
+				return jen.Func().Params().Qual("go/token", "Token").Block(jen.If(n.Dot("Comm").Op("==").Nil()).Block(jen.Return(jen.Qual("go/token", "DEFAULT"))), jen.Return(jen.Qual("go/token", "CASE"))).Call()
 			}),
 			PositionField: Field{"Case"},
 		},

@@ -45,7 +45,7 @@ func (r *RestorerResolver) ResolvePackage(importPath string) (string, error) {
 	}
 
 	if p == nil {
-		return "", resolver.PackageNotFoundError
+		return "", resolver.ErrPackageNotFound
 	}
 
 	return p.Name, nil

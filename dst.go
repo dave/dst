@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// package dst declares the types used to represent syntax trees for Go
-// packages.
-//
+// Package dst declares the types used to represent decorated syntax
+// trees for Go packages.
 package dst
 
 import (

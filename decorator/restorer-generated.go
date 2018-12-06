@@ -318,9 +318,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		r.cursor += token.Pos(len(func() token.Token {
 			if n.List == nil {
 				return token.DEFAULT
-			} else {
-				return token.CASE
 			}
+			return token.CASE
 		}().String()))
 
 		// Decoration: Case
@@ -362,9 +361,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		r.cursor += token.Pos(len(func() token.Token {
 			if n.Dir == dst.RECV {
 				return token.ARROW
-			} else {
-				return token.CHAN
 			}
+			return token.CHAN
 		}().String()))
 
 		// Token: Chan
@@ -411,9 +409,8 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		r.cursor += token.Pos(len(func() token.Token {
 			if n.Comm == nil {
 				return token.DEFAULT
-			} else {
-				return token.CASE
 			}
+			return token.CASE
 		}().String()))
 
 		// Decoration: Case
@@ -1883,5 +1880,4 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 	default:
 		panic(fmt.Sprintf("%T", n))
 	}
-	return nil
 }

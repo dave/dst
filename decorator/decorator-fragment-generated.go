@@ -227,9 +227,8 @@ func (f *fileDecorator) addNodeFragments(n ast.Node) {
 		f.addTokenFragment(n, func() token.Token {
 			if n.List == nil {
 				return token.DEFAULT
-			} else {
-				return token.CASE
 			}
+			return token.CASE
 		}(), n.Case)
 
 		// Decoration: Case
@@ -263,9 +262,8 @@ func (f *fileDecorator) addNodeFragments(n ast.Node) {
 		f.addTokenFragment(n, func() token.Token {
 			if n.Dir == ast.RECV {
 				return token.ARROW
-			} else {
-				return token.CHAN
 			}
+			return token.CHAN
 		}(), n.Begin)
 
 		// Token: Chan
@@ -303,9 +301,8 @@ func (f *fileDecorator) addNodeFragments(n ast.Node) {
 		f.addTokenFragment(n, func() token.Token {
 			if n.Comm == nil {
 				return token.DEFAULT
-			} else {
-				return token.CASE
 			}
+			return token.CASE
 		}(), n.Case)
 
 		// Decoration: Case

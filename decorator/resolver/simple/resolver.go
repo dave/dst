@@ -15,5 +15,5 @@ func (r RestorerResolver) ResolvePackage(importPath string) (string, error) {
 	if n, ok := r[importPath]; ok {
 		return n, nil
 	}
-	return "", resolver.PackageNotFoundError
+	return "", resolver.ErrPackageNotFound
 }
