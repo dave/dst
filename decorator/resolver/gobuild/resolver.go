@@ -14,6 +14,10 @@ func WithContext(dir string, context *build.Context) *RestorerResolver {
 	return &RestorerResolver{Dir: dir, Context: context}
 }
 
+func WithHints(dir string, hints map[string]string) *RestorerResolver {
+	return &RestorerResolver{Dir: dir, Hints: hints}
+}
+
 type RestorerResolver struct {
 	// FindPackage is called during Load to create the build.Package for a given import path from a
 	// given directory. If FindPackage is nil, (*build.Context).Import is used. A client may use
@@ -25,9 +29,16 @@ type RestorerResolver struct {
 	FindPackage func(ctxt *build.Context, importPath, fromDir string, mode build.ImportMode) (*build.Package, error)
 	Context     *build.Context
 	Dir         string
+
+	// Hints (package path -> name) is first checked before asking the build package
+	Hints map[string]string
 }
 
 func (r *RestorerResolver) ResolvePackage(importPath string) (string, error) {
+
+	if name, ok := r.Hints[importPath]; ok {
+		return name, nil
+	}
 
 	fp := r.FindPackage
 	if fp == nil {
