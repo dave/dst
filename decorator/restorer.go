@@ -486,6 +486,10 @@ func (r *FileRestorer) updateImports() error {
 // in the X field.
 func (r *FileRestorer) restoreIdent(n *dst.Ident, parentName, parentField, parentFieldType string, allowDuplicate bool) ast.Node {
 
+	if r.Resolver == nil && n.Path != "" {
+		panic("This syntax has been decorated with import management enabled, but the restorer does not have import management enabled. Use NewRestorerWithImports to create a restorer with import management. See the Imports section of the readme for more information.")
+	}
+
 	var name string
 	if r.Resolver != nil && n.Path != "" {
 
