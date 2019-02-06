@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"sync"
 	"testing"
 
 	"github.com/dave/dst"
@@ -1079,9 +1080,15 @@ func TestRestorerResolver(t *testing.T) {
 			}
 		}
 	}
+
+	// force these tests to run in series to fix bug in travis ci?
+	var m sync.Mutex
+
 	for _, test := range tests {
 		for _, c := range test.cases {
+			m.Lock()
 			t.Run(test.name+"/"+c.name, func(t *testing.T) {
+				defer m.Unlock()
 				if solo && !c.solo {
 					t.Skip()
 				}
@@ -1452,8 +1459,14 @@ func TestRestorerDecorationResolver(t *testing.T) {
 			break
 		}
 	}
+
+	// force these tests to run in series to fix bug in travis ci?
+	var m sync.Mutex
+
 	for _, test := range tests {
+		m.Lock()
 		t.Run(test.name, func(t *testing.T) {
+			defer m.Unlock()
 			if solo && !test.solo {
 				t.Skip()
 			}
