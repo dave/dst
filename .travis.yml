@@ -1,12 +1,13 @@
 language: go
+go_import_path: github.com/dave/dst
 go:
-    - 1.x
+  - 1.x
 notificaitons:
   email:
     recipients: dave@brophy.uk
     on_failure: always
 install:
-  - go get -u github.com/dave/courtney
+  - go get github.com/dave/courtney
   - go get -t -v ./...
 script:
   - go test -short ./...
