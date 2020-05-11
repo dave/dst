@@ -18,7 +18,7 @@ func TestLoad(t *testing.T) {
 				fmt.Println("a")
 			}
 		`,
-		"go.mod": "module root",
+		"go.mod": "module root\n\ngo 1.14",
 	}
 	expect := map[string]string{
 		"a.go": `package a
@@ -29,7 +29,7 @@ func TestLoad(t *testing.T) {
 				fmt.Println("a") // a
 			}
 		`,
-		"go.mod": "module root",
+		"go.mod": "module root\n\ngo 1.14",
 	}
 	dir, err := tempDir(code)
 	if err != nil {
