@@ -19,6 +19,11 @@ func generateClone(names []string) error {
 				g.Case(Op("*").Qual(DSTPATH, nodeName)).BlockFunc(func(g *Group) {
 					g.Id("out").Op(":=").Op("&").Id(nodeName).Values()
 
+					if nodeName == "BlockStmt" {
+						g.Line()
+						g.Id("out").Dot("RbraceHasNoPos").Op("=").Id("n").Dot("RbraceHasNoPos")
+					}
+
 					if nodeName != "Package" {
 						g.Line()
 						g.Id("out").Dot("Decs").Dot("Before").Op("=").Id("n").Dot("Decs").Dot("Before")

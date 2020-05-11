@@ -172,6 +172,8 @@ func Clone(n Node) Node {
 	case *BlockStmt:
 		out := &BlockStmt{}
 
+		out.RbraceHasNoPos = n.RbraceHasNoPos
+
 		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
