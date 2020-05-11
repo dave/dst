@@ -222,7 +222,11 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		}
 
 		// Token: Rbrace
-		out.Rbrace = r.cursor
+		if n.RbraceHasNoPos {
+			out.Rbrace = token.NoPos
+		} else {
+			out.Rbrace = r.cursor
+		}
 		r.cursor += token.Pos(len(token.RBRACE.String()))
 
 		// Decoration: End

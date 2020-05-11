@@ -250,6 +250,9 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		}
 
 		// Token: Rbrace
+		if n.Rbrace == 0 {
+			out.RbraceHasNoPos = true
+		}
 
 		if nd, ok := f.decorations[n]; ok {
 			if decs, ok := nd["Start"]; ok {

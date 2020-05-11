@@ -71,7 +71,22 @@ func generateRestorer(names []string) error {
 							position := Null()
 							value := Null()
 							if frag.PositionField != nil {
-								position = frag.PositionField.Get("out").Op("=").Id("r").Dot("cursor")
+								if nodeName == "BlockStmt" && frag.Name == "Rbrace" {
+									/*
+										if n.RbraceHasNoPos {
+											out.Rbrace = token.NoPos
+										} else {
+											out.Rbrace = r.cursor
+										}
+									*/
+									position = If(Id("n").Dot("RbraceHasNoPos")).Block(
+										Id("out").Dot("Rbrace").Op("=").Qual("go/token", "NoPos"),
+									).Else().Block(
+										Id("out").Dot("Rbrace").Op("=").Id("r").Dot("cursor"),
+									)
+								} else {
+									position = frag.PositionField.Get("out").Op("=").Id("r").Dot("cursor")
+								}
 							}
 							if frag.TokenField != nil {
 								value = frag.TokenField.Get("out").Op("=").Add(frag.Token.Get("n", false))

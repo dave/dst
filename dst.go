@@ -443,8 +443,9 @@ type (
 
 	// A BlockStmt node represents a braced statement list.
 	BlockStmt struct {
-		List []Stmt
-		Decs BlockStmtDecorations
+		List           []Stmt
+		RbraceHasNoPos bool // Sometimes (after a BadExpr?) the rbrace has a zero position, and this causes the brace to render in a different position. We duplicate this in the output for compatibility.
+		Decs           BlockStmtDecorations
 	}
 
 	// An IfStmt node represents an if statement.

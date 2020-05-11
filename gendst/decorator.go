@@ -71,6 +71,16 @@ func generateDecorator(names []string) error {
 							}
 						case data.Token:
 							g.Line().Commentf("Token: %s", frag.Name)
+							if nodeName == "BlockStmt" && frag.Name == "Rbrace" {
+								/*
+									if n.Rbrace == 0 {
+										out.RbraceHasNoPos = true
+									}
+								*/
+								g.If(Id("n").Dot("Rbrace").Op("==").Lit(0)).Block(
+									Id("out").Dot("RbraceHasNoPos").Op("=").True(),
+								)
+							}
 							if frag.TokenField != nil {
 								g.Add(frag.TokenField.Get("out")).Op("=").Add(frag.TokenField.Get("n"))
 							}
