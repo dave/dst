@@ -6,6 +6,7 @@ import (
 	"go/build"
 	"go/format"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -20,15 +21,21 @@ func TestLoadStdLibAll(t *testing.T) {
 		t.Skip("skipping standard library load test in short mode.")
 	}
 
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	cmd := exec.Command("go", "list", "./...")
 	cmd.Env = []string{
 		fmt.Sprintf("GOPATH=%s", build.Default.GOPATH),
 		fmt.Sprintf("GOROOT=%s", build.Default.GOROOT),
+		fmt.Sprintf("HOME=%s", home),
 	}
 	cmd.Dir = filepath.Join(build.Default.GOROOT, "src")
 	b, err := cmd.CombinedOutput()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("%s: %w", string(b), err)
 	}
 	all := strings.Split(strings.TrimSpace(string(b)), "\n")
 
