@@ -70,7 +70,7 @@ func TestPackage_SaveWithResolver(t *testing.T) {
 				fmt.Println("a")
 			}
 		`,
-		"go.mod": "module root",
+		"go.mod": "module root\n\ngo 1.14",
 	}
 	expect := map[string]string{
 		"a.go": `package a
@@ -81,7 +81,7 @@ func TestPackage_SaveWithResolver(t *testing.T) {
 				alternate_pkg_name.Println("a")
 			}
 		`,
-		"go.mod": "module root",
+		"go.mod": "module root\n\ngo 1.14",
 	}
 	dir, err := tempDir(code)
 	if err != nil {
