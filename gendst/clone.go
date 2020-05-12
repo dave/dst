@@ -19,11 +19,6 @@ func generateClone(names []string) error {
 				g.Case(Op("*").Qual(DSTPATH, nodeName)).BlockFunc(func(g *Group) {
 					g.Id("out").Op(":=").Op("&").Id(nodeName).Values()
 
-					if nodeName == "BlockStmt" {
-						g.Line()
-						g.Id("out").Dot("RbraceHasNoPos").Op("=").Id("n").Dot("RbraceHasNoPos")
-					}
-
 					if nodeName != "Package" {
 						g.Line()
 						g.Id("out").Dot("Decs").Dot("Before").Op("=").Id("n").Dot("Decs").Dot("Before")
@@ -38,6 +33,10 @@ func generateClone(names []string) error {
 							g.Line().Commentf("Decoration: %s", frag.Name)
 							g.Id("out").Dot("Decs").Dot(frag.Name).Op("=").Append(Id("out").Dot("Decs").Dot(frag.Name), Id("n").Dot("Decs").Dot(frag.Name).Op("..."))
 						case data.Token:
+							if frag.NoPosField != nil {
+								g.Line().Commentf("Token: %s", frag.Name)
+								g.Add(frag.NoPosField.Get("out")).Op("=").Add(frag.NoPosField.Get("n"))
+							}
 							if frag.TokenField != nil {
 								g.Line().Commentf("Token: %s", frag.Name)
 								g.Add(frag.TokenField.Get("out")).Op("=").Add(frag.TokenField.Get("n"))

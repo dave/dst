@@ -172,8 +172,6 @@ func Clone(n Node) Node {
 	case *BlockStmt:
 		out := &BlockStmt{}
 
-		out.RbraceHasNoPos = n.RbraceHasNoPos
-
 		out.Decs.Before = n.Decs.Before
 
 		// Decoration: Start
@@ -186,6 +184,9 @@ func Clone(n Node) Node {
 		for _, v := range n.List {
 			out.List = append(out.List, Clone(v).(Stmt))
 		}
+
+		// Token: Rbrace
+		out.RbraceHasNoPos = n.RbraceHasNoPos
 
 		// Decoration: End
 		out.Decs.End = append(out.Decs.End, n.Decs.End...)

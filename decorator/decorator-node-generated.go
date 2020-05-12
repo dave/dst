@@ -3,6 +3,7 @@ package decorator
 import (
 	"github.com/dave/dst"
 	"go/ast"
+	"go/token"
 )
 
 func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, parentFieldType string, n ast.Node) (dst.Node, error) {
@@ -250,7 +251,7 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		}
 
 		// Token: Rbrace
-		if n.Rbrace == 0 {
+		if n.Rbrace == token.NoPos {
 			out.RbraceHasNoPos = true
 		}
 

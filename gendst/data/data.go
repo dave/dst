@@ -1418,6 +1418,7 @@ var Info = map[string][]Part{
 			Name:          "Rbrace",
 			Token:         Basic{jen.Qual("go/token", "RBRACE")},
 			PositionField: Field{"Rbrace"},
+			NoPosField:    Field{"RbraceHasNoPos"},
 		},
 		Decoration{
 			Name: "End",
@@ -2395,6 +2396,7 @@ type Token struct {
 	ExistsField   FieldSpec
 	PositionField FieldSpec
 	TokenField    FieldSpec
+	NoPosField    FieldSpec
 }
 
 type Bad struct {
