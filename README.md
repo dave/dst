@@ -277,7 +277,7 @@ dst.Inspect(f, func(node dst.Node) bool {
 	if after != dst.None {
 		info += fmt.Sprintf("- After: %s\n", after)
 	}
-	if len(info) > 0 {
+	if info != "" {
 		fmt.Printf("%T\n%s\n", node, info)
 	}
 	return true
