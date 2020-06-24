@@ -220,6 +220,8 @@ if err := decorator.Print(f); err != nil {
 //}
 ```
 
+#### dstutil.Decorations
+
 The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package also provides a helper function `Decorations`
 which returns a list of decorations for any node:
 

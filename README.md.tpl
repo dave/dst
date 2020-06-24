@@ -62,6 +62,8 @@ accessed with the `Decorations()` method on the `Node` interface:
 
 {{ "ExampleDecorated" | example }}
 
+#### dstutil.Decorations
+
 The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package also provides a helper function `Decorations`
 which returns a list of decorations for any node:
 
