@@ -62,6 +62,11 @@ accessed with the `Decorations()` method on the `Node` interface:
 
 {{ "ExampleDecorated" | example }}
 
+The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package also provides a helper function `Decorations`
+which returns a list of decorations for any node:
+
+{{ "ExampleDecorationPoints" | example }}
+
 ### Newlines
 
 The `Before` and `After` properties cover the majority of cases, but occasionally a newline needs to 
@@ -78,13 +83,6 @@ use the `Clone` function to make a deep copy of the node before re-use:
 
 The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package is a fork of `golang.org/x/tools/go/ast/astutil`, 
 and provides the `Apply` function with similar semantics.     
-
-### Decorations
-
-The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package also provides a helper function `Decorations`
-which returns a list of decorations for any node:
-
-{{ "ExampleDecorationPoints" | example }}
 
 ### Imports
 
