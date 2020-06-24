@@ -333,16 +333,17 @@ func ExampleDecorationPoints() {
 			info += fmt.Sprintf("- Before: %s\n", before)
 		}
 		for _, point := range points {
-			if len(point.Decs) > 0 {
-				info += fmt.Sprintf("- %s: [", point.Name)
-				for i, dec := range point.Decs {
-					if i > 0 {
-						info += ", "
-					}
-					info += fmt.Sprintf("%q", dec)
-				}
-				info += "]\n"
+			if len(point.Decs) == 0 {
+				continue
 			}
+			info += fmt.Sprintf("- %s: [", point.Name)
+			for i, dec := range point.Decs {
+				if i > 0 {
+					info += ", "
+				}
+				info += fmt.Sprintf("%q", dec)
+			}
+			info += "]\n"
 		}
 		if after != dst.None {
 			info += fmt.Sprintf("- After: %s\n", after)
