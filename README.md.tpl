@@ -79,6 +79,13 @@ use the `Clone` function to make a deep copy of the node before re-use:
 The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package is a fork of `golang.org/x/tools/go/ast/astutil`, 
 and provides the `Apply` function with similar semantics.     
 
+### Decorations
+
+The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package also provides a helper function `Decorations`
+which returns a list of decorations for any node:
+
+{{ "ExampleDecorationPoints" | example }}
+
 ### Imports
 
 The decorator can automatically manage the `import` block, which is a non-trivial task.

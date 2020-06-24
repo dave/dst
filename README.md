@@ -264,6 +264,96 @@ if err := decorator.Print(f); err != nil {
 The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package is a fork of `golang.org/x/tools/go/ast/astutil`, 
 and provides the `Apply` function with similar semantics.     
 
+### Decorations
+
+The [dstutil](https://github.com/dave/dst/tree/master/dstutil) package also provides a helper function `Decorations`
+which returns a list of decorations for any node:
+
+```go
+code := `package main
+
+// main comment
+// is multi line
+func main() {
+
+	if true {
+
+		// foo
+		println( /* foo inline */ "foo")
+	} else if false {
+		println /* bar inline */ ("bar")
+
+		// bar after
+
+	} else {
+		// empty block
+	}
+}`
+
+f, err := decorator.Parse(code)
+if err != nil {
+	panic(err)
+}
+
+dst.Inspect(f, func(node dst.Node) bool {
+	if node == nil {
+		return false
+	}
+	before, after, points := dstutil.Decorations(node)
+	var info string
+	if before != dst.None {
+		info += fmt.Sprintf("- Before: %s\n", before)
+	}
+	for _, point := range points {
+		if len(point.Decs) > 0 {
+			info += fmt.Sprintf("- %s: [", point.Name)
+			for i, dec := range point.Decs {
+				if i > 0 {
+					info += ", "
+				}
+				info += fmt.Sprintf("%q", dec)
+			}
+			info += "]\n"
+		}
+	}
+	if after != dst.None {
+		info += fmt.Sprintf("- After: %s\n", after)
+	}
+	if len(info) > 0 {
+		fmt.Printf("%T\n%s\n", node, info)
+	}
+	return true
+})
+
+//Output:
+//*dst.FuncDecl
+//- Before: NewLine
+//- Start: ["// main comment", "// is multi line"]
+//
+//*dst.IfStmt
+//- Before: NewLine
+//- After: NewLine
+//
+//*dst.ExprStmt
+//- Before: NewLine
+//- Start: ["// foo"]
+//- After: NewLine
+//
+//*dst.CallExpr
+//- Lparen: ["/* foo inline */"]
+//
+//*dst.ExprStmt
+//- Before: NewLine
+//- End: ["\n", "\n", "// bar after"]
+//- After: NewLine
+//
+//*dst.CallExpr
+//- Fun: ["/* bar inline */"]
+//
+//*dst.BlockStmt
+//- Lbrace: ["\n", "// empty block"]
+```
+
 ### Imports
 
 The decorator can automatically manage the `import` block, which is a non-trivial task.

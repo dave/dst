@@ -13,6 +13,7 @@ import (
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator/resolver/goast"
 	"github.com/dave/dst/decorator/resolver/guess"
+	"github.com/dave/dst/dstutil"
 	"golang.org/x/tools/go/loader"
 )
 
@@ -52,9 +53,9 @@ func TestPositions(t *testing.T) {
 		if n == nil {
 			return false
 		}
-		_, _, infos := getDecorationInfo(n)
-		for _, info := range infos {
-			for _, text := range info.decs {
+		_, _, points := dstutil.Decorations(n)
+		for _, point := range points {
+			for _, text := range point.Decs {
 				if text == "// notest" {
 					continue
 				}
@@ -76,30 +77,30 @@ func TestPositions(t *testing.T) {
 		}
 		if fmt.Sprintf("%T", n) == currentNodeType {
 			//fmt.Printf("*** Testing %s (%d)\n", currentNodeType, currentTestIndex)
-			_, _, infos := getDecorationInfo(n)
-			for _, info := range infos {
-				for _, text := range info.decs {
+			_, _, points := dstutil.Decorations(n)
+			for _, point := range points {
+				for _, text := range point.Decs {
 					if !strings.HasPrefix(text, "/*") {
 						continue
 					}
 					text := strings.TrimSuffix(strings.TrimPrefix(text, "/*"), "*/")
-					if text != info.name {
-						t.Errorf("incorrect position in %s (%d) - expected %s, got %s", currentNodeType, currentTestIndex, text, info.name)
+					if text != point.Name {
+						t.Errorf("incorrect position in %s (%d) - expected %s, got %s", currentNodeType, currentTestIndex, text, point.Name)
 					}
 				}
 			}
 			done = true
 		} else {
-			_, _, infos := getDecorationInfo(n)
-			for _, info := range infos {
-				for _, text := range info.decs {
+			_, _, points := dstutil.Decorations(n)
+			for _, point := range points {
+				for _, text := range point.Decs {
 					if !strings.HasPrefix(text, "/*") {
 						continue
 					}
 					text := strings.TrimSuffix(strings.TrimPrefix(text, "/*"), "*/")
 					if text != "Start" && text != "End" {
 						// Only tolerate comments moved to adjacent decorations for Start and End
-						t.Errorf("comment on wrong decoration: %s (%d) %s -> %T %s\n", currentNodeType, currentTestIndex, text, n, info.name)
+						t.Errorf("comment on wrong decoration: %s (%d) %s -> %T %s\n", currentNodeType, currentTestIndex, text, n, point.Name)
 					}
 				}
 			}

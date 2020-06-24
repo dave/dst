@@ -193,9 +193,9 @@ func generateDecorator(names []string) error {
 }
 
 func generateDecoratorTestHelper(names []string) error {
-	f := NewFile("decorator")
+	f := NewFile("dstutil")
 	f.ImportName(DSTPATH, "dst")
-	f.Func().Id("getDecorationInfo").Params(Id("n").Qual(DSTPATH, "Node")).Params(Id("before"), Id("after").Qual(DSTPATH, "SpaceType"), Id("info").Index().Id("decorationInfo")).BlockFunc(func(g *Group) {
+	f.Func().Id("decorations").Params(Id("n").Qual(DSTPATH, "Node")).Params(Id("before"), Id("after").Qual(DSTPATH, "SpaceType"), Id("points").Index().Id("DecorationPoint")).BlockFunc(func(g *Group) {
 		g.Switch(Id("n").Op(":=").Id("n").Assert(Id("type"))).BlockFunc(func(g *Group) {
 			for _, nodeName := range names {
 				g.Case(Op("*").Qual(DSTPATH, nodeName)).BlockFunc(func(g *Group) {
@@ -206,7 +206,7 @@ func generateDecoratorTestHelper(names []string) error {
 					for _, frag := range data.Info[nodeName] {
 						switch frag := frag.(type) {
 						case data.Decoration:
-							g.Id("info").Op("=").Append(Id("info"), Id("decorationInfo").Values(Lit(frag.Name), Id("n").Dot("Decs").Dot(frag.Name)))
+							g.Id("points").Op("=").Append(Id("points"), Id("DecorationPoint").Values(Lit(frag.Name), Id("n").Dot("Decs").Dot(frag.Name)))
 						}
 					}
 				})
@@ -214,5 +214,5 @@ func generateDecoratorTestHelper(names []string) error {
 		})
 		g.Return()
 	})
-	return f.Save("./decorator/decorator-info-generated.go")
+	return f.Save("./dstutil/decorations-generated.go")
 }

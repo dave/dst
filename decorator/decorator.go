@@ -12,6 +12,7 @@ import (
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator/resolver"
 	"github.com/dave/dst/decorator/resolver/gotypes"
+	"github.com/dave/dst/dstutil"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -170,11 +171,6 @@ type fileDecorator struct {
 	endIndents    map[ast.Node]int
 	before, after map[ast.Node]dst.SpaceType
 	decorations   map[ast.Node]map[string][]string
-}
-
-type decorationInfo struct {
-	name string
-	decs []string
 }
 
 // We never need to resolve idents that are in these fields (decorateSelectorExpr will override
@@ -488,23 +484,23 @@ func debug(w io.Writer, file dst.Node) {
 			return false
 		}
 		var out string
-		before, after, infos := getDecorationInfo(n)
+		before, after, points := dstutil.Decorations(n)
 		switch before {
 		case dst.NewLine:
 			out += " [New line before]"
 		case dst.EmptyLine:
 			out += " [Empty line before]"
 		}
-		for _, info := range infos {
-			if len(info.decs) > 0 {
+		for _, point := range points {
+			if len(point.Decs) > 0 {
 				var values string
-				for i, dec := range info.decs {
+				for i, dec := range point.Decs {
 					if i > 0 {
 						values += " "
 					}
 					values += fmt.Sprintf("%q", dec)
 				}
-				out += fmt.Sprintf(" [%s %s]", info.name, values)
+				out += fmt.Sprintf(" [%s %s]", point.Name, values)
 			}
 		}
 		switch after {
