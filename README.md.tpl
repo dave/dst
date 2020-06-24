@@ -65,7 +65,7 @@ accessed with the `Decorations()` method on the `Node` interface:
 #### dstutil.Decorations
 
 While debugging, it is often useful to have a list of all decorations attached to a node. The
-[dstutil](https://github.com/dave/dst/tree/master/dstutil) package also provides a helper function `Decorations` which
+[dstutil](https://github.com/dave/dst/tree/master/dstutil) package provides a helper function `Decorations` which
 returns a list of the attachment points and all decorations for any node:
 
 {{ "ExampleDecorationPoints" | example }}
