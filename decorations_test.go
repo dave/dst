@@ -95,7 +95,7 @@ func ExampleAlias() {
 			fmt.Println("a")
 		}`
 
-	dec := decorator.NewDecoratorWithImports(token.NewFileSet(), "main", goast.New())
+	dec := decorator.NewDecoratorWithImports(token.NewFileSet(), "main", goast.New(), false)
 
 	f, err := dec.Parse(code)
 	if err != nil {
@@ -132,7 +132,7 @@ func ExampleManualImports() {
 			fmt.Println("a")
 		}`
 
-	dec := decorator.NewDecoratorWithImports(token.NewFileSet(), "main", goast.New())
+	dec := decorator.NewDecoratorWithImports(token.NewFileSet(), "main", goast.New(), false)
 
 	f, err := dec.Parse(code)
 	if err != nil {
@@ -243,7 +243,7 @@ func ExampleGoTypesImport() {
 
 	// Create a new decorator to decorate files in the package. This could also be done with the
 	// convenience function NewDecoratorFromPackage, but we show the manual method here.
-	dec := decorator.NewDecoratorWithImports(p.Fset, p.PkgPath, gotypes.New(p.TypesInfo.Uses))
+	dec := decorator.NewDecoratorWithImports(p.Fset, p.PkgPath, gotypes.New(p.TypesInfo.Uses), false)
 
 	f, err := dec.DecorateFile(p.Syntax[0])
 	if err != nil {

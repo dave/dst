@@ -6,13 +6,15 @@ import (
 	"testing"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator/resolver/gotypes"
 	"golang.org/x/tools/go/packages"
 )
 
 func TestDecoratorResolver(t *testing.T) {
 	type tc struct {
-		expect string
-		get    func(*dst.File) *dst.Ident
+		expect          string
+		get             func(*dst.File) *dst.Ident
+		includeLocalPkg bool
 	}
 	tests := []struct {
 		skip, solo bool
@@ -47,18 +49,28 @@ func TestDecoratorResolver(t *testing.T) {
 						d := f.Decls[1]
 						return d.(*dst.FuncDecl).Body.List[0].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ident)
 					},
+					false,
 				},
 				{
 					"root/b",
 					func(f *dst.File) *dst.Ident {
 						return f.Decls[1].(*dst.FuncDecl).Body.List[1].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ident)
 					},
+					false,
 				},
 				{
 					"",
 					func(f *dst.File) *dst.Ident {
 						return f.Decls[1].(*dst.FuncDecl).Body.List[2].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ident)
 					},
+					false,
+				},
+				{
+					"root/main",
+					func(f *dst.File) *dst.Ident {
+						return f.Decls[1].(*dst.FuncDecl).Body.List[2].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ident)
+					},
+					true,
 				},
 			},
 		},
@@ -91,7 +103,7 @@ func TestDecoratorResolver(t *testing.T) {
 				},
 				"root/main",
 			)
-			os.RemoveAll(root)
+			err = os.RemoveAll(root)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -100,21 +112,26 @@ func TestDecoratorResolver(t *testing.T) {
 			}
 			pkg := pkgs[0]
 
-			d := NewDecoratorFromPackage(pkg)
-
-			var file *dst.File
-			for _, sf := range pkg.Syntax {
-				if _, name := filepath.Split(pkg.Fset.File(sf.Pos()).Name()); name == "main.go" {
-					var err error
-					file, err = d.DecorateFile(sf)
-					if err != nil {
-						t.Fatal(err)
-					}
-					break
-				}
-			}
-
 			for _, c := range test.cases {
+				var d *Decorator
+				if c.includeLocalPkg {
+					d = NewDecoratorWithImports(pkg.Fset, pkg.PkgPath, gotypes.New(pkg.TypesInfo.Uses), true)
+				} else {
+					d = NewDecoratorFromPackage(pkg)
+				}
+
+				var file *dst.File
+				for _, sf := range pkg.Syntax {
+					if _, name := filepath.Split(pkg.Fset.File(sf.Pos()).Name()); name == "main.go" {
+						var err error
+						file, err = d.DecorateFile(sf)
+						if err != nil {
+							t.Fatal(err)
+						}
+						break
+					}
+				}
+
 				id := c.get(file)
 				if id.Path != c.expect {
 					t.Errorf("expected %q, found %q", c.expect, id.Path)
