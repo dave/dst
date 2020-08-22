@@ -66,7 +66,7 @@ func TestGoAstDecoratorResolver(t *testing.T) {
 				t.Skip()
 			}
 
-			d := decorator.NewDecoratorWithImports(token.NewFileSet(), "main", New(), false)
+			d := decorator.NewDecoratorWithImports(token.NewFileSet(), "main", New())
 
 			f, err := d.Parse(test.src)
 			if err != nil {

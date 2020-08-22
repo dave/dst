@@ -29,17 +29,16 @@ func NewDecorator(fset *token.FileSet) *Decorator {
 }
 
 // NewDecoratorWithImports returns a new decorator with import management enabled.
-func NewDecoratorWithImports(fset *token.FileSet, path string, resolver resolver.DecoratorResolver, includeLocalPkg bool) *Decorator {
+func NewDecoratorWithImports(fset *token.FileSet, path string, resolver resolver.DecoratorResolver) *Decorator {
 	dec := NewDecorator(fset)
 	dec.Path = path
 	dec.Resolver = resolver
-	dec.IncludeLocalPkg = includeLocalPkg
 	return dec
 }
 
 // NewDecoratorFromPackage returns a new decorator configured to decorate files in pkg.
 func NewDecoratorFromPackage(pkg *packages.Package) *Decorator {
-	return NewDecoratorWithImports(pkg.Fset, pkg.PkgPath, gotypes.New(pkg.TypesInfo.Uses), false)
+	return NewDecoratorWithImports(pkg.Fset, pkg.PkgPath, gotypes.New(pkg.TypesInfo.Uses))
 }
 
 // Decorator converts ast nodes into dst nodes, and converts decoration info from the ast fileset
@@ -56,8 +55,10 @@ type Decorator struct {
 	Resolver resolver.DecoratorResolver
 	// Local package path - required if Resolver is set.
 	Path string
-	// If IncludeLocalPkg is true, all packages are specified in the output including the local package.
-	IncludeLocalPkg bool
+	// By default local idents are left with an empty Path, so they stay local if the local package
+	// is renamed. Setting ResolveLocalPath to true prevents this, so all idents will have the
+	// package path added.
+	ResolveLocalPath bool
 }
 
 // Parse uses parser.ParseFile to parse and decorate a Go source file. The src parameter should
@@ -331,7 +332,7 @@ func (f *fileDecorator) resolvePath(force bool, parent ast.Node, parentName, par
 
 	path = stripVendor(path)
 
-	if !f.IncludeLocalPkg && path == stripVendor(f.Path) {
+	if !f.ResolveLocalPath && path == stripVendor(f.Path) {
 		return "", nil
 	}
 

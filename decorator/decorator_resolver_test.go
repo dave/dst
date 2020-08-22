@@ -6,15 +6,14 @@ import (
 	"testing"
 
 	"github.com/dave/dst"
-	"github.com/dave/dst/decorator/resolver/gotypes"
 	"golang.org/x/tools/go/packages"
 )
 
 func TestDecoratorResolver(t *testing.T) {
 	type tc struct {
-		expect          string
-		get             func(*dst.File) *dst.Ident
-		includeLocalPkg bool
+		expect           string
+		get              func(*dst.File) *dst.Ident
+		resolveLocalPath bool
 	}
 	tests := []struct {
 		skip, solo bool
@@ -103,22 +102,15 @@ func TestDecoratorResolver(t *testing.T) {
 				},
 				"root/main",
 			)
-			err = os.RemoveAll(root)
-			if err != nil {
-				t.Fatal(err)
-			}
+			_ = os.RemoveAll(root) // ignore error
 			if len(pkgs) != 1 {
 				t.Fatalf("expected 1 package, found %d", len(pkgs))
 			}
 			pkg := pkgs[0]
 
 			for _, c := range test.cases {
-				var d *Decorator
-				if c.includeLocalPkg {
-					d = NewDecoratorWithImports(pkg.Fset, pkg.PkgPath, gotypes.New(pkg.TypesInfo.Uses), true)
-				} else {
-					d = NewDecoratorFromPackage(pkg)
-				}
+				d := NewDecoratorFromPackage(pkg)
+				d.ResolveLocalPath = c.resolveLocalPath
 
 				var file *dst.File
 				for _, sf := range pkg.Syntax {

@@ -3,22 +3,14 @@ package decorator
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator/resolver"
 	"github.com/dave/dst/decorator/resolver/gopackages"
-	"github.com/dave/dst/decorator/resolver/gotypes"
 	"golang.org/x/tools/go/packages"
-)
-
-const (
-	includeLocalPkgEnvKey = "DST_INCLUDE_LOCAL_PKG"
 )
 
 func Load(cfg *packages.Config, patterns ...string) ([]*Package, error) {
@@ -37,17 +29,6 @@ func Load(cfg *packages.Config, patterns ...string) ([]*Package, error) {
 	}
 
 	dpkgs := map[*packages.Package]*Package{}
-
-	includeLocalPkg := false
-	for _, env := range cfg.Env {
-		if strings.HasPrefix(env, includeLocalPkgEnvKey) {
-			val, err := strconv.ParseBool(strings.TrimPrefix(env, includeLocalPkgEnvKey+"="))
-			if err != nil {
-				return nil, fmt.Errorf("%s env value should be true or false", includeLocalPkgEnvKey)
-			}
-			includeLocalPkg = val
-		}
-	}
 
 	var convert func(p *packages.Package) (*Package, error)
 	convert = func(pkg *packages.Package) (*Package, error) {
@@ -68,7 +49,7 @@ func Load(cfg *packages.Config, patterns ...string) ([]*Package, error) {
 				goFiles[fpath] = true
 			}
 
-			p.Decorator = NewDecoratorWithImports(pkg.Fset, pkg.PkgPath, gotypes.New(pkg.TypesInfo.Uses), includeLocalPkg)
+			p.Decorator = NewDecoratorFromPackage(pkg)
 			for _, f := range pkg.Syntax {
 				fpath := pkg.Fset.File(f.Pos()).Name()
 				if !goFiles[fpath] {
