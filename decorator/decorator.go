@@ -55,6 +55,10 @@ type Decorator struct {
 	Resolver resolver.DecoratorResolver
 	// Local package path - required if Resolver is set.
 	Path string
+	// By default local idents are left with an empty Path, so they stay local if the local package
+	// is renamed. Setting ResolveLocalPath to true prevents this, so all idents will have the
+	// package path added.
+	ResolveLocalPath bool
 }
 
 // Parse uses parser.ParseFile to parse and decorate a Go source file. The src parameter should
@@ -328,7 +332,7 @@ func (f *fileDecorator) resolvePath(force bool, parent ast.Node, parentName, par
 
 	path = stripVendor(path)
 
-	if path == stripVendor(f.Path) {
+	if !f.ResolveLocalPath && path == stripVendor(f.Path) {
 		return "", nil
 	}
 
