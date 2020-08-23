@@ -65,8 +65,8 @@ func testPackageRestoresCorrectlyWithImports(t *testing.T, path ...string) {
 
 				t.Run(fname, func(t *testing.T) {
 
-					if p.PkgPath == "net/http" && (fname == "server.go" || fname == "request.go") {
-						t.Skip("TODO: In net/http there are two files (server.go and request.go) that have multiple imports with the same path and different aliases (see https://github.com/golang/go/commit/3409ce39bfd7584523b7a8c150a310cea92d879d). This edge case would need a complete rewrite of the import management block to support.")
+					if (p.PkgPath == "net/http" && (fname == "server.go" || fname == "request.go")) || (p.PkgPath == "crypto/x509" && fname == "x509.go") {
+						t.Skip("TODO: In net/http/server.go, net/http/request.go, and crypto/x509/x509.go we multiple imports with the same path and different aliases. This edge case would need a complete rewrite of the import management block to support - see see https://github.com/dave/dst/issues/45")
 					}
 
 					buf := &bytes.Buffer{}
