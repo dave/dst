@@ -103,6 +103,9 @@ func TestDecoratorResolver(t *testing.T) {
 				"root/main",
 			)
 			_ = os.RemoveAll(root) // ignore error
+			if err != nil {
+				t.Fatal(err)
+			}
 			if len(pkgs) != 1 {
 				t.Fatalf("expected 1 package, found %d", len(pkgs))
 			}
