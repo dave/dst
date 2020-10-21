@@ -62,6 +62,8 @@ func generateDecorator(names []string) error {
 						case data.Init:
 							g.Line().Commentf("Init: %s", frag.Name)
 							g.Add(frag.Field.Get("out")).Op("=").Op("&").Qual(DSTPATH, frag.Type.TypeName()).Values()
+							g.Id("f").Dot("Dst").Dot("Nodes").Index(frag.Field.Get("n")).Op("=").Add(frag.Field.Get("out"))
+							g.Id("f").Dot("Ast").Dot("Nodes").Index(frag.Field.Get("out")).Op("=").Add(frag.Field.Get("n"))
 						case data.Decoration:
 							// nothing here
 						case data.String:
