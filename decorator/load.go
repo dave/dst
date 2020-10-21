@@ -19,8 +19,8 @@ func Load(cfg *packages.Config, patterns ...string) ([]*Package, error) {
 		cfg = &packages.Config{Mode: packages.LoadSyntax}
 	}
 
-	if cfg.Mode != packages.LoadSyntax && cfg.Mode != packages.LoadAllSyntax {
-		return nil, errors.New("config mode should be LoadSyntax or LoadAllSyntax")
+	if cfg.Mode&packages.NeedSyntax == 0 {
+		return nil, errors.New("config mode should include NeedSyntax")
 	}
 
 	pkgs, err := packages.Load(cfg, patterns...)
