@@ -906,6 +906,8 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 
 		// Init: Type
 		out.Type = &dst.FuncType{}
+		f.Dst.Nodes[n.Type] = out.Type
+		f.Ast.Nodes[out.Type] = n.Type
 
 		// Token: Func
 		out.Type.Func = true
