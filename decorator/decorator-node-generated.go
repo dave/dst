@@ -930,6 +930,15 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 			out.Name = child.(*dst.Ident)
 		}
 
+		// Node: TypeParams
+		if n.Type.TypeParams != nil {
+			child, err := f.decorateNode(n, "FuncDecl", "TypeParams", "FieldList", n.Type.TypeParams)
+			if err != nil {
+				return nil, err
+			}
+			out.Type.TypeParams = child.(*dst.FieldList)
+		}
+
 		// Node: Params
 		if n.Type.Params != nil {
 			child, err := f.decorateNode(n, "FuncDecl", "Params", "FieldList", n.Type.Params)
@@ -969,6 +978,9 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 			}
 			if decs, ok := nd["Name"]; ok {
 				out.Decs.Name = decs
+			}
+			if decs, ok := nd["TypeParams"]; ok {
+				out.Decs.TypeParams = decs
 			}
 			if decs, ok := nd["Params"]; ok {
 				out.Decs.Params = decs
@@ -1032,6 +1044,15 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		// Token: Func
 		out.Func = n.Func.IsValid()
 
+		// Node: TypeParams
+		if n.TypeParams != nil {
+			child, err := f.decorateNode(n, "FuncType", "TypeParams", "FieldList", n.TypeParams)
+			if err != nil {
+				return nil, err
+			}
+			out.TypeParams = child.(*dst.FieldList)
+		}
+
 		// Node: Params
 		if n.Params != nil {
 			child, err := f.decorateNode(n, "FuncType", "Params", "FieldList", n.Params)
@@ -1056,6 +1077,9 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 			}
 			if decs, ok := nd["Func"]; ok {
 				out.Decs.Func = decs
+			}
+			if decs, ok := nd["TypeParams"]; ok {
+				out.Decs.TypeParams = decs
 			}
 			if decs, ok := nd["Params"]; ok {
 				out.Decs.Params = decs
@@ -1364,6 +1388,55 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 			}
 			if decs, ok := nd["Index"]; ok {
 				out.Decs.Index = decs
+			}
+			if decs, ok := nd["End"]; ok {
+				out.Decs.End = decs
+			}
+		}
+
+		return out, nil
+	case *ast.IndexListExpr:
+		out := &dst.IndexListExpr{}
+		f.Dst.Nodes[n] = out
+		f.Ast.Nodes[out] = n
+
+		out.Decs.Before = f.before[n]
+		out.Decs.After = f.after[n]
+
+		// Node: X
+		if n.X != nil {
+			child, err := f.decorateNode(n, "IndexListExpr", "X", "Expr", n.X)
+			if err != nil {
+				return nil, err
+			}
+			out.X = child.(dst.Expr)
+		}
+
+		// Token: Lbrack
+
+		// List: Indices
+		for _, v := range n.Indices {
+			child, err := f.decorateNode(n, "IndexListExpr", "Indices", "Expr", v)
+			if err != nil {
+				return nil, err
+			}
+			out.Indices = append(out.Indices, child.(dst.Expr))
+		}
+
+		// Token: Rbrack
+
+		if nd, ok := f.decorations[n]; ok {
+			if decs, ok := nd["Start"]; ok {
+				out.Decs.Start = decs
+			}
+			if decs, ok := nd["X"]; ok {
+				out.Decs.X = decs
+			}
+			if decs, ok := nd["Lbrack"]; ok {
+				out.Decs.Lbrack = decs
+			}
+			if decs, ok := nd["Indices"]; ok {
+				out.Decs.Indices = decs
 			}
 			if decs, ok := nd["End"]; ok {
 				out.Decs.End = decs
@@ -2128,6 +2201,15 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 		// Token: Assign
 		out.Assign = n.Assign.IsValid()
 
+		// Node: TypeParams
+		if n.TypeParams != nil {
+			child, err := f.decorateNode(n, "TypeSpec", "TypeParams", "FieldList", n.TypeParams)
+			if err != nil {
+				return nil, err
+			}
+			out.TypeParams = child.(*dst.FieldList)
+		}
+
 		// Node: Type
 		if n.Type != nil {
 			child, err := f.decorateNode(n, "TypeSpec", "Type", "Expr", n.Type)
@@ -2143,6 +2225,9 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 			}
 			if decs, ok := nd["Name"]; ok {
 				out.Decs.Name = decs
+			}
+			if decs, ok := nd["TypeParams"]; ok {
+				out.Decs.TypeParams = decs
 			}
 			if decs, ok := nd["End"]; ok {
 				out.Decs.End = decs

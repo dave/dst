@@ -63,13 +63,14 @@ type Decl interface {
 // and embedded struct fields. In the latter case, the field name is the type name.
 //
 type Field struct {
-	Names []*Ident  // field/method/parameter names; or nil
-	Type  Expr      // field/method/parameter type
+	Names []*Ident  // field/method/(type) parameter names; or nil
+	Type  Expr      // field/method/parameter type; or nil
 	Tag   *BasicLit // field tag; or nil
 	Decs  FieldDecorations
 }
 
-// A FieldList represents a list of Fields, enclosed by parentheses or braces.
+// A FieldList represents a list of Fields, enclosed by parentheses,
+// curly braces, or square brackets.
 type FieldList struct {
 	Opening bool
 	List    []*Field // field list; or nil
@@ -161,6 +162,14 @@ type (
 		X     Expr // expression
 		Index Expr // index expression
 		Decs  IndexExprDecorations
+	}
+
+	// An IndexListExpr node represents an expression followed by multiple
+	// indices.
+	IndexListExpr struct {
+		X       Expr // expression
+		Indices []Expr
+		Decs    IndexListExprDecorations
 	}
 
 	// An SliceExpr node represents an expression followed by slice indices.
@@ -258,16 +267,17 @@ type (
 
 	// A FuncType node represents a function type.
 	FuncType struct {
-		Func    bool
-		Params  *FieldList // (incoming) parameters; non-nil
-		Results *FieldList // (outgoing) results; or nil
-		Decs    FuncTypeDecorations
+		Func       bool
+		TypeParams *FieldList // type parameters; or nil
+		Params     *FieldList // (incoming) parameters; non-nil
+		Results    *FieldList // (outgoing) results; or nil
+		Decs       FuncTypeDecorations
 	}
 
 	// An InterfaceType node represents an interface type.
 	InterfaceType struct {
-		Methods    *FieldList // list of methods
-		Incomplete bool       // true if (source) methods are missing in the Methods list
+		Methods    *FieldList // list of embedded interfaces, methods, or types
+		Incomplete bool       // true if (source) methods or types are missing in the Methods list
 		Decs       InterfaceTypeDecorations
 	}
 
@@ -298,6 +308,7 @@ func (*CompositeLit) exprNode()   {}
 func (*ParenExpr) exprNode()      {}
 func (*SelectorExpr) exprNode()   {}
 func (*IndexExpr) exprNode()      {}
+func (*IndexListExpr) exprNode()  {}
 func (*SliceExpr) exprNode()      {}
 func (*TypeAssertExpr) exprNode() {}
 func (*CallExpr) exprNode()       {}
@@ -569,10 +580,11 @@ type (
 
 	// A TypeSpec node represents a type declaration (TypeSpec production).
 	TypeSpec struct {
-		Name   *Ident // type name
-		Assign bool   // position of '=', if any
-		Type   Expr   // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
-		Decs   TypeSpecDecorations
+		Name       *Ident     // type name
+		TypeParams *FieldList // type parameters; or nil
+		Assign     bool       // position of '=', if any
+		Type       Expr       // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
+		Decs       TypeSpecDecorations
 	}
 )
 
@@ -609,7 +621,7 @@ type (
 	//	token.VAR     *ValueSpec
 	//
 	GenDecl struct {
-		Tok    token.Token // IMPORT, CONST, TYPE, VAR
+		Tok    token.Token // IMPORT, CONST, TYPE, or VAR
 		Lparen bool
 		Specs  []Spec
 		Rparen bool
@@ -620,7 +632,7 @@ type (
 	FuncDecl struct {
 		Recv *FieldList // receiver (methods); or nil (functions)
 		Name *Ident     // function/method name
-		Type *FuncType  // function signature: parameters, results, and position of "func" keyword
+		Type *FuncType  // function signature: type and value parameters, results, and position of "func" keyword
 		Body *BlockStmt // function body; or nil for external (non-Go) function
 		Decs FuncDeclDecorations
 	}

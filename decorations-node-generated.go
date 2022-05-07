@@ -168,6 +168,11 @@ func (n *IndexExpr) Decorations() *NodeDecs {
 }
 
 // Decorations returns the decorations that are common to all nodes (Before, Start, End, After).
+func (n *IndexListExpr) Decorations() *NodeDecs {
+	return &n.Decs.NodeDecs
+}
+
+// Decorations returns the decorations that are common to all nodes (Before, Start, End, After).
 func (n *InterfaceType) Decorations() *NodeDecs {
 	return &n.Decs.NodeDecs
 }

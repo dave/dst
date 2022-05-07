@@ -283,6 +283,16 @@ A /*Label*/ : /*Colon*/
 		/*Start*/ T2 = /*Name*/ T1 /*End*/
 	)
 
+	// TypeSpec(2)
+	type (
+		/*Start*/ X /*Name*/ [P any, Q any] /*TypeParams*/ []P /*End*/
+	)
+
+	// IndexListExpr
+	type IEPT[P any, Q any] struct {
+		XX X /*X*/ [ /*Lbrack*/ P, Q /*Indices*/] /*End*/
+	}
+
 	// GenDecl(0)
 	/*Start*/
 	const /*Tok*/ ( /*Lparen*/
@@ -305,12 +315,17 @@ func /*Func*/ d /*Name*/ (d, e int) /*Params*/ {
 } /*End*/
 
 // FuncDecl(1)
+func /*Func*/ TP /*Name*/ [P any] /*TypeParams*/ (a int) /*Params*/ (b P) /*Results*/ {
+	return b
+} /*End*/
+
+// FuncDecl(2)
 /*Start*/
 func /*Func*/ (a *A) /*Recv*/ e /*Name*/ (d, e int) /*Params*/ {
 	return
 } /*End*/
 
-// FuncDecl(2)
+// FuncDecl(3)
 /*Start*/
 func /*Func*/ (a *A) /*Recv*/ f /*Name*/ (d, e int) /*Params*/ (f, g int) /*Results*/ {
 	return
