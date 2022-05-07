@@ -155,6 +155,7 @@ func decorations(n dst.Node) (before, after dst.SpaceType, points []DecorationPo
 		points = append(points, DecorationPoint{"Func", n.Decs.Func})
 		points = append(points, DecorationPoint{"Recv", n.Decs.Recv})
 		points = append(points, DecorationPoint{"Name", n.Decs.Name})
+		points = append(points, DecorationPoint{"TypeParams", n.Decs.TypeParams})
 		points = append(points, DecorationPoint{"Params", n.Decs.Params})
 		points = append(points, DecorationPoint{"Results", n.Decs.Results})
 		points = append(points, DecorationPoint{"End", n.Decs.End})
@@ -169,6 +170,7 @@ func decorations(n dst.Node) (before, after dst.SpaceType, points []DecorationPo
 		after = n.Decs.After
 		points = append(points, DecorationPoint{"Start", n.Decs.Start})
 		points = append(points, DecorationPoint{"Func", n.Decs.Func})
+		points = append(points, DecorationPoint{"TypeParams", n.Decs.TypeParams})
 		points = append(points, DecorationPoint{"Params", n.Decs.Params})
 		points = append(points, DecorationPoint{"End", n.Decs.End})
 	case *dst.GenDecl:
@@ -218,6 +220,14 @@ func decorations(n dst.Node) (before, after dst.SpaceType, points []DecorationPo
 		points = append(points, DecorationPoint{"X", n.Decs.X})
 		points = append(points, DecorationPoint{"Lbrack", n.Decs.Lbrack})
 		points = append(points, DecorationPoint{"Index", n.Decs.Index})
+		points = append(points, DecorationPoint{"End", n.Decs.End})
+	case *dst.IndexListExpr:
+		before = n.Decs.Before
+		after = n.Decs.After
+		points = append(points, DecorationPoint{"Start", n.Decs.Start})
+		points = append(points, DecorationPoint{"X", n.Decs.X})
+		points = append(points, DecorationPoint{"Lbrack", n.Decs.Lbrack})
+		points = append(points, DecorationPoint{"Indices", n.Decs.Indices})
 		points = append(points, DecorationPoint{"End", n.Decs.End})
 	case *dst.InterfaceType:
 		before = n.Decs.Before
@@ -332,6 +342,7 @@ func decorations(n dst.Node) (before, after dst.SpaceType, points []DecorationPo
 		after = n.Decs.After
 		points = append(points, DecorationPoint{"Start", n.Decs.Start})
 		points = append(points, DecorationPoint{"Name", n.Decs.Name})
+		points = append(points, DecorationPoint{"TypeParams", n.Decs.TypeParams})
 		points = append(points, DecorationPoint{"End", n.Decs.End})
 	case *dst.TypeSwitchStmt:
 		before = n.Decs.Before

@@ -22,8 +22,8 @@ var Info = map[string][]Part{
 		//
 		type Field struct {
 			Doc     *CommentGroup // associated documentation; or nil
-			Names   []*Ident      // field/method/parameter names; or nil
-			Type    Expr          // field/method/parameter type
+			Names   []*Ident      // field/method/(type) parameter names; or nil
+			Type    Expr          // field/method/(type) parameter type
 			Tag     *BasicLit     // field tag; or nil
 			Comment *CommentGroup // line comments; or nil
 		}
@@ -57,11 +57,12 @@ var Info = map[string][]Part{
 		},
 	},
 	/*
-		// A FieldList represents a list of Fields, enclosed by parentheses or braces.
+		// A FieldList represents a list of Fields, enclosed by parentheses,
+		// curly braces, or square brackets.
 		type FieldList struct {
-			Opening token.Pos // position of opening parenthesis/brace, if any
+			Opening token.Pos // position of opening parenthesis/brace/bracket, if any
 			List    []*Field  // field list; or nil
-			Closing token.Pos // position of closing parenthesis/brace, if any
+			Closing token.Pos // position of closing parenthesis/brace/bracket, if any
 		}
 	*/
 	// There's nothing in the AST to tell us if Opening / Closing are BRACE or PAREN, apart from
@@ -416,6 +417,57 @@ var Info = map[string][]Part{
 			Name: "End",
 		},
 	},
+
+	/*
+		// An IndexListExpr node represents an expression followed by multiple
+		// indices.
+		IndexListExpr struct {
+			X       Expr      // expression
+			Lbrack  token.Pos // position of "["
+			Indices []Expr    // index expressions
+			Rbrack  token.Pos // position of "]"
+		}
+	*/
+	"IndexListExpr": {
+		Decoration{
+			Name: "Start",
+		},
+		Node{
+			Name:  "X",
+			Field: Field{"X"},
+			Type:  Iface{"Expr"},
+		},
+		Decoration{
+			Name: "X",
+		},
+		Token{
+			Name:          "Lbrack",
+			Token:         Basic{jen.Qual("go/token", "LBRACK")},
+			PositionField: Field{"Lbrack"},
+		},
+		Decoration{
+			Name: "Lbrack",
+		},
+		List{
+			Name:      "Indices",
+			Field:     Field{"Indices"},
+			Elem:      Iface{"Expr"},
+			Separator: token.COMMA,
+		},
+
+		Decoration{
+			Name: "Indices",
+		},
+		Token{
+			Name:          "Rbrack",
+			Token:         Basic{jen.Qual("go/token", "RBRACK")},
+			PositionField: Field{"Rbrack"},
+		},
+		Decoration{
+			Name: "End",
+		},
+	},
+
 	/*
 		// An SliceExpr node represents an expression followed by slice indices.
 		SliceExpr struct {
@@ -835,9 +887,10 @@ var Info = map[string][]Part{
 	/*
 		// A FuncType node represents a function type.
 		FuncType struct {
-			Func    token.Pos  // position of "func" keyword (token.NoPos if there is no "func")
-			Params  *FieldList // (incoming) parameters; non-nil
-			Results *FieldList // (outgoing) results; or nil
+			Func        token.Pos     // position of "func" keyword (token.NoPos if there is no "func")
+			TypeParams  *FieldList // type parameters; or nil
+			Params      *FieldList    // (incoming) parameters; non-nil
+			Results     *FieldList    // (outgoing) results; or nil
 		}
 	*/
 	"FuncType": {
@@ -860,6 +913,15 @@ var Info = map[string][]Part{
 				Ast: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Func").Dot("IsValid").Call() }),
 				Dst: Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Func") }),
 			},
+		},
+		Node{
+			Name:  "TypeParams",
+			Field: Field{"TypeParams"},
+			Type:  Struct{"FieldList"},
+		},
+		Decoration{
+			Name: "TypeParams",
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("TypeParams").Op("!=").Nil() }),
 		},
 		Node{
 			Name:  "Params",
@@ -1934,11 +1996,12 @@ var Info = map[string][]Part{
 	/*
 		// A TypeSpec node represents a type declaration (TypeSpec production).
 		TypeSpec struct {
-			Doc     *CommentGroup // associated documentation; or nil
-			Name    *Ident        // type name
-			Assign  token.Pos     // position of '=', if any
-			Type    Expr          // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
-			Comment *CommentGroup // line comments; or nil
+			Doc        *CommentGroup // associated documentation; or nil
+			Name       *Ident        // type name
+			TypeParams *FieldList    // type parameters; or nil
+			Assign     token.Pos     // position of '=', if any
+			Type       Expr          // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
+			Comment    *CommentGroup // line comments; or nil
 		}
 	*/
 	"TypeSpec": {
@@ -1962,6 +2025,15 @@ var Info = map[string][]Part{
 		},
 		Decoration{
 			Name: "Name",
+		},
+		Node{
+			Name:  "TypeParams",
+			Field: Field{"TypeParams"},
+			Type:  Struct{"FieldList"},
+		},
+		Decoration{
+			Name: "TypeParams",
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("TypeParams").Op("!=").Nil() }),
 		},
 		Node{
 			Name:  "Type",
@@ -2015,7 +2087,7 @@ var Info = map[string][]Part{
 		GenDecl struct {
 			Doc    *CommentGroup // associated documentation; or nil
 			TokPos token.Pos     // position of Tok
-			Tok    token.Token   // IMPORT, CONST, TYPE, VAR
+			Tok    token.Token   // IMPORT, CONST, TYPE, or VAR
 			Lparen token.Pos     // position of '(', if any
 			Specs  []Spec
 			Rparen token.Pos // position of ')', if any
@@ -2077,7 +2149,7 @@ var Info = map[string][]Part{
 			Doc  *CommentGroup // associated documentation; or nil
 			Recv *FieldList    // receiver (methods); or nil (functions)
 			Name *Ident        // function/method name
-			Type *FuncType     // function signature: parameters, results, and position of "func" keyword
+			Type *FuncType     // function signature: type and value parameters, results, and position of "func" keyword
 			Body *BlockStmt    // function body; or nil for external (non-Go) function
 		}
 
@@ -2134,6 +2206,20 @@ var Info = map[string][]Part{
 		},
 		Decoration{
 			Name: "Name",
+		},
+		Node{
+			Name:  "TypeParams",
+			Field: InnerField{"Type", "TypeParams"},
+			Type:  Struct{"FieldList"},
+		},
+		Decoration{
+			Name: "TypeParams",
+			Use:  Expr(func(n *jen.Statement) *jen.Statement { return n.Dot("Type").Dot("TypeParams").Op("!=").Nil() }),
+		},
+		SpecialDecoration{
+			// This renders any decorations from n.Type.TypeParams (but never saves them there)
+			Name: "TypeParams",
+			Decs: InnerField{"Type", "Decs"},
 		},
 		Node{
 			Name:  "Params",

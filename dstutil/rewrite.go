@@ -242,6 +242,10 @@ func (a *application) apply(parent dst.Node, name string, iter *iterator, n dst.
 		a.apply(n, "X", nil, n.X)
 		a.apply(n, "Index", nil, n.Index)
 
+	case *dst.IndexListExpr:
+		a.apply(n, "X", nil, n.X)
+		a.applyList(n, "Indices")
+
 	case *dst.SliceExpr:
 		a.apply(n, "X", nil, n.X)
 		a.apply(n, "Low", nil, n.Low)

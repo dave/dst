@@ -616,6 +616,16 @@ func (f *fileDecorator) addNodeFragments(n ast.Node) {
 		// Decoration: Name
 		f.addDecorationFragment(n, "Name", token.NoPos)
 
+		// Node: TypeParams
+		if n.Type.TypeParams != nil {
+			f.addNodeFragments(n.Type.TypeParams)
+		}
+
+		// Decoration: TypeParams
+		if n.Type.TypeParams != nil {
+			f.addDecorationFragment(n, "TypeParams", token.NoPos)
+		}
+
 		// Node: Params
 		if n.Type.Params != nil {
 			f.addNodeFragments(n.Type.Params)
@@ -676,6 +686,16 @@ func (f *fileDecorator) addNodeFragments(n ast.Node) {
 		// Decoration: Func
 		if n.Func.IsValid() {
 			f.addDecorationFragment(n, "Func", token.NoPos)
+		}
+
+		// Node: TypeParams
+		if n.TypeParams != nil {
+			f.addNodeFragments(n.TypeParams)
+		}
+
+		// Decoration: TypeParams
+		if n.TypeParams != nil {
+			f.addDecorationFragment(n, "TypeParams", token.NoPos)
 		}
 
 		// Node: Params
@@ -883,6 +903,39 @@ func (f *fileDecorator) addNodeFragments(n ast.Node) {
 
 		// Decoration: Index
 		f.addDecorationFragment(n, "Index", token.NoPos)
+
+		// Token: Rbrack
+		f.addTokenFragment(n, token.RBRACK, n.Rbrack)
+
+		// Decoration: End
+		f.addDecorationFragment(n, "End", n.End())
+
+	case *ast.IndexListExpr:
+
+		// Decoration: Start
+		f.addDecorationFragment(n, "Start", n.Pos())
+
+		// Node: X
+		if n.X != nil {
+			f.addNodeFragments(n.X)
+		}
+
+		// Decoration: X
+		f.addDecorationFragment(n, "X", token.NoPos)
+
+		// Token: Lbrack
+		f.addTokenFragment(n, token.LBRACK, n.Lbrack)
+
+		// Decoration: Lbrack
+		f.addDecorationFragment(n, "Lbrack", token.NoPos)
+
+		// List: Indices
+		for _, v := range n.Indices {
+			f.addNodeFragments(v)
+		}
+
+		// Decoration: Indices
+		f.addDecorationFragment(n, "Indices", token.NoPos)
 
 		// Token: Rbrack
 		f.addTokenFragment(n, token.RBRACK, n.Rbrack)
@@ -1382,6 +1435,16 @@ func (f *fileDecorator) addNodeFragments(n ast.Node) {
 
 		// Decoration: Name
 		f.addDecorationFragment(n, "Name", token.NoPos)
+
+		// Node: TypeParams
+		if n.TypeParams != nil {
+			f.addNodeFragments(n.TypeParams)
+		}
+
+		// Decoration: TypeParams
+		if n.TypeParams != nil {
+			f.addDecorationFragment(n, "TypeParams", token.NoPos)
+		}
 
 		// Node: Type
 		if n.Type != nil {

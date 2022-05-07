@@ -805,6 +805,17 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 		// Decoration: Name
 		r.applyDecorations(out, n.Decs.Name, false)
 
+		// Node: TypeParams
+		if n.Type.TypeParams != nil {
+			out.Type.TypeParams = r.restoreNode(n.Type.TypeParams, "FuncDecl", "TypeParams", "FieldList", allowDuplicate).(*ast.FieldList)
+		}
+
+		// Decoration: TypeParams
+		r.applyDecorations(out, n.Decs.TypeParams, false)
+
+		// Special decoration: TypeParams
+		r.applyDecorations(out, n.Type.Decs.TypeParams, false)
+
 		// Node: Params
 		if n.Type.Params != nil {
 			out.Type.Params = r.restoreNode(n.Type.Params, "FuncDecl", "Params", "FieldList", allowDuplicate).(*ast.FieldList)
@@ -881,6 +892,14 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 
 		// Decoration: Func
 		r.applyDecorations(out, n.Decs.Func, false)
+
+		// Node: TypeParams
+		if n.TypeParams != nil {
+			out.TypeParams = r.restoreNode(n.TypeParams, "FuncType", "TypeParams", "FieldList", allowDuplicate).(*ast.FieldList)
+		}
+
+		// Decoration: TypeParams
+		r.applyDecorations(out, n.Decs.TypeParams, false)
 
 		// Node: Params
 		if n.Params != nil {
@@ -1140,6 +1159,47 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 
 		// Decoration: Index
 		r.applyDecorations(out, n.Decs.Index, false)
+
+		// Token: Rbrack
+		out.Rbrack = r.cursor
+		r.cursor += token.Pos(len(token.RBRACK.String()))
+
+		// Decoration: End
+		r.applyDecorations(out, n.Decs.End, true)
+		r.applySpace(n, "After", n.Decs.After)
+
+		return out
+	case *dst.IndexListExpr:
+		out := &ast.IndexListExpr{}
+		r.Ast.Nodes[n] = out
+		r.Dst.Nodes[out] = n
+		r.applySpace(n, "Before", n.Decs.Before)
+
+		// Decoration: Start
+		r.applyDecorations(out, n.Decs.Start, false)
+
+		// Node: X
+		if n.X != nil {
+			out.X = r.restoreNode(n.X, "IndexListExpr", "X", "Expr", allowDuplicate).(ast.Expr)
+		}
+
+		// Decoration: X
+		r.applyDecorations(out, n.Decs.X, false)
+
+		// Token: Lbrack
+		out.Lbrack = r.cursor
+		r.cursor += token.Pos(len(token.LBRACK.String()))
+
+		// Decoration: Lbrack
+		r.applyDecorations(out, n.Decs.Lbrack, false)
+
+		// List: Indices
+		for _, v := range n.Indices {
+			out.Indices = append(out.Indices, r.restoreNode(v, "IndexListExpr", "Indices", "Expr", allowDuplicate).(ast.Expr))
+		}
+
+		// Decoration: Indices
+		r.applyDecorations(out, n.Decs.Indices, false)
 
 		// Token: Rbrack
 		out.Rbrack = r.cursor
@@ -1764,6 +1824,14 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 
 		// Decoration: Name
 		r.applyDecorations(out, n.Decs.Name, false)
+
+		// Node: TypeParams
+		if n.TypeParams != nil {
+			out.TypeParams = r.restoreNode(n.TypeParams, "TypeSpec", "TypeParams", "FieldList", allowDuplicate).(*ast.FieldList)
+		}
+
+		// Decoration: TypeParams
+		r.applyDecorations(out, n.Decs.TypeParams, false)
 
 		// Node: Type
 		if n.Type != nil {

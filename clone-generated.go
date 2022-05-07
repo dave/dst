@@ -655,6 +655,14 @@ func Clone(n Node) Node {
 		// Decoration: Name
 		out.Decs.Name = append(out.Decs.Name, n.Decs.Name...)
 
+		// Node: TypeParams
+		if n.Type.TypeParams != nil {
+			out.Type.TypeParams = Clone(n.Type.TypeParams).(*FieldList)
+		}
+
+		// Decoration: TypeParams
+		out.Decs.TypeParams = append(out.Decs.TypeParams, n.Decs.TypeParams...)
+
 		// Node: Params
 		if n.Type.Params != nil {
 			out.Type.Params = Clone(n.Type.Params).(*FieldList)
@@ -722,6 +730,14 @@ func Clone(n Node) Node {
 
 		// Decoration: Func
 		out.Decs.Func = append(out.Decs.Func, n.Decs.Func...)
+
+		// Node: TypeParams
+		if n.TypeParams != nil {
+			out.TypeParams = Clone(n.TypeParams).(*FieldList)
+		}
+
+		// Decoration: TypeParams
+		out.Decs.TypeParams = append(out.Decs.TypeParams, n.Decs.TypeParams...)
 
 		// Node: Params
 		if n.Params != nil {
@@ -948,6 +964,39 @@ func Clone(n Node) Node {
 
 		// Decoration: Index
 		out.Decs.Index = append(out.Decs.Index, n.Decs.Index...)
+
+		// Decoration: End
+		out.Decs.End = append(out.Decs.End, n.Decs.End...)
+
+		out.Decs.After = n.Decs.After
+
+		return out
+	case *IndexListExpr:
+		out := &IndexListExpr{}
+
+		out.Decs.Before = n.Decs.Before
+
+		// Decoration: Start
+		out.Decs.Start = append(out.Decs.Start, n.Decs.Start...)
+
+		// Node: X
+		if n.X != nil {
+			out.X = Clone(n.X).(Expr)
+		}
+
+		// Decoration: X
+		out.Decs.X = append(out.Decs.X, n.Decs.X...)
+
+		// Decoration: Lbrack
+		out.Decs.Lbrack = append(out.Decs.Lbrack, n.Decs.Lbrack...)
+
+		// List: Indices
+		for _, v := range n.Indices {
+			out.Indices = append(out.Indices, Clone(v).(Expr))
+		}
+
+		// Decoration: Indices
+		out.Decs.Indices = append(out.Decs.Indices, n.Decs.Indices...)
 
 		// Decoration: End
 		out.Decs.End = append(out.Decs.End, n.Decs.End...)
@@ -1458,6 +1507,14 @@ func Clone(n Node) Node {
 
 		// Decoration: Name
 		out.Decs.Name = append(out.Decs.Name, n.Decs.Name...)
+
+		// Node: TypeParams
+		if n.TypeParams != nil {
+			out.TypeParams = Clone(n.TypeParams).(*FieldList)
+		}
+
+		// Decoration: TypeParams
+		out.Decs.TypeParams = append(out.Decs.TypeParams, n.Decs.TypeParams...)
 
 		// Node: Type
 		if n.Type != nil {
