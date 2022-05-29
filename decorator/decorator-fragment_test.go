@@ -18,6 +18,151 @@ func TestFragment(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "index list expr",
+			code: `package a
+
+var A B[int, string]`,
+			expect: `File Start 1:1
+        File "package" 1:1
+        File Package 1:8
+        Ident Start 1:9
+        Ident X 1:9
+        Ident "a" 1:9
+        Ident End 1:10
+        File Name 1:10
+        Empty line 1:10
+        GenDecl Start 3:1
+        GenDecl "var" 3:1
+        GenDecl Tok 3:4
+        ValueSpec Start 3:5
+        Ident Start 3:5
+        Ident X 3:5
+        Ident "A" 3:5
+        Ident End 3:6
+        IndexListExpr Start 3:7
+        Ident Start 3:7
+        Ident X 3:7
+        Ident "B" 3:7
+        Ident End 3:8
+        IndexListExpr X 3:8
+        IndexListExpr "[" 3:8
+        IndexListExpr Lbrack 3:9
+        Ident Start 3:9
+        Ident X 3:9
+        Ident "int" 3:9
+        Ident End 3:12
+        Ident Start 3:14
+        Ident X 3:14
+        Ident "string" 3:14
+        Ident End 3:20
+        IndexListExpr Indices 3:20
+        IndexListExpr "]" 3:20
+        IndexListExpr End 3:21
+        ValueSpec End 3:21
+        GenDecl End 3:21`,
+		},
+		{
+			name: "type params",
+			code: `package a
+
+func A[B any, C int | int64](b B) C {
+	return 0
+}`,
+			expect: `File Start 1:1
+        File "package" 1:1
+        File Package 1:8
+        Ident Start 1:9
+        Ident X 1:9
+        Ident "a" 1:9
+        Ident End 1:10
+        File Name 1:10
+        Empty line 1:10
+        FuncDecl Start 3:1
+        FuncDecl "func" 3:1
+        FuncDecl Func 3:5
+        Ident Start 3:6
+        Ident X 3:6
+        Ident "A" 3:6
+        Ident End 3:7
+        FuncDecl Name 3:7
+        FieldList Start 3:7
+        FieldList "(" 3:7
+        FieldList Opening 3:8
+        Field Start 3:8
+        Ident Start 3:8
+        Ident X 3:8
+        Ident "B" 3:8
+        Ident End 3:9
+        Ident Start 3:10
+        Ident X 3:10
+        Ident "any" 3:10
+        Ident End 3:13
+        Field End 3:13
+        Field Start 3:15
+        Ident Start 3:15
+        Ident X 3:15
+        Ident "C" 3:15
+        Ident End 3:16
+        BinaryExpr Start 3:17
+        Ident Start 3:17
+        Ident X 3:17
+        Ident "int" 3:17
+        Ident End 3:20
+        BinaryExpr X 3:20
+        BinaryExpr "|" 3:21
+        BinaryExpr Op 3:22
+        Ident Start 3:23
+        Ident X 3:23
+        Ident "int64" 3:23
+        Ident End 3:28
+        BinaryExpr End 3:28
+        Field End 3:28
+        FieldList ")" 3:28
+        FieldList End 3:29
+        FuncDecl TypeParams 3:29
+        FieldList Start 3:29
+        FieldList "(" 3:29
+        FieldList Opening 3:30
+        Field Start 3:30
+        Ident Start 3:30
+        Ident X 3:30
+        Ident "b" 3:30
+        Ident End 3:31
+        Ident Start 3:32
+        Ident X 3:32
+        Ident "B" 3:32
+        Ident End 3:33
+        Field End 3:33
+        FieldList ")" 3:33
+        FieldList End 3:34
+        FuncDecl Params 3:34
+        FieldList Start 3:35
+        FieldList Opening 3:35
+        Field Start 3:35
+        Ident Start 3:35
+        Ident X 3:35
+        Ident "C" 3:35
+        Ident End 3:36
+        Field End 3:36
+        FieldList End 3:36
+        FuncDecl Results 3:36
+        BlockStmt Start 3:37
+        BlockStmt "{" 3:37
+        BlockStmt Lbrace 3:38
+        New line 3:38
+        ReturnStmt Start 4:2
+        ReturnStmt "return" 4:2
+        ReturnStmt Return 4:8
+        BasicLit Start 4:9
+        BasicLit "0" 4:9
+        BasicLit End 4:10
+        ReturnStmt End 4:10
+        New line 4:10
+        BlockStmt "}" 5:1
+        BlockStmt End 5:2
+        FuncDecl End 5:2`,
+		},
+		{
 			name: "block comment",
 			code: `package a
 				

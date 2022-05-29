@@ -19,6 +19,36 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "index list expr",
+			code: `package a
+
+var A /*1*/ B[ /*2*/ int /*3*/, string /*4*/] /*5*/`,
+			expect: `GenDecl [Empty line before] [End "/*5*/"]
+        Ident [End "/*1*/"]
+        IndexListExpr [Lbrack "/*2*/"] [Indices "/*4*/"]
+        Ident [End "/*3*/"]`,
+		},
+		{
+			name: "type params",
+			code: `package a
+
+func /*1*/ A[ /*2*/ B /*3*/ any /*4*/, C /*5*/ int /*6*/ | /*7*/ int64 /*8*/]( /*9*/ b /*10*/ B /*11*/) /*12*/ C /*13*/ {
+	return 0
+}`,
+			expect: `FuncDecl [Empty line before] [Func "/*1*/"] [Params "/*12*/"] [Results "/*13*/"]
+        FieldList [Opening "/*2*/"]
+        Field [End "/*4*/"]
+        Ident [End "/*3*/"]
+        Field [End "/*8*/"]
+        Ident [End "/*5*/"]
+        BinaryExpr [X "/*6*/"] [Op "/*7*/"]
+        FieldList [Opening "/*9*/"]
+        Field [End "/*11*/"]
+        Ident [End "/*10*/"]
+        ReturnStmt [New line before] [New line after]`,
+		},
+
+		{
 			name: "import-blocks",
 			code: `package main
 

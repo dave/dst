@@ -13,6 +13,63 @@ func TestRestorer(t *testing.T) {
 		code       string
 	}{
 		{
+			name: "generics-byteseq",
+			code: `package main
+
+import (
+	"fmt"
+)
+
+func /*A*/ add /*B*/ [ /*C*/ S /*D*/ ~ /*E*/ string /*F*/ | /*G*/ ~ /*H*/ [] /*I*/ byte /*J*/] /*K*/ ( /*L*/ buf /*M*/ * /*N*/ [] /*O*/ byte /*P*/, s /*Q*/ S /*R*/) /*S*/ { /*T*/
+	*buf = append(*buf, s...)
+}
+
+func main() {
+	var buf []byte
+	add(&buf, "foo")
+	add(&buf, []byte("bar"))
+	fmt.Println(string(buf))
+}`,
+		},
+		{
+			name: "generics-anonymous-func",
+			code: `package main
+
+import "fmt"
+
+func makeComparableFunc /*A*/ [ /*B*/ T /*C*/ comparable /*D*/] /*E*/ ( /*F*/ ) /*G*/ func /*H*/ ( /*I*/ lhs /*J*/, rhs /*K*/ T /*L*/) /*M*/ bool /*N*/ {
+	return func(lhs, rhs T) bool {
+		return lhs == rhs
+	}
+}
+
+func main() {
+	equal := /*A*/ makeComparableFunc /*B*/ [ /*C*/ int /*D*/] /*E*/ ( /*F*/ ) /*G*/
+	fmt.Println(equal(1, 2))
+}`,
+		},
+		{
+			name: "generics-add",
+			code: `package main
+
+import (
+	"fmt"
+)
+
+type Addable interface {
+	int /*A*/ | /*B*/ int8 /*C*/ | /*D*/ int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64 | uintptr | float32 | float64 | complex64 | complex128 | string
+}
+
+func add /*A*/ [ /*B*/ T /*C*/ Addable /*D*/]( /*E*/ a /*F*/, b /*G*/ T /*H*/) /*I*/ T /*J*/ {
+	return a + b
+}
+
+func main() {
+	fmt.Println(add(1, 2))
+	fmt.Println(add("foo", "bar"))
+}`,
+		},
+		{
 			name: "comment-alignment",
 			code: `package a
 
