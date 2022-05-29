@@ -283,6 +283,7 @@ func (a *application) apply(parent dst.Node, name string, iter *iterator, n dst.
 		a.apply(n, "Fields", nil, n.Fields)
 
 	case *dst.FuncType:
+		a.apply(n, "TypeParams", nil, n.TypeParams)
 		a.apply(n, "Params", nil, n.Params)
 		a.apply(n, "Results", nil, n.Results)
 
@@ -390,6 +391,7 @@ func (a *application) apply(parent dst.Node, name string, iter *iterator, n dst.
 
 	case *dst.TypeSpec:
 		a.apply(n, "Name", nil, n.Name)
+		a.apply(n, "TypeParams", nil, n.TypeParams)
 		a.apply(n, "Type", nil, n.Type)
 
 	case *dst.BadDecl:
