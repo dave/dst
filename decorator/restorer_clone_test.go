@@ -27,8 +27,13 @@ func testPackageRestoresCorrectlyWithClone(t *testing.T, path ...string) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(pkgs) == 0 {
+		t.Fatal("No packages loaded")
+	}
 	for _, p := range pkgs {
-
+		if len(p.Syntax) == 0 {
+			t.Fatalf("Package %s has no syntax", p.PkgPath)
+		}
 		t.Run(p.PkgPath, func(t *testing.T) {
 
 			// must use go/build package resolver for standard library because of https://github.com/golang/go/issues/26924
