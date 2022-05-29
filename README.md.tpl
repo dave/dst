@@ -236,4 +236,4 @@ For further developing or contributing to `dst`, check out [these notes](https:/
 
 ## Special thanks
 
-Thanks very much to @hawkinsw for taking on the task of adding generics compatibility to `dst`.
+Thanks very much to [hawkinsw](https://github.com/hawkinsw) for taking on the task of adding generics compatibility to `dst`.
