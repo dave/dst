@@ -241,6 +241,7 @@ type ForStmtDecorations struct {
 // 		return
 // 	} /*End*/
 //
+// 	/*Start*/
 // 	func /*Func*/ TP /*Name*/ [P any] /*TypeParams*/ (a int) /*Params*/ (b P) /*Results*/ {
 // 		return b
 // 	} /*End*/
@@ -376,9 +377,7 @@ type IndexExprDecorations struct {
 
 // IndexListExprDecorations holds decorations for IndexListExpr:
 //
-// 	type IEPT[P any, Q any] struct {
-// 		XX X /*X*/ [ /*Lbrack*/ P, Q /*Indices*/] /*End*/
-// 	}
+// 	var T4 /*Start*/ T3 /*X*/ [ /*Lbrack*/ int, string /*Indices*/] /*End*/
 //
 type IndexListExprDecorations struct {
 	NodeDecs
@@ -597,7 +596,7 @@ type TypeAssertExprDecorations struct {
 // 	)
 //
 // 	type (
-// 		/*Start*/ X /*Name*/ [P any, Q any] /*TypeParams*/ []P /*End*/
+// 		/*Start*/ T3 /*Name*/ [P any, Q any] /*TypeParams*/ []P /*End*/
 // 	)
 //
 type TypeSpecDecorations struct {

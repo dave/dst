@@ -285,13 +285,11 @@ A /*Label*/ : /*Colon*/
 
 	// TypeSpec(2)
 	type (
-		/*Start*/ X /*Name*/ [P any, Q any] /*TypeParams*/ []P /*End*/
+		/*Start*/ T3 /*Name*/ [P any, Q any] /*TypeParams*/ []P /*End*/
 	)
 
 	// IndexListExpr
-	type IEPT[P any, Q any] struct {
-		XX X /*X*/ [ /*Lbrack*/ P, Q /*Indices*/] /*End*/
-	}
+	var T4 /*Start*/ T3 /*X*/ [ /*Lbrack*/ int, string /*Indices*/] /*End*/
 
 	// GenDecl(0)
 	/*Start*/
@@ -306,6 +304,7 @@ A /*Label*/ : /*Colon*/
 
 	// --
 
+	print(T4)
 }
 
 // FuncDecl(0)
@@ -315,6 +314,7 @@ func /*Func*/ d /*Name*/ (d, e int) /*Params*/ {
 } /*End*/
 
 // FuncDecl(1)
+/*Start*/
 func /*Func*/ TP /*Name*/ [P any] /*TypeParams*/ (a int) /*Params*/ (b P) /*Results*/ {
 	return b
 } /*End*/
