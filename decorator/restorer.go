@@ -267,7 +267,7 @@ func (r *FileRestorer) updateImports() error {
 		}
 		name, err := r.Resolver.ResolvePackage(path)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not resolve package %s: %w", path, err)
 		}
 		resolved[path] = name
 	}
