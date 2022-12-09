@@ -19,6 +19,26 @@ func TestDecorator(t *testing.T) {
 		expect     string
 	}{
 		{
+			name: "package comment bug 3",
+			code: `/*
+1
+*/
+package a`,
+			expect: `File [Start "/*\n1\n*/" "\n"]`,
+		},
+		{
+			name: "package comment bug 2",
+			code: `// 1
+package a`,
+			expect: `File [Start "// 1"]`,
+		},
+		{
+			name: "package comment bug 1",
+			code: `/* 1 */
+package a`,
+			expect: `File [Start "/* 1 */" "\n"]`,
+		},
+		{
 			name: "index list expr",
 			code: `package a
 

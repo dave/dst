@@ -520,7 +520,7 @@ func (r *FileRestorer) restoreIdent(n *dst.Ident, parentName, parentField, paren
 	r.applySpace(n, "Before", n.Decs.Before)
 
 	// Decoration: Start
-	r.applyDecorations(out, n.Decs.Start, false)
+	r.applyDecorations(out, "Start", n.Decs.Start, false)
 
 	// Node: X
 	out.X = r.restoreNode(dst.NewIdent(name), "SelectorExpr", "X", "Expr", allowDuplicate).(ast.Expr)
@@ -529,13 +529,13 @@ func (r *FileRestorer) restoreIdent(n *dst.Ident, parentName, parentField, paren
 	r.cursor += token.Pos(len(token.PERIOD.String()))
 
 	// Decoration: X
-	r.applyDecorations(out, n.Decs.X, false)
+	r.applyDecorations(out, "X", n.Decs.X, false)
 
 	// Node: Sel
 	out.Sel = r.restoreNode(dst.NewIdent(n.Name), "SelectorExpr", "Sel", "Ident", allowDuplicate).(*ast.Ident)
 
 	// Decoration: End
-	r.applyDecorations(out, n.Decs.End, true)
+	r.applyDecorations(out, "End", n.Decs.End, true)
 	r.applySpace(n, "After", n.Decs.After)
 
 	return out
@@ -626,8 +626,11 @@ func (r *FileRestorer) addCommentField(n ast.Node, slash token.Pos, text string)
 	}
 }
 
-func (r *FileRestorer) applyDecorations(node ast.Node, decorations dst.Decorations, end bool) {
+func (r *FileRestorer) applyDecorations(node ast.Node, name string, decorations dst.Decorations, end bool) {
 	firstLine := true
+	_, isNodeFile := node.(*ast.File)
+	isPackageComment := isNodeFile && name == "Start"
+
 	for _, d := range decorations {
 
 		isNewline := d == "\n"
@@ -674,6 +677,10 @@ func (r *FileRestorer) applyDecorations(node ast.Node, decorations dst.Decoratio
 		if isNewline || isLineComment {
 			firstLine = false
 		}
+	}
+	if isPackageComment {
+		// This fixes https://github.com/dave/dst/issues/69
+		r.cursor++
 	}
 }
 

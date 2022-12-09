@@ -13,6 +13,50 @@ func TestRestorer(t *testing.T) {
 		code       string
 	}{
 		{
+			name: "package comment bug 7",
+			code: `/* 1 */ package a`,
+		},
+		{
+			name: "package comment bug 6",
+			code: `// 1
+/*
+2
+*/package a`,
+		},
+		{
+			name: "package comment bug 5",
+			code: `// 1
+/*
+2
+*/
+package a`,
+		},
+		{
+			name: "package comment bug 4",
+			code: `/*
+1
+*/
+// 2
+package a`,
+		},
+		{
+			name: "package comment bug 3",
+			code: `/*
+1
+*/
+package a`,
+		},
+		{
+			name: "package comment bug 2",
+			code: `// 1
+package main`,
+		},
+		{
+			name: "package comment bug 1",
+			code: `/* 1 */
+package main`,
+		},
+		{
 			name: "generics-byteseq",
 			code: `package main
 
@@ -733,6 +777,8 @@ const d = 1
 
 			if buf.String() != test.code {
 				t.Errorf("diff:\n%s", diff(test.code, buf.String()))
+				t.Errorf("expected:\n%s", test.code)
+				t.Errorf("found:\n%s", buf.String())
 			}
 		})
 	}
