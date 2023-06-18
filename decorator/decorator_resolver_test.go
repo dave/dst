@@ -35,7 +35,9 @@ func TestDecoratorResolver(t *testing.T) {
 						a.A()
 						B()
 						C()
-					}`,
+					}
+
+					type Gen[T any] func(T) error`,
 				"main/c.go": "package main \n\n func C(){}",
 				"a/a.go":    "package a \n\n func A(){}",
 				"b/b.go":    "package b \n\n func B(){}",
@@ -68,6 +70,20 @@ func TestDecoratorResolver(t *testing.T) {
 					"root/main",
 					func(f *dst.File) *dst.Ident {
 						return f.Decls[1].(*dst.FuncDecl).Body.List[2].(*dst.ExprStmt).X.(*dst.CallExpr).Fun.(*dst.Ident)
+					},
+					true,
+				},
+				{
+					"",
+					func(f *dst.File) *dst.Ident {
+						return f.Decls[2].(*dst.GenDecl).Specs[0].(*dst.TypeSpec).Type.(*dst.FuncType).Params.List[0].Type.(*dst.Ident)
+					},
+					false,
+				},
+				{
+					"",
+					func(f *dst.File) *dst.Ident {
+						return f.Decls[2].(*dst.GenDecl).Specs[0].(*dst.TypeSpec).Type.(*dst.FuncType).Params.List[0].Type.(*dst.Ident)
 					},
 					true,
 				},
