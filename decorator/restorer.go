@@ -187,7 +187,13 @@ func (r *FileRestorer) updateImports() error {
 	// a list of all the imports that will be in the imports block after the update
 	importsRequired := map[string]bool{}
 
+	seen := map[dst.Node]struct{}{}
+
 	dst.Inspect(r.file, func(n dst.Node) bool {
+		if _, already := seen[n]; already {
+			return false
+		}
+		seen[n] = struct{}{}
 		switch n := n.(type) {
 		case *dst.Ident:
 			if n.Path == "" {
