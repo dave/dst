@@ -78,6 +78,13 @@ func (d *Decorator) ParseFile(filename string, src interface{}, mode parser.Mode
 		return nil, perr
 	}
 
+	// If the file has no valid position information, we can't safely decorate it.
+	// This happens when the source is so malformed that the parser couldn't
+	// produce a usable AST (e.g., "pkg main" or empty input).
+	if f.Pos() == token.NoPos {
+		return nil, perr
+	}
+
 	file, err := d.DecorateFile(f)
 	if err != nil {
 		return nil, err
