@@ -59,7 +59,6 @@ type Decl interface {
 // in a signature.
 // Field.Names is nil for unnamed parameters (parameter lists which only contain types)
 // and embedded struct fields. In the latter case, the field name is the type name.
-//
 type Field struct {
 	Names []*Ident  // field/method/(type) parameter names; or nil
 	Type  Expr      // field/method/parameter type; or nil
