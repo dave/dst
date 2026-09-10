@@ -699,6 +699,9 @@ func (r *FileRestorer) restoreNode(n dst.Node, parentName, parentField, parentFi
 
 		// Scope: Scope
 		out.Scope = r.restoreScope(n.Scope)
+
+		// Value: GoVersion
+		out.GoVersion = n.GoVersion
 		r.applySpace(n, "After", n.Decs.After)
 
 		return out

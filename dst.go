@@ -650,6 +650,7 @@ type File struct {
 	Scope      *Scope        // package scope (this file only)
 	Imports    []*ImportSpec // imports in this file
 	Unresolved []*Ident      // unresolved identifiers in this file
+	GoVersion  string        // minimum Go version required by //go:build or // +build directives
 	Decs       FileDecorations
 }
 

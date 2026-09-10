@@ -2287,6 +2287,7 @@ var Info = map[string][]Part{
 			Imports    []*ImportSpec   // imports in this file
 			Unresolved []*Ident        // unresolved identifiers in this file
 			Comments   []*CommentGroup // list of all comments in the source file
+			GoVersion  string          // minimum Go version required by //go:build or // +build directives
 		}
 	*/
 	// TODO: File.Unresolved?
@@ -2329,6 +2330,10 @@ var Info = map[string][]Part{
 			Field:     Field{"Imports"},
 			Elem:      Struct{"ImportSpec"},
 			NoRestore: true,
+		},
+		Value{
+			Name:  "GoVersion",
+			Field: Field{"GoVersion"},
 		},
 	},
 	/*

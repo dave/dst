@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/dave/dst"
 )
 
 func TestDecorator(t *testing.T) {
@@ -640,6 +642,62 @@ func TestDecorator_ParseDir(t *testing.T) {
 
 	compareDir(t, dir, actual)
 
+}
+
+func TestGoVersion(t *testing.T) {
+
+	// go/ast records the minimum Go version required by the //go:build directives in the file
+	// in File.GoVersion. Check it survives a round trip through dst.
+	tests := []struct {
+		name   string
+		code   string
+		expect string
+	}{
+		{
+			name:   "go directive",
+			code:   "//go:build go1.21\n\npackage a\n",
+			expect: "go1.21",
+		},
+		{
+			name:   "no directive",
+			code:   "package a\n",
+			expect: "",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			fset := token.NewFileSet()
+			astFile, err := parser.ParseFile(fset, "a.go", test.code, parser.ParseComments)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if astFile.GoVersion != test.expect {
+				t.Fatalf("go/parser gave GoVersion %q, expected %q", astFile.GoVersion, test.expect)
+			}
+
+			dec := NewDecorator(fset)
+			dstFile, err := dec.DecorateFile(astFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if dstFile.GoVersion != test.expect {
+				t.Errorf("after decorating, GoVersion is %q, expected %q", dstFile.GoVersion, test.expect)
+			}
+
+			if cloned := dst.Clone(dstFile).(*dst.File); cloned.GoVersion != test.expect {
+				t.Errorf("after cloning, GoVersion is %q, expected %q", cloned.GoVersion, test.expect)
+			}
+
+			restored, err := NewRestorer().RestoreFile(dstFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if restored.GoVersion != test.expect {
+				t.Errorf("after restoring, GoVersion is %q, expected %q", restored.GoVersion, test.expect)
+			}
+		})
+	}
 }
 
 var multiSpaces = regexp.MustCompile(" {2,}")
