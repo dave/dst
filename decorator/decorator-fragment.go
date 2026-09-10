@@ -344,10 +344,14 @@ func (f *fileDecorator) link() {
 				if frag.Empty {
 					spaceType = dst.EmptyLine
 				}
-				if foundBefore {
+				// Several newline fragments can resolve to the same node - e.g. a run of two
+				// blank lines is an empty-line fragment followed by a new-line fragment, and both
+				// find the same node. Only ever increase the spacing, so the new-line doesn't
+				// downgrade the empty-line we already found. See #81.
+				if foundBefore && spaceType > f.before[nodeBefore] {
 					f.before[nodeBefore] = spaceType
 				}
-				if foundAfter {
+				if foundAfter && spaceType > f.after[nodeAfter] {
 					f.after[nodeAfter] = spaceType
 				}
 				continue

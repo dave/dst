@@ -783,3 +783,73 @@ const d = 1
 		})
 	}
 }
+
+func TestRestorerBlankLines(t *testing.T) {
+	tests := []struct {
+		skip, solo bool
+		name       string
+		code       string
+	}{
+		{
+			name: "two blank lines between statements",
+			code: "package a\n\nfunc main() {\n\tx := 1\n\n\n\t_ = x\n}\n",
+		},
+		{
+			name: "three blank lines between statements",
+			code: "package a\n\nfunc main() {\n\tx := 1\n\n\n\n\t_ = x\n}\n",
+		},
+		{
+			name: "two blank lines between declarations",
+			code: "package a\n\nvar x = 1\n\n\nvar y = 2\n",
+		},
+		{
+			name: "two blank lines between functions",
+			code: "package a\n\nfunc a() {}\n\n\nfunc b() {}\n",
+		},
+		{
+			name: "two blank lines before a comment",
+			code: "package a\n\nvar x = 1\n\n\n// y is a variable\nvar y = 2\n",
+		},
+	}
+	var solo bool
+	for _, test := range tests {
+		if test.solo {
+			solo = true
+			break
+		}
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if solo && !test.solo {
+				t.Skip()
+			}
+			if test.skip {
+				t.Skip()
+			}
+
+			// A run of blank lines can only be restored as a single blank line, which is what
+			// gofmt renders them as. See https://github.com/dave/dst/issues/81
+			b, err := format.Source([]byte(test.code))
+			if err != nil {
+				t.Fatal(err)
+			}
+			expect := string(b)
+
+			file, err := Parse(test.code)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			buf := &bytes.Buffer{}
+			if err := Fprint(buf, file); err != nil {
+				t.Fatal(err)
+			}
+
+			if buf.String() != expect {
+				t.Errorf("diff:\n%s", diff(expect, buf.String()))
+				t.Errorf("expected:\n%s", expect)
+				t.Errorf("found:\n%s", buf.String())
+			}
+		})
+	}
+}
