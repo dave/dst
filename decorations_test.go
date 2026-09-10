@@ -122,7 +122,7 @@ func ExampleAlias() {
 
 }
 
-func ExampleManualImports() {
+func Example_manualImports() {
 
 	code := `package main
 
@@ -165,7 +165,7 @@ func ExampleManualImports() {
 
 }
 
-func ExampleImports() {
+func Example_imports() {
 
 	// Create a simple module in a temporary directory
 	dir, err := tempDir(map[string]string{
@@ -216,7 +216,7 @@ func ExampleImports() {
 	//func main() { fmt.Println("Hello, World!") }
 }
 
-func ExampleGoTypesImport() {
+func Example_goTypesImport() {
 
 	// Create a simple module in a temporary directory
 	dir, err := tempDir(map[string]string{
@@ -297,7 +297,7 @@ func ExampleClone() {
 	//var j /* b */ int
 }
 
-func ExampleDecorationPoints() {
+func Example_decorationPoints() {
 	code := `package main
 	
 	// main comment
@@ -383,7 +383,7 @@ func ExampleDecorationPoints() {
 	//- Lbrace: ["\n", "// empty block"]
 }
 
-func ExampleTypes() {
+func Example_types() {
 	code := `package main
 
 	func main() {
@@ -464,7 +464,7 @@ func ExampleTypes() {
 
 }
 
-func ExampleDecorated() {
+func Example_decorated() {
 	code := `package main
 
 	func main() {
@@ -501,7 +501,7 @@ func ExampleDecorated() {
 	//}
 }
 
-func ExampleSpace() {
+func Example_space() {
 	code := `package main
 
 	func main() {
@@ -623,7 +623,7 @@ func ExampleDecorations() {
 	//}
 }
 
-func ExampleAstBroken() {
+func Example_astBroken() {
 	code := `package a
 
 	func main(){
@@ -655,7 +655,7 @@ func ExampleAstBroken() {
 	//}
 }
 
-func ExampleDstFixed() {
+func Example_dstFixed() {
 	code := `package a
 
 	func main(){
