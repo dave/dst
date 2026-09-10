@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dave/dst.svg?branch=master)](https://travis-ci.org/dave/dst)
+[![go test](https://github.com/dave/dst/actions/workflows/ci.yml/badge.svg)](https://github.com/dave/dst/actions/workflows/ci.yml)
 [![Documentation](https://img.shields.io/badge/godoc-documentation-brightgreen.svg)](https://godoc.org/github.com/dave/dst/decorator)
 [![codecov](https://img.shields.io/badge/codecov-92%25-brightgreen.svg)](https://codecov.io/gh/dave/dst)
 ![stability-stable](https://img.shields.io/badge/stability-stable-brightgreen.svg)
