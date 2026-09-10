@@ -63,6 +63,14 @@ func generateDstDecs(names []string) error {
 		panic(err)
 	}
 	source := buf.String()
+
+	// The part positions below are token.Pos values, which are relative to the base of the file in
+	// the FileSet, but they are used to slice source, which starts at the beginning of the file.
+	// The loader parses the files of a package concurrently, so the base of positions.go depends
+	// on which file wins the race - if it isn't the first file added to the FileSet, the slices
+	// are offset and we either corrupt the generated comments or panic. Normalise the positions
+	// to a base of 1, which is what the slicing below expects.
+	offset := prog.Fset.File(astFile.Pos()).Base() - 1
 	reg := regexp.MustCompile(`// ([a-zA-Z]+)`)
 	type part struct {
 		name       string
@@ -104,7 +112,7 @@ func generateDstDecs(names []string) error {
 			if part.name != name {
 				continue
 			}
-			text := source[part.start:part.end]
+			text := source[part.start-offset : part.end-offset]
 			indented := text[0] == '\t'
 			text = strings.TrimSpace(text)
 			var indent string

@@ -573,6 +573,9 @@ func Clone(n Node) Node {
 			out.Imports = append(out.Imports, Clone(v).(*ImportSpec))
 		}
 
+		// Value: GoVersion
+		out.GoVersion = n.GoVersion
+
 		out.Decs.After = n.Decs.After
 
 		return out

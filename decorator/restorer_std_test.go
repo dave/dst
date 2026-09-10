@@ -58,8 +58,31 @@ func testPackageRestoresCorrectlyWithImports(t *testing.T, path ...string) {
 		"embed/internal/embedtest": true,
 		"os/signal/internal/pty":   true,
 	}
+	// These files import the same path more than once with different aliases (e.g. "unsafe" and
+	// `_ "unsafe"`). The import management block can only hold one alias per path, so the imports
+	// are merged and the restored file doesn't match. Supporting this would need a rewrite of the
+	// import management block - see https://github.com/dave/dst/issues/45
+	skipDuplicateImports := map[string]map[string]bool{
+		"crypto/rand":        {"rand.go": true},
+		"crypto/x509":        {"x509.go": true},
+		"internal/godebug":   {"godebug.go": true},
+		"net/http":           {"server.go": true, "request.go": true},
+		"reflect":            {"badlinkname.go": true},
+		"runtime":            {"rand.go": true},
+		"testing/cryptotest": {"rand.go": true},
+	}
 	for _, p := range pkgs {
 		if skip[p.PkgPath] {
+			continue
+		}
+		if len(p.GoFiles) == 0 {
+			// nothing to restore in a package with no non-test source - e.g. one that only
+			// contains external test files
+			continue
+		}
+		if len(p.Syntax) == 0 && len(p.CompiledGoFiles) != len(p.GoFiles) {
+			// Load only decorates the files in GoFiles, so a package where every source file is
+			// preprocessed by cgo ends up with no decorated files
 			continue
 		}
 		if len(p.Syntax) == 0 {
@@ -79,8 +102,8 @@ func testPackageRestoresCorrectlyWithImports(t *testing.T, path ...string) {
 
 				t.Run(fname, func(t *testing.T) {
 
-					if (p.PkgPath == "net/http" && (fname == "server.go" || fname == "request.go")) || (p.PkgPath == "crypto/x509" && fname == "x509.go") {
-						t.Skip("TODO: In net/http/server.go, net/http/request.go, and crypto/x509/x509.go we multiple imports with the same path and different aliases. This edge case would need a complete rewrite of the import management block to support - see see https://github.com/dave/dst/issues/45")
+					if skipDuplicateImports[p.PkgPath][fname] {
+						t.Skip("TODO: multiple imports with the same path and different aliases - see https://github.com/dave/dst/issues/45")
 					}
 
 					buf := &bytes.Buffer{}

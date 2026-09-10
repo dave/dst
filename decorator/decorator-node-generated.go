@@ -808,6 +808,9 @@ func (f *fileDecorator) decorateNode(parent ast.Node, parentName, parentField, p
 			out.Imports = append(out.Imports, child.(*dst.ImportSpec))
 		}
 
+		// Value: GoVersion
+		out.GoVersion = n.GoVersion
+
 		if nd, ok := f.decorations[n]; ok {
 			if decs, ok := nd["Start"]; ok {
 				out.Decs.Start = decs

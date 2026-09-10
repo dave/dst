@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dave/dst.svg?branch=master)](https://travis-ci.org/dave/dst)
+[![go test](https://github.com/dave/dst/actions/workflows/ci.yml/badge.svg)](https://github.com/dave/dst/actions/workflows/ci.yml)
 [![Documentation](https://img.shields.io/badge/godoc-documentation-brightgreen.svg)](https://godoc.org/github.com/dave/dst/decorator)
 [![codecov](https://img.shields.io/badge/codecov-92%25-brightgreen.svg)](https://codecov.io/gh/dave/dst)
 ![stability-stable](https://img.shields.io/badge/stability-stable-brightgreen.svg)
@@ -18,11 +18,11 @@ See [this Go issue](https://github.com/golang/go/issues/20744) for more informat
 Consider this example where we want to reverse the order of the two statements. As you can see the 
 comments don't remain attached to the correct nodes:
 
-{{ "ExampleAstBroken" | example }}
+{{ "Example_astBroken" | example }}
 
 Here's the same example using `dst`:
 
-{{ "ExampleDstFixed" | example }}
+{{ "Example_dstFixed" | example }}
 
 ## Usage
 
@@ -52,14 +52,14 @@ The `Before` property marks the node as having a line space (new line or empty l
 These spaces are rendered before any decorations attached to the `Start` decoration point. The `After`
 property is similar but rendered after the node (and after any `End` decorations).
 
-{{ "ExampleSpace" | example }}
+{{ "Example_space" | example }}
 
 ### Decorations
 
 The common decoration properties (`Start`, `End`, `Before` and `After`) occur on all nodes, and can be 
 accessed with the `Decorations()` method on the `Node` interface:
 
-{{ "ExampleDecorated" | example }}
+{{ "Example_decorated" | example }}
 
 #### dstutil.Decorations
 
@@ -67,7 +67,7 @@ While debugging, it is often useful to have a list of all decorations attached t
 [dstutil](https://github.com/dave/dst/tree/master/dstutil) package provides a helper function `Decorations` which
 returns a list of the attachment points and all decorations for any node:
 
-{{ "ExampleDecorationPoints" | example }}
+{{ "Example_decorationPoints" | example }}
 
 ### Newlines
 
@@ -113,14 +113,14 @@ method will depend on the environment. [See below](#resolvers) for more details.
 The [Load](https://godoc.org/github.com/dave/dst/decorator#Load) convenience function uses 
 `go/packages` to load packages and decorate all loaded ast files, with import management enabled:
 
-{{ "ExampleImports" | example }}
+{{ "Example_imports" | example }}
 
 ### Mappings
 
 The decorator exposes `Dst.Nodes` and `Ast.Nodes` which map between `ast.Node` and `dst.Node`. This 
 enables systems that refer to `ast` nodes (such as `go/types`) to be used:
 
-{{ "ExampleTypes" | example }}
+{{ "Example_types" | example }}
 
 ## Resolvers
 
@@ -186,7 +186,7 @@ where performance is critical. `simple` resolves paths only if they occur in a p
 
 Here's an example of supplying resolvers for the decorator and restorer:
 
-{{ "ExampleManualImports" | example }}
+{{ "Example_manualImports" | example }}
 
 ### Alias
 
