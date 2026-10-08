@@ -810,6 +810,10 @@ func TestRestorerBlankLines(t *testing.T) {
 			name: "two blank lines before a comment",
 			code: "package a\n\nvar x = 1\n\n\n// y is a variable\nvar y = 2\n",
 		},
+		{
+			name: "multi-result return followed by comment (issue 89)",
+			code: "package p\n\nfunc f() {\n\treturn g(\n\t\t1,\n\t), s\n\t// c\n}\n",
+		},
 	}
 	var solo bool
 	for _, test := range tests {
