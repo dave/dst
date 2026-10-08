@@ -666,6 +666,9 @@ func (r *FileRestorer) applyDecorations(node ast.Node, name string, decorations 
 		}
 
 		// for newline decorations and also line-comments, add a newline
+		if isNewline {
+			r.cursor++
+		}
 		if isLineComment || isNewline {
 			lineOffset := int(r.cursor) - r.base // remember lines are relative to the file base
 			r.lines = append(r.lines, lineOffset)
